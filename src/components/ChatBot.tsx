@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageCircle, X, Send, Bot, User } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
   id: string;
@@ -15,7 +17,7 @@ const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hi! I'm here to help answer your financial questions. Ask me about life insurance, retirement planning, or risk assessment.",
+      text: "Hi! I'm your AI-powered financial advisor. I can help you understand risks, insurance needs, and protection strategies. What would you like to know?",
       isBot: true,
       timestamp: new Date()
     }
@@ -23,6 +25,7 @@ const ChatBot = () => {
   const [inputMessage, setInputMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -32,63 +35,33 @@ const ChatBot = () => {
     scrollToBottom();
   }, [messages]);
 
-  const getBotResponse = (userMessage: string): string => {
-    const message = userMessage.toLowerCase();
-    
-    // Life Insurance Keywords
-    if (message.includes("life insurance") || message.includes("life coverage") || message.includes("death benefit")) {
-      return "Life insurance provides financial protection for your family. Most experts recommend 10-12x your annual income in coverage. The younger you are when you apply, the lower your premiums will be for life. Would you like to start your risk assessment to see your specific coverage needs?";
+  const getAIResponse = async (userMessage: string): Promise<string> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-chatbot', {
+        body: { 
+          message: userMessage,
+          context: {
+            page: 'chat',
+            timestamp: new Date().toISOString()
+          }
+        }
+      });
+
+      if (error) {
+        console.error('AI chatbot error:', error);
+        throw error;
+      }
+
+      return data.response || "I'm sorry, I couldn't process your message right now. Please try again.";
+    } catch (error) {
+      console.error('Error calling AI chatbot:', error);
+      toast({
+        title: "Connection Error",
+        description: "Unable to reach AI assistant. Please try again.",
+        variant: "destructive"
+      });
+      return "I'm having trouble connecting right now. Please try your question again in a moment.";
     }
-    
-    if (message.includes("term") && message.includes("whole")) {
-      return "Term life insurance is typically more affordable and covers you for a specific period (10-30 years). Whole life provides permanent coverage with a cash value component but costs more. For most families, term life insurance provides the most protection for the lowest cost.";
-    }
-    
-    if (message.includes("cost") || message.includes("expensive") || message.includes("afford")) {
-      return "Life insurance is more affordable than most people think! A healthy 30-year-old can get $500,000 in coverage for about $20-30/month. The key is applying while you're young and healthy. Every year you wait, premiums increase significantly.";
-    }
-    
-    // Retirement Keywords
-    if (message.includes("retirement") || message.includes("401k") || message.includes("ira")) {
-      return "Retirement planning is crucial for long-term financial security. The general rule is to save 10-15% of your income for retirement. Starting early gives you the power of compound interest. Our assessment can show you if you're on track for your retirement goals.";
-    }
-    
-    if (message.includes("enough") && (message.includes("retirement") || message.includes("save"))) {
-      return "A common rule is the 4% withdrawal rule - you'll need 25x your desired annual retirement income saved. For example, if you want $50,000/year in retirement, you'd need $1.25 million saved. Our longevity risk analysis can show your specific needs.";
-    }
-    
-    // Tax Keywords
-    if (message.includes("tax") || message.includes("taxes")) {
-      return "Tax diversification is often overlooked but crucial. Having money in traditional 401(k)s, Roth IRAs, and taxable accounts gives you flexibility in retirement. Our tax risk assessment evaluates your current tax diversification strategy.";
-    }
-    
-    // Market/Investment Keywords
-    if (message.includes("market") || message.includes("invest") || message.includes("stock")) {
-      return "Market risk increases as you get closer to retirement. Younger investors can be more aggressive, while those nearing retirement should be more conservative. The key is having a diversified portfolio appropriate for your age and risk tolerance.";
-    }
-    
-    // Assessment Keywords
-    if (message.includes("assessment") || message.includes("analyze") || message.includes("risk")) {
-      return "Our comprehensive risk assessment evaluates four key areas: Life Insurance Risk, Longevity Risk, Market Risk, and Tax Risk. It takes just 5 minutes and provides personalized recommendations. Would you like to start your free assessment now?";
-    }
-    
-    // General Keywords
-    if (message.includes("hello") || message.includes("hi") || message.includes("help")) {
-      return "Hello! I'm here to help with your financial questions. I can explain life insurance, retirement planning, tax strategies, and more. What would you like to know about?";
-    }
-    
-    if (message.includes("thank")) {
-      return "You're welcome! Remember, the best time to start protecting your family's financial future is today. Feel free to ask more questions or start your risk assessment when you're ready.";
-    }
-    
-    // Default responses
-    const defaultResponses = [
-      "That's a great question! Financial planning can be complex, but taking action is what matters most. Our risk assessment can provide personalized insights for your specific situation.",
-      "I'd be happy to help you with that! For detailed analysis specific to your situation, I recommend starting our free 5-minute risk assessment.",
-      "Financial security is a journey, not a destination. Let me help you understand your risks and opportunities. Would you like to start with our comprehensive assessment?"
-    ];
-    
-    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   };
 
   const sendMessage = async () => {
@@ -105,18 +78,22 @@ const ChatBot = () => {
     setInputMessage("");
     setIsTyping(true);
 
-    // Simulate bot thinking time
-    setTimeout(() => {
+    // Get AI response
+    try {
+      const aiResponse = await getAIResponse(inputMessage);
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: getBotResponse(inputMessage),
+        text: aiResponse,
         isBot: true,
         timestamp: new Date()
       };
       
       setMessages(prev => [...prev, botResponse]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+    } finally {
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000); // Random delay between 1-2 seconds
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

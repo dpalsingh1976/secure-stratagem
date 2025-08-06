@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import RiskProgressRing from "@/components/RiskProgressRing";
 import ChatBot from "@/components/ChatBot";
+import PredictiveInsights from "@/components/PredictiveInsights";
+import RiskExplanationModal from "@/components/RiskExplanationModal";
 import { Phone, Mail, Calendar, Download, Share2, AlertTriangle, TrendingUp, Shield, Clock } from "lucide-react";
 
 interface RiskScores {
@@ -316,7 +318,14 @@ const Results = () => {
                           <Icon className="w-6 h-6 text-primary" />
                         </div>
                       </div>
-                      <CardTitle className="text-lg font-heading">{category.title}</CardTitle>
+                      <CardTitle className="text-lg font-heading flex items-center justify-center gap-2">
+                        {category.title}
+                        <RiskExplanationModal 
+                          riskCategory={category.title}
+                          riskScore={category.score}
+                          userProfile={personalizedData}
+                        />
+                      </CardTitle>
                       <CardDescription>{category.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -330,6 +339,19 @@ const Results = () => {
                   </Card>
                 );
               })}
+            </div>
+          </div>
+
+          {/* AI Predictive Insights */}
+          <div className="mb-16">
+            <h3 className="text-2xl font-bold text-foreground mb-8 text-center font-heading">
+              AI-Powered Future Analysis
+            </h3>
+            <div className="max-w-2xl mx-auto">
+              <PredictiveInsights 
+                userProfile={personalizedData}
+                riskScores={riskScores}
+              />
             </div>
           </div>
 
