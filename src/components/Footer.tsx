@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { Shield, Phone, Mail, Clock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AssessmentModal from "@/components/AssessmentModal";
 
 const Footer = () => {
+  const [isAssessmentOpen, setIsAssessmentOpen] = useState(false);
+  
   return (
     <footer className="bg-foreground text-white">
       {/* Call to action section */}
@@ -19,7 +23,7 @@ const Footer = () => {
               size="lg" 
               variant="secondary"
               className="text-lg px-8 py-4 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200"
-              onClick={() => window.location.href = '/assessment'}
+              onClick={() => setIsAssessmentOpen(true)}
             >
               Start Free Assessment Now
             </Button>
@@ -128,6 +132,11 @@ const Footer = () => {
           </p>
         </div>
       </div>
+      
+      <AssessmentModal 
+        open={isAssessmentOpen} 
+        onOpenChange={setIsAssessmentOpen} 
+      />
     </footer>
   );
 };
