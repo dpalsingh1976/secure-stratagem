@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { CheckCircle, ArrowRight, Shield, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AssessmentModal from "@/components/AssessmentModal";
 
 const AssessmentPreview = () => {
+  const [isAssessmentOpen, setIsAssessmentOpen] = useState(false);
   const steps = [
     {
       number: "01",
@@ -107,7 +110,7 @@ const AssessmentPreview = () => {
             <Button 
               size="lg" 
               className="btn-primary text-lg px-12 py-4 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200 group"
-              onClick={() => window.location.href = '/assessment'}
+              onClick={() => setIsAssessmentOpen(true)}
             >
               Start Your Risk Assessment
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -119,6 +122,11 @@ const AssessmentPreview = () => {
           </div>
         </div>
       </div>
+      
+      <AssessmentModal 
+        open={isAssessmentOpen} 
+        onOpenChange={setIsAssessmentOpen} 
+      />
     </section>
   );
 };

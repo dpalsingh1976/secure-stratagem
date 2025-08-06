@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Shield, Target, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AssessmentModal from "@/components/AssessmentModal";
 
 const Hero = () => {
+  const [isAssessmentOpen, setIsAssessmentOpen] = useState(false);
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background gradient */}
@@ -46,7 +49,7 @@ const Hero = () => {
             <Button 
               size="lg" 
               className="btn-accent text-lg px-8 py-4 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200"
-              onClick={() => window.location.href = '/assessment'}
+              onClick={() => setIsAssessmentOpen(true)}
             >
               <TrendingUp className="w-5 h-5 mr-2" />
               Start Free Risk Assessment
@@ -79,6 +82,11 @@ const Hero = () => {
           <div className="w-1 h-2 bg-white/60 rounded-full mt-2 animate-pulse"></div>
         </div>
       </div>
+      
+      <AssessmentModal 
+        open={isAssessmentOpen} 
+        onOpenChange={setIsAssessmentOpen} 
+      />
     </section>
   );
 };
