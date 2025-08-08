@@ -1,5 +1,5 @@
 import { Heart, Clock, TrendingDown, Receipt } from "lucide-react";
-import RiskExplanationModal from "./RiskExplanationModal";
+
 
 const RiskCategories = () => {
   const categories = [
@@ -75,10 +75,6 @@ const RiskCategories = () => {
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xl font-semibold text-foreground font-heading flex items-center gap-2">
                         {category.title}
-                        <RiskExplanationModal 
-                          riskCategory={category.title}
-                          riskScore={75 + index * 5} // Demo scores
-                        />
                       </h3>
                       <span className="text-sm font-medium text-muted-foreground px-2 py-1 bg-muted rounded-full">
                         {category.subtitle}

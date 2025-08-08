@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import RiskProgressRing from "@/components/RiskProgressRing";
 import ChatBot from "@/components/ChatBot";
 import PredictiveInsights from "@/components/PredictiveInsights";
-import RiskExplanationModal from "@/components/RiskExplanationModal";
+
 import { Phone, Mail, Calendar, Download, Share2, AlertTriangle, TrendingUp, Shield, Clock } from "lucide-react";
 
 interface RiskScores {
@@ -320,11 +320,6 @@ const Results = () => {
                       </div>
                       <CardTitle className="text-lg font-heading flex items-center justify-center gap-2">
                         {category.title}
-                        <RiskExplanationModal 
-                          riskCategory={category.title}
-                          riskScore={category.score}
-                          userProfile={personalizedData}
-                        />
                       </CardTitle>
                       <CardDescription>{category.description}</CardDescription>
                     </CardHeader>

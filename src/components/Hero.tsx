@@ -54,13 +54,6 @@ const Hero = () => {
               <TrendingUp className="w-5 h-5 mr-2" />
               Start Free Risk Assessment
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="btn-outline-primary text-white border-white/30 hover:bg-white/10 text-lg px-8 py-4"
-            >
-              Watch Demo (2 min)
-            </Button>
           </div>
 
           {/* Social proof */}
