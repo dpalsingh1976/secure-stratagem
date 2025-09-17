@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Shield, Phone, Mail, Clock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import AssessmentModal from "@/components/AssessmentModal";
+import EnhancedAssessmentModal from "@/components/EnhancedAssessmentModal";
 
 const Footer = () => {
   const [isAssessmentOpen, setIsAssessmentOpen] = useState(false);
@@ -133,7 +133,7 @@ const Footer = () => {
         </div>
       </div>
       
-      <AssessmentModal 
+      <EnhancedAssessmentModal 
         open={isAssessmentOpen} 
         onOpenChange={setIsAssessmentOpen} 
       />

@@ -274,6 +274,54 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          ai_insights: string | null
+          assessment_data: Json
+          consultation_requested: boolean | null
+          created_at: string
+          email: string | null
+          follow_up_scheduled: boolean | null
+          id: string
+          name: string | null
+          phone: string | null
+          report_generated_at: string | null
+          risk_scores: Json
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_insights?: string | null
+          assessment_data: Json
+          consultation_requested?: boolean | null
+          created_at?: string
+          email?: string | null
+          follow_up_scheduled?: boolean | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          report_generated_at?: string | null
+          risk_scores: Json
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_insights?: string | null
+          assessment_data?: Json
+          consultation_requested?: boolean | null
+          created_at?: string
+          email?: string | null
+          follow_up_scheduled?: boolean | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          report_generated_at?: string | null
+          risk_scores?: Json
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -3,7 +3,7 @@ import RiskCategories from "@/components/RiskCategories";
 import AssessmentPreview from "@/components/AssessmentPreview";
 import TrustIndicators from "@/components/TrustIndicators";
 import Footer from "@/components/Footer";
-import ChatBot from "@/components/ChatBot";
+import EnhancedChatBot from "@/components/EnhancedChatBot";
 
 const Index = () => {
   return (
@@ -13,7 +13,7 @@ const Index = () => {
       <AssessmentPreview />
       <TrustIndicators />
       <Footer />
-      <ChatBot />
+      <EnhancedChatBot />
     </div>
   );
 };
