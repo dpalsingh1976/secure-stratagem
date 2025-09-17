@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Shield, Target, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import AssessmentModal from "@/components/AssessmentModal";
+import EnhancedAssessmentModal from "@/components/EnhancedAssessmentModal";
 
 const Hero = () => {
   const [isAssessmentOpen, setIsAssessmentOpen] = useState(false);
@@ -76,7 +76,7 @@ const Hero = () => {
         </div>
       </div>
       
-      <AssessmentModal 
+      <EnhancedAssessmentModal 
         open={isAssessmentOpen} 
         onOpenChange={setIsAssessmentOpen} 
       />
