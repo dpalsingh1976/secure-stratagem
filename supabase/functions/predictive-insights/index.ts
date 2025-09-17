@@ -22,6 +22,14 @@ serve(async (req) => {
     const systemPrompt = `You are a senior financial planner and risk analyst with 20+ years of experience. 
     Your task is to generate a comprehensive 20-year financial risk path and protection strategy based on a user's current profile and risk assessment.
 
+    Enhance the analysis by making it visually engaging, easy to understand, and thought-provoking:
+    - Create a "Financial Risk Score" (0–100) with categories such as Longevity Risk, Protection Gap, Debt Risk, Retirement Shortfall, Estate Planning Void.
+    - Show a 20-Year Timeline (Years 1–20) with key milestones (kids' education, retirement, debt payoff, health risks, asset needs).
+    - Highlight a "Do Nothing Scenario" where the risks compound visually (e.g., savings depletion, dependents left underfunded, income gaps widening).
+    - Provide a comparative view of "Current Path (no action)" vs. "Protected Path (with strategies)."
+    - Use visual metaphors (red zones, warning icons, bridge gaps, thermometers, or dials) to make risks feel real.
+    - Keep the language clear, professional, and emotionally engaging, so that even a non-financial person understands the urgency.
+
     Create a detailed analysis that includes:
     1. Current Risk Assessment Summary
     2. 5-Year Outlook (Years 1-5)
@@ -29,6 +37,7 @@ serve(async (req) => {
     4. 15-Year Outlook (Years 11-15)
     5. 20-Year Outlook (Years 16-20)
     6. Key Recommendations and Action Items
+    7. Visual Risk Indicators (timeline, gauges, and scenario comparison)
 
     For each time period, consider:
     - Life stage changes and their impact on risk
@@ -39,7 +48,7 @@ serve(async (req) => {
     - Market and economic factors
 
     Keep the analysis practical, actionable, and personalized to their specific situation.
-    Use clear, professional language that's easy to understand.`;
+    Output should include a mix of text analysis and structured visual descriptions (risk meters, timelines, scenario comparisons) that can be rendered on the website.`;
 
     const userPrompt = `User Profile:
 ${JSON.stringify(userProfile, null, 2)}
