@@ -1,5 +1,6 @@
 import Hero from "@/components/Hero";
 import RiskCategories from "@/components/RiskCategories";
+import AIAnalysisPreview from "@/components/AIAnalysisPreview";
 import AssessmentPreview from "@/components/AssessmentPreview";
 import TrustIndicators from "@/components/TrustIndicators";
 import Footer from "@/components/Footer";
@@ -10,6 +11,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Hero />
       <RiskCategories />
+      <AIAnalysisPreview />
       <AssessmentPreview />
       <TrustIndicators />
       <Footer />
