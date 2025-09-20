@@ -29,8 +29,8 @@ const Footer = () => {
             </Button>
             <Button 
               size="lg"
-              variant="outline"
-              className="text-white border-white/30 hover:bg-white/10 text-lg px-8 py-4"
+              variant="secondary"
+              className="text-lg px-8 py-4"
             >
               <Phone className="w-5 h-5 mr-2" />
               Call for Consultation
@@ -85,14 +85,14 @@ const Footer = () => {
                 <div className="flex items-start gap-3">
                   <Phone className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
                   <div>
-                    <div className="font-medium">1-800-RISK-PRO</div>
+                    <div className="font-medium">646-284-4268</div>
                     <div className="text-sm text-gray-400">Mon-Fri 8AM-8PM EST</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Mail className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
                   <div>
-                    <div className="font-medium">support@smartriskanalyzer.com</div>
+                    <div className="font-medium">davindes@theprosperityfinancial.com</div>
                     <div className="text-sm text-gray-400">Response within 2 hours</div>
                   </div>
                 </div>
@@ -100,7 +100,7 @@ const Footer = () => {
                   <MapPin className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
                   <div>
                     <div className="font-medium">Nationwide Service</div>
-                    <div className="text-sm text-gray-400">Licensed in all 50 states</div>
+                    <div className="text-sm text-gray-400">Licensed in 10 states</div>
                   </div>
                 </div>
               </div>

@@ -56,16 +56,6 @@ const Hero = () => {
             </Button>
           </div>
 
-          {/* Social proof */}
-          <div className="text-sm opacity-80">
-            <p className="mb-2">Trusted by financial professionals nationwide</p>
-            <div className="flex items-center justify-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <span key={i} className="text-accent text-lg">★</span>
-              ))}
-              <span className="ml-2">4.9/5 rating from 2,500+ users</span>
-            </div>
-          </div>
         </div>
       </div>
 
