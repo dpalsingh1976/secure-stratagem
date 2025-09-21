@@ -42,7 +42,7 @@ const Footer = () => {
       {/* Main footer content */}
       <div className="py-16 bg-slate-900">
         <div className="container-financial">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Company info */}
             <div className="lg:col-span-2">
               <div className="flex items-center gap-2 mb-6">
@@ -66,17 +66,6 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Quick links */}
-            <div>
-              <h3 className="text-lg font-semibold mb-6 font-heading">Assessment</h3>
-              <ul className="space-y-3 text-gray-300">
-                <li><a href="#" className="hover:text-accent transition-colors">Start Assessment</a></li>
-                <li><a href="#" className="hover:text-accent transition-colors">Risk Categories</a></li>
-                <li><a href="#" className="hover:text-accent transition-colors">How It Works</a></li>
-                <li><a href="#" className="hover:text-accent transition-colors">Sample Report</a></li>
-                <li><a href="#" className="hover:text-accent transition-colors">FAQ</a></li>
-              </ul>
-            </div>
 
             {/* Contact info */}
             <div>

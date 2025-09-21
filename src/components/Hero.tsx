@@ -18,21 +18,6 @@ const Hero = () => {
 
       <div className="relative z-10 container-financial text-center text-white">
         <div className="animate-fade-in-up">
-          {/* Trust indicators */}
-          <div className="flex items-center justify-center gap-6 mb-8 text-sm opacity-90">
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              <span>Secure & Confidential</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              <span>10,000+ Families Protected</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              <span>AI-Powered Analysis</span>
-            </div>
-          </div>
 
           <h1 className="text-financial-hero text-balance mb-6 font-heading">
             Discover Your Hidden
