@@ -6,7 +6,7 @@ import EnhancedAssessmentModal from "@/components/EnhancedAssessmentModal";
 const Hero = () => {
   const [isAssessmentOpen, setIsAssessmentOpen] = useState(false);
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative h-[70vh] flex items-center justify-center overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 gradient-hero opacity-95"></div>
       
