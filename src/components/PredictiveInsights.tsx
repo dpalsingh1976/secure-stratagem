@@ -71,7 +71,7 @@ const PredictiveInsights = ({ userProfile, riskScores }: PredictiveInsightsProps
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary" />
-          AI-Powered Predictive Insights
+          Personalized Predictive Insights
         </CardTitle>
         <CardDescription>
           Get a comprehensive 20-year financial risk path tailored to your profile
@@ -113,7 +113,7 @@ const PredictiveInsights = ({ userProfile, riskScores }: PredictiveInsightsProps
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                     <h3 className="text-lg font-semibold">Generating Your Insights...</h3>
                     <p className="text-muted-foreground text-center max-w-md">
-                      Our AI is analyzing your financial profile and market trends to create 
+                      Our financial modeling system is analyzing your profile and market trends to create 
                       a personalized 20-year projection of your financial risks and opportunities.
                     </p>
                   </div>
@@ -174,7 +174,7 @@ const PredictiveInsights = ({ userProfile, riskScores }: PredictiveInsightsProps
           </Dialog>
           
           <p className="text-xs text-muted-foreground text-center">
-            Powered by advanced AI • Takes 30-60 seconds to generate
+            Powered by advanced financial modeling • Takes 30-60 seconds to generate
           </p>
         </div>
       </CardContent>

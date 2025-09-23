@@ -9,6 +9,7 @@ import { Download, Calendar, Mail, AlertTriangle, CheckCircle, XCircle, Clock, A
 import RiskProgressRing from "@/components/RiskProgressRing";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { getLifeInsuranceExplanation, getLongevityRiskExplanation, getMarketRiskExplanation, getTaxEstateRiskExplanation } from "@/utils/riskExplanations";
 
 interface AssessmentData {
   age: string;
@@ -395,34 +396,66 @@ For a personalized consultation, please contact us to schedule a meeting.
           {/* Detailed Risk Breakdown */}
           <div className="grid md:grid-cols-2 gap-4">
             {[
-              { key: 'lifeInsurance', label: 'Life Insurance Gap', icon: AlertTriangle },
-              { key: 'longevity', label: 'Longevity Risk', icon: Clock },
-              { key: 'market', label: 'Market Risk', icon: XCircle },
-              { key: 'tax', label: 'Tax & Estate Risk', icon: AlertTriangle }
-            ].map(({ key, label, icon: Icon }) => {
+              { 
+                key: 'lifeInsurance', 
+                label: 'Life Insurance Gap', 
+                icon: AlertTriangle, 
+                explanation: getLifeInsuranceExplanation(riskScores.lifeInsurance, { 
+                  age: parseInt(assessmentData.age), 
+                  annualIncome: assessmentData.annualIncome, 
+                  dependents: assessmentData.dependents, 
+                  retirementAge: assessmentData.retirementAge, 
+                  lifeInsurance: assessmentData.lifeInsurance, 
+                  retirementSavings: assessmentData.retirementSavings 
+                })
+              },
+              { 
+                key: 'longevity', 
+                label: 'Longevity Risk', 
+                icon: Clock, 
+                explanation: getLongevityRiskExplanation(riskScores.longevity, { 
+                  age: parseInt(assessmentData.age), 
+                  annualIncome: assessmentData.annualIncome, 
+                  dependents: assessmentData.dependents, 
+                  retirementAge: assessmentData.retirementAge, 
+                  lifeInsurance: assessmentData.lifeInsurance, 
+                  retirementSavings: assessmentData.retirementSavings 
+                })
+              },
+              { 
+                key: 'market', 
+                label: 'Market Risk', 
+                icon: XCircle, 
+                explanation: getMarketRiskExplanation(riskScores.market)
+              },
+              { 
+                key: 'tax', 
+                label: 'Tax & Estate Risk', 
+                icon: AlertTriangle, 
+                explanation: getTaxEstateRiskExplanation(riskScores.tax)
+              }
+            ].map(({ key, label, icon: Icon, explanation }) => {
               const score = riskScores[key as keyof RiskScores];
               const RiskIcon = getRiskIcon(score);
               
               return (
                 <Card key={key} className="card-financial">
                   <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <RiskIcon className={`w-5 h-5 ${getRiskColor(score)}`} />
+                      </div>
                       <CardTitle className="text-sm font-medium">{label}</CardTitle>
-                      <RiskIcon className={`w-5 h-5 ${getRiskColor(score)}`} />
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Risk Level</span>
-                        <span className={`font-semibold ${getRiskColor(score)}`}>
-                          {getRiskLevel(score)}
-                        </span>
+                    <div className="space-y-3">
+                      <div className="flex justify-center">
+                        <RiskProgressRing score={score} size={80} />
                       </div>
-                      <Progress value={Number(score)} className="h-2" />
-                      <div className="text-xs text-muted-foreground">
-                        {score}% exposure
-                      </div>
+                      <p className="text-xs text-foreground leading-relaxed">
+                        {explanation}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -437,7 +470,7 @@ For a personalized consultation, please contact us to schedule a meeting.
                 <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-sm">AI</span>
                 </div>
-                Advanced AI Risk Analysis
+                Advanced Risk Analysis
                 {isGeneratingAI && (
                   <div className="ml-auto">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
@@ -445,7 +478,7 @@ For a personalized consultation, please contact us to schedule a meeting.
                 )}
               </CardTitle>
               <CardDescription>
-                Powered by advanced financial modeling and machine learning algorithms
+                Powered by advanced financial modeling and industry best practices
               </CardDescription>
             </CardHeader>
             <CardContent>

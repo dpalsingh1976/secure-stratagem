@@ -6,6 +6,7 @@ import ChatBot from "@/components/ChatBot";
 import PredictiveInsights from "@/components/PredictiveInsights";
 
 import { Phone, Mail, Calendar, Download, Share2, AlertTriangle, TrendingUp, Shield, Clock } from "lucide-react";
+import { getLifeInsuranceExplanation, getLongevityRiskExplanation, getMarketRiskExplanation, getTaxEstateRiskExplanation, getOverallRiskMessage } from "@/utils/riskExplanations";
 
 interface RiskScores {
   lifeInsurance: number;
@@ -157,17 +158,6 @@ const Results = () => {
     return "Low";
   };
 
-  const getUrgencyMessage = (age: number, overallRisk: number): string => {
-    if (overallRisk >= 80) {
-      return `At age ${age}, your financial risks are critical. Immediate action is needed to protect your family's future. Every day you wait increases your exposure.`;
-    } else if (overallRisk >= 60) {
-      return `At age ${age}, you have significant financial gaps that need attention. Taking action now can save you thousands in the future.`;
-    } else if (overallRisk >= 40) {
-      return `You're on the right track, but there are opportunities to strengthen your financial protection at age ${age}.`;
-    } else {
-      return `Excellent work! Your financial protection strategy is well-positioned for your age.`;
-    }
-  };
 
   const getRecommendations = (scores: RiskScores, data: any) => {
     const recommendations = [];
@@ -216,37 +206,37 @@ const Results = () => {
   };
 
   const age = personalizedData ? parseInt(personalizedData.age) : 35;
-  const urgencyMessage = getUrgencyMessage(age, riskScores.overall);
+  const urgencyMessage = getOverallRiskMessage(riskScores.overall, age);
   const recommendations = getRecommendations(riskScores, personalizedData);
 
   const riskCategories = [
     {
-      title: "Life Insurance Risk",
+      title: "Life Insurance Gap",
       score: riskScores.lifeInsurance,
       level: riskLevels.lifeInsurance,
       icon: Shield,
-      description: "Your family's financial protection gap"
+      explanation: getLifeInsuranceExplanation(riskScores.lifeInsurance, personalizedData ? { age, annualIncome: personalizedData.annualIncome, dependents: personalizedData.dependents, retirementAge: personalizedData.retirementAge, lifeInsurance: personalizedData.lifeInsurance, retirementSavings: personalizedData.retirementSavings } : undefined)
     },
     {
       title: "Longevity Risk", 
       score: riskScores.longevity,
       level: riskLevels.longevity,
       icon: Clock,
-      description: "Retirement income sustainability"
+      explanation: getLongevityRiskExplanation(riskScores.longevity, personalizedData ? { age, annualIncome: personalizedData.annualIncome, dependents: personalizedData.dependents, retirementAge: personalizedData.retirementAge, lifeInsurance: personalizedData.lifeInsurance, retirementSavings: personalizedData.retirementSavings } : undefined)
     },
     {
       title: "Market Risk",
       score: riskScores.market,
       level: riskLevels.market,
       icon: TrendingUp,
-      description: "Investment volatility exposure"
+      explanation: getMarketRiskExplanation(riskScores.market)
     },
     {
-      title: "Tax Risk",
+      title: "Tax & Estate Risk",
       score: riskScores.tax,
       level: riskLevels.tax,
       icon: AlertTriangle,
-      description: "Future tax burden exposure"
+      explanation: getTaxEstateRiskExplanation(riskScores.tax)
     }
   ];
 
@@ -305,31 +295,34 @@ const Results = () => {
           {/* Individual Risk Categories */}
           <div className="mb-16">
             <h3 className="text-2xl font-bold text-foreground mb-8 text-center font-heading">
-              Risk Category Breakdown
+              Personalized Risk Assessment
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {riskCategories.map((category, index) => {
                 const Icon = category.icon;
                 return (
-                  <Card key={category.title} className="card-financial text-center">
+                  <Card key={category.title} className="card-financial">
                     <CardHeader className="pb-4">
-                      <div className="flex justify-center mb-3">
+                      <div className="flex items-center gap-3 mb-3">
                         <div className="p-3 bg-primary/10 rounded-lg">
                           <Icon className="w-6 h-6 text-primary" />
                         </div>
+                        <CardTitle className="text-lg font-heading">
+                          {category.title}
+                        </CardTitle>
                       </div>
-                      <CardTitle className="text-lg font-heading flex items-center justify-center gap-2">
-                        {category.title}
-                      </CardTitle>
-                      <CardDescription>{category.description}</CardDescription>
+                      <div className="mb-4">
+                        <RiskProgressRing 
+                          score={category.score} 
+                          size={120}
+                          className="mb-4"
+                        />
+                      </div>
                     </CardHeader>
                     <CardContent>
-                      <RiskProgressRing 
-                        score={category.score} 
-                        size={120}
-                        label={category.title}
-                        className="mb-4"
-                      />
+                      <p className="text-sm text-foreground leading-relaxed">
+                        {category.explanation}
+                      </p>
                     </CardContent>
                   </Card>
                 );
@@ -340,7 +333,7 @@ const Results = () => {
           {/* AI Predictive Insights */}
           <div className="mb-16">
             <h3 className="text-2xl font-bold text-foreground mb-8 text-center font-heading">
-              AI-Powered Future Analysis
+              Personalized Future Analysis
             </h3>
             <div className="max-w-2xl mx-auto">
               <PredictiveInsights 
