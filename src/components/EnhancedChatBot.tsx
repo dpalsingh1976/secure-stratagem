@@ -367,7 +367,7 @@ const EnhancedChatBot = () => {
               </Button>
             </div>
             <div className="text-xs text-muted-foreground mt-2 text-center">
-              Press Enter to send • AI-powered financial guidance
+              Press Enter to send • Personalized financial guidance
             </div>
           </div>
         </div>

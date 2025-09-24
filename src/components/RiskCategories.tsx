@@ -53,7 +53,7 @@ const RiskCategories = () => {
             Four Critical Risk Areas We Analyze
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Our AI-powered platform evaluates your financial risks across these interconnected areas 
+            Our advanced platform evaluates your financial risks across these interconnected areas 
             to provide a comprehensive protection strategy.
           </p>
         </div>

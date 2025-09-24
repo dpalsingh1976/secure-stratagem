@@ -25,7 +25,7 @@ const Hero = () => {
           </h1>
           
           <p className="text-financial-subtitle text-balance mb-8 max-w-3xl mx-auto opacity-95">
-            Get a comprehensive AI-powered risk assessment across Life Insurance, Longevity, Market, and Tax risks. 
+            Get a comprehensive personalized risk assessment across Life Insurance, Longevity, Market, and Tax risks. 
             Personalized insights in under 5 minutes.
           </p>
 

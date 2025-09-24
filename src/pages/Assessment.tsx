@@ -52,7 +52,7 @@ const Assessment = () => {
               </Button>
               <div>
                 <h1 className="text-xl font-bold font-heading">Smart Risk Analyzer</h1>
-                <p className="text-sm text-muted-foreground">AI-Powered Financial Risk Assessment</p>
+                <p className="text-sm text-muted-foreground">Personalized Financial Risk Assessment</p>
               </div>
             </div>
             <div className="text-right">

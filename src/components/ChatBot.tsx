@@ -17,7 +17,7 @@ const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hi! I'm your AI-powered financial advisor. I can help you understand risks, insurance needs, and protection strategies. What would you like to know?",
+      text: "Hi! I'm your personalized financial advisor. I can help you understand risks, insurance needs, and protection strategies. What would you like to know?",
       isBot: true,
       timestamp: new Date()
     }

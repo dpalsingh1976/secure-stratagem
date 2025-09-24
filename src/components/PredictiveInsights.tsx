@@ -1,11 +1,6 @@
-import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Loader2, TrendingUp } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { TrendingUp, TrendingDown, AlertTriangle, Target } from "lucide-react";
 
 interface PredictiveInsightsProps {
   userProfile?: any;
@@ -13,169 +8,108 @@ interface PredictiveInsightsProps {
 }
 
 const PredictiveInsights = ({ userProfile, riskScores }: PredictiveInsightsProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [insights, setInsights] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  const handleGenerateInsights = async () => {
-    if (insights) return; // Already loaded
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('predictive-insights', {
-        body: {
-          userProfile: userProfile || {
-            age: 35,
-            income: 75000,
-            hasKids: true,
-            married: true,
-            occupation: "Professional",
-            healthStatus: "Good",
-            investmentExperience: "Moderate"
-          },
-          riskScores: riskScores || {
-            lifeInsurance: 75,
-            longevity: 80,
-            market: 65,
-            tax: 70
-          }
-        }
+  // Generate rule-based insights without AI
+  const generateInsights = () => {
+    const insights = [];
+    const age = userProfile?.age ? parseInt(userProfile.age) : 35;
+    
+    if (riskScores?.lifeInsurance >= 60) {
+      insights.push({
+        type: "critical",
+        title: "Life Insurance Action Needed",
+        description: "Your current coverage may leave your family with significant financial gaps. Consider increasing coverage before rates rise with age.",
+        trend: "down",
+        timeframe: "immediate"
       });
-
-      if (error) {
-        console.error('Predictive insights error:', error);
-        throw error;
-      }
-
-      setInsights(data.insights);
-      toast({
-        title: "Insights Generated",
-        description: "Your 20-year financial risk path is ready to review.",
+    }
+    
+    if (riskScores?.longevity >= 70) {
+      insights.push({
+        type: "warning", 
+        title: "Retirement Income Gap Projected",
+        description: `At age ${age}, your current savings trajectory may not support your desired retirement lifestyle. Consider increasing contributions or guaranteed income solutions.`,
+        trend: "down",
+        timeframe: "long-term"
       });
-    } catch (error) {
-      console.error('Error generating predictive insights:', error);
-      toast({
-        title: "Error",
-        description: "Unable to generate insights. Please try again.",
-        variant: "destructive"
+    }
+    
+    if (age < 50 && riskScores?.market >= 50) {
+      insights.push({
+        type: "opportunity",
+        title: "Time is Your Advantage",
+        description: "You have years to weather market volatility and grow wealth. Consider strategies that balance growth potential with downside protection.",
+        trend: "up", 
+        timeframe: "medium-term"
       });
-      setInsights("I'm sorry, I couldn't generate your predictive insights right now. Please try again later.");
-    } finally {
-      setIsLoading(false);
+    }
+    
+    return insights;
+  };
+
+  const insights = generateInsights();
+
+  const getIcon = (trend: string) => {
+    switch (trend) {
+      case "up": return TrendingUp;
+      case "down": return TrendingDown;
+      default: return Target;
+    }
+  };
+
+  const getVariant = (type: string) => {
+    switch (type) {
+      case "critical": return "destructive";
+      case "warning": return "secondary";
+      case "opportunity": return "default";
+      default: return "outline";
     }
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="card-financial">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-primary" />
-          Personalized Predictive Insights
-        </CardTitle>
-        <CardDescription>
-          Get a comprehensive 20-year financial risk path tailored to your profile
-        </CardDescription>
+        <CardTitle className="font-heading">Future Outlook</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
-            <TrendingUp className="w-8 h-8 text-primary" />
-            <div>
-              <h4 className="font-semibold text-foreground">Future Risk Analysis</h4>
-              <p className="text-sm text-muted-foreground">
-                Discover how your financial risks will evolve over the next 20 years
+          {insights.length === 0 ? (
+            <div className="text-center py-6">
+              <AlertTriangle className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">
+                Complete your assessment to see personalized future projections.
               </p>
             </div>
-          </div>
-
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                onClick={handleGenerateInsights}
-                className="w-full bg-primary hover:bg-primary/90"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate My 20-Year Financial Path
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh]">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  Your 20-Year Financial Risk Path
-                </DialogTitle>
-              </DialogHeader>
-              
-              <ScrollArea className="h-[60vh] pr-4">
-                {isLoading ? (
-                  <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    <h3 className="text-lg font-semibold">Generating Your Insights...</h3>
-                    <p className="text-muted-foreground text-center max-w-md">
-                      Our financial modeling system is analyzing your profile and market trends to create 
-                      a personalized 20-year projection of your financial risks and opportunities.
-                    </p>
+          ) : (
+            insights.map((insight, index) => {
+              const Icon = getIcon(insight.trend);
+              return (
+                <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
+                  <div className={`p-2 rounded-full ${
+                    insight.type === 'critical' ? 'bg-red-100 text-red-600' :
+                    insight.type === 'warning' ? 'bg-yellow-100 text-yellow-600' :
+                    'bg-green-100 text-green-600'
+                  }`}>
+                    <Icon className="w-4 h-4" />
                   </div>
-                ) : insights ? (
-                  <div className="space-y-4">
-                    <div className="bg-muted/50 p-6 rounded-lg">
-                      <div className="prose prose-sm max-w-none">
-                        {insights.split('\n').map((paragraph, index) => {
-                          if (paragraph.trim().startsWith('#')) {
-                            return (
-                              <h3 key={index} className="text-lg font-semibold mt-6 mb-3 text-primary">
-                                {paragraph.replace(/^#+\s*/, '')}
-                              </h3>
-                            );
-                          }
-                          if (paragraph.trim().startsWith('**') && paragraph.trim().endsWith('**')) {
-                            return (
-                              <h4 key={index} className="font-semibold mt-4 mb-2 text-foreground">
-                                {paragraph.replace(/\*\*/g, '')}
-                              </h4>
-                            );
-                          }
-                          if (paragraph.trim() === '') return null;
-                          return (
-                            <p key={index} className="mb-3 text-sm leading-relaxed text-foreground">
-                              {paragraph}
-                            </p>
-                          );
-                        })}
-                      </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="font-medium text-sm">{insight.title}</h4>
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                        {insight.timeframe}
+                      </span>
                     </div>
-                    
-                    <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
-                      <p className="text-sm text-primary font-medium mb-2">
-                        💡 Next Steps Recommended:
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Review these insights with a licensed financial advisor to create an actionable plan 
-                        tailored to your specific situation and goals.
-                      </p>
-                    </div>
+                    <p className="text-sm text-muted-foreground">{insight.description}</p>
                   </div>
-                ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Sparkles className="w-12 h-12 mx-auto mb-4 text-primary/50" />
-                    <h3 className="text-lg font-semibold mb-2">Ready to See Your Future?</h3>
-                    <p>Click the button above to generate your personalized 20-year financial projection.</p>
-                  </div>
-                )}
-              </ScrollArea>
-              
-              <div className="flex justify-end pt-4 border-t">
-                <Button onClick={() => setIsOpen(false)}>
-                  Close
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+                </div>
+              );
+            })
+          )}
           
-          <p className="text-xs text-muted-foreground text-center">
-            Powered by advanced financial modeling • Takes 30-60 seconds to generate
-          </p>
+          <div className="mt-4 pt-4 border-t">
+            <Button variant="outline" size="sm" className="w-full">
+              Schedule Strategy Session
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

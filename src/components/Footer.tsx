@@ -50,7 +50,7 @@ const Footer = () => {
                 <span className="text-2xl font-bold font-heading">Smart Risk Analyzer</span>
               </div>
               <p className="text-gray-300 mb-6 leading-relaxed">
-                AI-powered financial risk assessment platform helping families identify 
+                Advanced financial risk assessment platform helping families identify 
                 and address critical protection gaps across Life Insurance, Longevity, 
                 Market, and Tax risks.
               </p>

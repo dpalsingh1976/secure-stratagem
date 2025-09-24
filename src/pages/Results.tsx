@@ -4,17 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import RiskProgressRing from "@/components/RiskProgressRing";
 import ChatBot from "@/components/ChatBot";
 import PredictiveInsights from "@/components/PredictiveInsights";
+import RiskExplanationDrawer from "@/components/RiskExplanationDrawer";
 
 import { Phone, Mail, Calendar, Download, Share2, AlertTriangle, TrendingUp, Shield, Clock } from "lucide-react";
-import { getLifeInsuranceExplanation, getLongevityRiskExplanation, getMarketRiskExplanation, getTaxEstateRiskExplanation, getOverallRiskMessage } from "@/utils/riskExplanations";
+import { RiskInputs, RiskScores as IRiskScores } from "@/types/riskTypes";
+import { calculateAllRisks, getRiskLevel } from "@/utils/riskCalculations";
+import { mapAssessmentToRiskInputs } from "@/utils/assessmentDataMapper";
+import { getOverallRiskMessage } from "@/utils/riskExplanations";
 
-interface RiskScores {
-  lifeInsurance: number;
-  longevity: number;
-  market: number;
-  tax: number;
-  overall: number;
-}
+// Use interface from types
+interface RiskScores extends IRiskScores {}
 
 interface RiskLevels {
   lifeInsurance: string;
@@ -42,6 +41,7 @@ const Results = () => {
   });
 
   const [personalizedData, setPersonalizedData] = useState<any>(null);
+  const [riskInputs, setRiskInputs] = useState<RiskInputs | null>(null);
 
   useEffect(() => {
     // Get assessment data from sessionStorage
@@ -50,8 +50,12 @@ const Results = () => {
       const data = JSON.parse(assessmentData);
       setPersonalizedData(data);
       
-      // Calculate risk scores based on assessment data
-      const scores = calculateRiskScores(data);
+      // Map assessment data to structured inputs
+      const inputs = mapAssessmentToRiskInputs(data);
+      setRiskInputs(inputs);
+      
+      // Calculate risk scores using new rule-based system
+      const scores = calculateAllRisks(inputs);
       setRiskScores(scores);
       
       // Calculate risk levels
@@ -69,94 +73,9 @@ const Results = () => {
     }
   }, []);
 
-  const calculateRiskScores = (data: any): RiskScores => {
-    // This is a simplified risk calculation algorithm
-    // In a real application, this would be more sophisticated
-    
-    const age = parseInt(data.age) || 30;
-    
-    // Life Insurance Risk Calculation
-    let lifeInsuranceRisk = 50; // Base score
-    
-    // Higher risk if married with dependents
-    if (data.maritalStatus === 'married') lifeInsuranceRisk += 15;
-    if (parseInt(data.dependents) > 0) lifeInsuranceRisk += parseInt(data.dependents) * 10;
-    
-    // Higher risk if no or low coverage
-    if (data.lifeInsurance === 'none') lifeInsuranceRisk += 30;
-    else if (data.lifeInsurance === 'under100k') lifeInsuranceRisk += 20;
-    
-    // Higher risk with age (premium increases)
-    if (age > 40) lifeInsuranceRisk += (age - 40) * 2;
-    
-    // Longevity Risk Calculation
-    let longevityRisk = 40; // Base score
-    
-    // Higher risk if low retirement savings
-    if (data.retirementSavings === 'none') longevityRisk += 40;
-    else if (data.retirementSavings === 'under50k') longevityRisk += 30;
-    
-    // Higher risk if planning late retirement
-    const retirementAge = parseInt(data.retirementAge) || 65;
-    const yearsToRetirement = retirementAge - age;
-    if (yearsToRetirement < 15) longevityRisk += 20;
-    
-    // Higher risk if wanting high replacement income
-    const replacementIncome = parseInt(data.retirementIncome) || 70;
-    if (replacementIncome > 80) longevityRisk += 15;
-    
-    // Market Risk Calculation
-    let marketRisk = 30; // Base score
-    
-    // Higher risk if conservative but young, or aggressive but old
-    if (data.riskTolerance === 'conservative' && age < 40) marketRisk += 20;
-    if (data.riskTolerance === 'aggressive' && age > 50) marketRisk += 25;
-    
-    // Higher risk if low diversification
-    if (data.investmentAccounts === 'none') marketRisk += 20;
-    
-    // Tax Risk Calculation
-    let taxRisk = 35; // Base score
-    
-    // Higher risk if no estate planning
-    if (data.estatePlanning === 'none') taxRisk += 25;
-    
-    // Higher risk if high income but poor tax diversification
-    if (data.annualIncome.includes('200k') || data.annualIncome.includes('300k')) {
-      if (data.retirementSavings === 'none' || data.investmentAccounts === 'none') {
-        taxRisk += 20;
-      }
-    }
-    
-    // Cap all scores at 100
-    lifeInsuranceRisk = Math.min(lifeInsuranceRisk, 100);
-    longevityRisk = Math.min(longevityRisk, 100);
-    marketRisk = Math.min(marketRisk, 100);
-    taxRisk = Math.min(taxRisk, 100);
-    
-    // Calculate overall risk (weighted average)
-    const overallRisk = Math.round(
-      (lifeInsuranceRisk * 0.3) + 
-      (longevityRisk * 0.3) + 
-      (marketRisk * 0.2) + 
-      (taxRisk * 0.2)
-    );
+  // Risk calculation is now handled by the new rule-based system
 
-    return {
-      lifeInsurance: lifeInsuranceRisk,
-      longevity: longevityRisk,
-      market: marketRisk,
-      tax: taxRisk,
-      overall: overallRisk
-    };
-  };
-
-  const getRiskLevel = (score: number): string => {
-    if (score >= 80) return "Critical";
-    if (score >= 60) return "High";
-    if (score >= 40) return "Medium";
-    return "Low";
-  };
+  // getRiskLevel is now imported from utils
 
 
   const getRecommendations = (scores: RiskScores, data: any) => {
@@ -212,31 +131,31 @@ const Results = () => {
   const riskCategories = [
     {
       title: "Life Insurance Gap",
+      riskType: "lifeInsurance" as const,
       score: riskScores.lifeInsurance,
       level: riskLevels.lifeInsurance,
       icon: Shield,
-      explanation: getLifeInsuranceExplanation(riskScores.lifeInsurance, personalizedData ? { age, annualIncome: personalizedData.annualIncome, dependents: personalizedData.dependents, retirementAge: personalizedData.retirementAge, lifeInsurance: personalizedData.lifeInsurance, retirementSavings: personalizedData.retirementSavings } : undefined)
     },
     {
       title: "Longevity Risk", 
+      riskType: "longevity" as const,
       score: riskScores.longevity,
       level: riskLevels.longevity,
       icon: Clock,
-      explanation: getLongevityRiskExplanation(riskScores.longevity, personalizedData ? { age, annualIncome: personalizedData.annualIncome, dependents: personalizedData.dependents, retirementAge: personalizedData.retirementAge, lifeInsurance: personalizedData.lifeInsurance, retirementSavings: personalizedData.retirementSavings } : undefined)
     },
     {
       title: "Market Risk",
+      riskType: "market" as const,
       score: riskScores.market,
       level: riskLevels.market,
       icon: TrendingUp,
-      explanation: getMarketRiskExplanation(riskScores.market)
     },
     {
       title: "Tax & Estate Risk",
+      riskType: "taxEstate" as const,
       score: riskScores.tax,
       level: riskLevels.tax,
       icon: AlertTriangle,
-      explanation: getTaxEstateRiskExplanation(riskScores.tax)
     }
   ];
 
@@ -303,13 +222,22 @@ const Results = () => {
                 return (
                   <Card key={category.title} className="card-financial">
                     <CardHeader className="pb-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="p-3 bg-primary/10 rounded-lg">
-                          <Icon className="w-6 h-6 text-primary" />
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-3 bg-primary/10 rounded-lg">
+                            <Icon className="w-6 h-6 text-primary" />
+                          </div>
+                          <CardTitle className="text-lg font-heading">
+                            {category.title}
+                          </CardTitle>
                         </div>
-                        <CardTitle className="text-lg font-heading">
-                          {category.title}
-                        </CardTitle>
+                        {riskInputs && (
+                          <RiskExplanationDrawer 
+                            riskType={category.riskType}
+                            exposurePct={category.score}
+                            inputs={riskInputs}
+                          />
+                        )}
                       </div>
                       <div className="mb-4">
                         <RiskProgressRing 
@@ -320,9 +248,14 @@ const Results = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-foreground leading-relaxed">
-                        {category.explanation}
-                      </p>
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium text-muted-foreground">
+                          Risk Level: <span className="text-foreground">{category.level}</span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Click "Why this risk?" above for detailed explanation and next steps.
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 );
@@ -330,10 +263,10 @@ const Results = () => {
             </div>
           </div>
 
-          {/* AI Predictive Insights */}
+          {/* Future Analysis */}
           <div className="mb-16">
             <h3 className="text-2xl font-bold text-foreground mb-8 text-center font-heading">
-              Personalized Future Analysis
+              Personalized Future Outlook
             </h3>
             <div className="max-w-2xl mx-auto">
               <PredictiveInsights 
