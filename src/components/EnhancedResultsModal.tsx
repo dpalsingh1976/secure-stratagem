@@ -471,44 +471,6 @@ For a personalized consultation, please contact us to schedule a meeting.
             })}
           </div>
 
-          {/* AI Insights with Enhanced Display */}
-          <Card className="card-financial border-2 border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">AI</span>
-                </div>
-                Advanced Risk Analysis
-                {isGeneratingAI && (
-                  <div className="ml-auto">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-                  </div>
-                )}
-              </CardTitle>
-              <CardDescription>
-                Powered by advanced financial modeling and industry best practices
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isGeneratingAI ? (
-                <div className="space-y-3">
-                  <div className="h-4 bg-muted animate-pulse rounded"></div>
-                  <div className="h-4 bg-muted animate-pulse rounded w-3/4"></div>
-                  <div className="h-4 bg-muted animate-pulse rounded w-1/2"></div>
-                </div>
-              ) : (
-                <div className="prose prose-sm max-w-none">
-                  {aiInsights.split('\n').map((paragraph, index) => (
-                    paragraph.trim() && (
-                      <p key={index} className="mb-3 text-sm leading-relaxed">
-                        {paragraph.trim()}
-                      </p>
-                    )
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
           {/* Risk Calculation Methodology */}
           <Card className="card-financial">
