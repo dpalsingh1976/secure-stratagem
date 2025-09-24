@@ -7,9 +7,12 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Download, Calendar, Mail, AlertTriangle, CheckCircle, XCircle, Clock, ArrowRight, Calculator } from "lucide-react";
 import RiskProgressRing from "@/components/RiskProgressRing";
+import RiskScoreModal from "@/components/RiskScoreModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { getLifeInsuranceExplanation, getLongevityRiskExplanation, getMarketRiskExplanation, getTaxEstateRiskExplanation } from "@/utils/riskExplanations";
+import { calculateAllRisks, getRiskLevel } from "@/utils/riskCalculations";
+import { mapAssessmentToRiskInputs } from "@/utils/assessmentDataMapper";
 
 interface AssessmentData {
   age: string;
@@ -66,6 +69,7 @@ const EnhancedResultsModal = ({
     tax: 0,
     overall: 0
   });
+  const [riskInputs, setRiskInputs] = useState<any>(null);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiInsights, setAiInsights] = useState<string>("");
@@ -79,6 +83,11 @@ const EnhancedResultsModal = ({
       const { scores, details } = calculateRiskScoresWithDetails(assessmentData);
       setRiskScores(scores);
       setRiskCalculationDetails(details);
+      
+      // Map assessment data to risk inputs for the modal
+      const inputs = mapAssessmentToRiskInputs(assessmentData);
+      setRiskInputs(inputs);
+      
       generateInsights(assessmentData, scores);
       saveLead(assessmentData, scores, contactInfo);
     }
@@ -370,7 +379,24 @@ For a personalized consultation, please contact us to schedule a meeting.
             <CardHeader className="text-center">
               <CardTitle className="text-xl">Overall Financial Risk</CardTitle>
               <div className="flex justify-center mt-4">
-                <RiskProgressRing score={riskScores.overall} size={140} />
+                {riskInputs && (
+                  <RiskScoreModal riskScores={riskScores} riskInputs={riskInputs}>
+                    <div 
+                      role="button"
+                      tabIndex={0}
+                      className="cursor-pointer transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full inline-block"
+                      aria-label="Open risk score details"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          e.currentTarget.click();
+                        }
+                      }}
+                    >
+                      <RiskProgressRing score={riskScores.overall} size={140} />
+                    </div>
+                  </RiskScoreModal>
+                )}
               </div>
               <Badge 
                 variant={riskScores.overall > 50 ? "destructive" : "secondary"}
@@ -378,12 +404,6 @@ For a personalized consultation, please contact us to schedule a meeting.
               >
                 {getRiskLevel(riskScores.overall)} Risk
               </Badge>
-              <CardDescription className="mt-2 text-base">
-                {riskScores.overall > 75 && "Immediate action recommended to protect your financial future."}
-                {riskScores.overall > 50 && riskScores.overall <= 75 && "Several areas need attention to improve your financial security."}
-                {riskScores.overall > 25 && riskScores.overall <= 50 && "Good foundation with room for improvement."}
-                {riskScores.overall <= 25 && "Strong financial protection strategy in place."}
-              </CardDescription>
             </CardHeader>
           </Card>
 
