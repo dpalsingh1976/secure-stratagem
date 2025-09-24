@@ -102,35 +102,9 @@ const EnhancedChatBot = () => {
     }
   };
 
-  const getAIResponse = async (userMessage: string): Promise<string> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('ai-chatbot', {
-        body: { 
-          message: userMessage,
-          context: {
-            page: 'enhanced_chat',
-            sessionId: sessionId,
-            conversationHistory: messages.slice(-5), // Last 5 messages for context
-            timestamp: new Date().toISOString()
-          }
-        }
-      });
-
-      if (error) {
-        console.error('AI chatbot error:', error);
-        throw error;
-      }
-
-      return data.response || "I'm sorry, I couldn't process your message right now. Please try again.";
-    } catch (error) {
-      console.error('Error calling AI chatbot:', error);
-      toast({
-        title: "Connection Error",
-        description: "Unable to reach AI assistant. Please try again.",
-        variant: "destructive"
-      });
-      return "I'm having trouble connecting right now. Please try your question again in a moment.";
-    }
+  const getResponse = async (userMessage: string): Promise<string> => {
+    // Return a simple response since OpenAI functionality has been removed
+    return "Thank you for your question. For detailed financial advice and personalized guidance, please contact our team to schedule a consultation with a licensed professional.";
   };
 
   const sendMessage = async (messageText?: string) => {
@@ -150,20 +124,20 @@ const EnhancedChatBot = () => {
     setIsTyping(true);
 
     try {
-      const aiResponse = await getAIResponse(text);
+      const response = await getResponse(text);
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: aiResponse,
+        text: response,
         isBot: true,
         timestamp: new Date(),
-        suggestions: generateSuggestions(aiResponse)
+        suggestions: generateSuggestions(response)
       };
       
       const finalMessages = [...newMessages, botResponse];
       setMessages(finalMessages);
       await saveConversation(finalMessages);
     } catch (error) {
-      console.error('Error getting AI response:', error);
+      console.error('Error getting response:', error);
     } finally {
       setIsTyping(false);
     }

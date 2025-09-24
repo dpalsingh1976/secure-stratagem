@@ -79,7 +79,7 @@ const EnhancedResultsModal = ({
       const { scores, details } = calculateRiskScoresWithDetails(assessmentData);
       setRiskScores(scores);
       setRiskCalculationDetails(details);
-      generateAIInsights(assessmentData, scores);
+      generateInsights(assessmentData, scores);
       saveLead(assessmentData, scores, contactInfo);
     }
   }, [assessmentData, contactInfo]);
@@ -196,22 +196,11 @@ const EnhancedResultsModal = ({
     return amounts[savings] || 0;
   };
 
-  const generateAIInsights = async (data: AssessmentData, scores: RiskScores) => {
+  const generateInsights = async (data: AssessmentData, scores: RiskScores) => {
     setIsGeneratingAI(true);
     try {
-      const { data: response, error } = await supabase.functions.invoke('predictive-insights', {
-        body: {
-          userProfile: data,
-          riskScores: scores,
-          contactInfo: contactInfo
-        }
-      });
-
-      if (error) throw error;
-      setAiInsights(response.insights || "AI insights are currently unavailable.");
-    } catch (error) {
-      console.error('Error generating AI insights:', error);
-      setAiInsights(`Based on your assessment, here's what our analysis shows:
+      // Generate simple rule-based insights instead of AI
+      const insights = `Based on your assessment, here's what our analysis shows:
 
 **Key Risk Areas:**
 ${scores.overall > 75 ? '• Critical: Immediate action needed across multiple areas' : ''}
@@ -226,7 +215,12 @@ ${scores.tax > 50 ? '• Estate Planning: Documentation needs updating' : ''}
 • Explore tax-advantaged retirement accounts
 • Review and update estate planning documents
 
-*This analysis is generated using advanced financial modeling based on industry standards and your specific situation.*`);
+*This analysis is generated using proven financial modeling based on industry standards and your specific situation.*`;
+      
+      setAiInsights(insights);
+    } catch (error) {
+      console.error('Error generating insights:', error);
+      setAiInsights("Insights are currently unavailable. Please try again later.");
     } finally {
       setIsGeneratingAI(false);
     }

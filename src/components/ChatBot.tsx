@@ -35,33 +35,9 @@ const ChatBot = () => {
     scrollToBottom();
   }, [messages]);
 
-  const getAIResponse = async (userMessage: string): Promise<string> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('ai-chatbot', {
-        body: { 
-          message: userMessage,
-          context: {
-            page: 'chat',
-            timestamp: new Date().toISOString()
-          }
-        }
-      });
-
-      if (error) {
-        console.error('AI chatbot error:', error);
-        throw error;
-      }
-
-      return data.response || "I'm sorry, I couldn't process your message right now. Please try again.";
-    } catch (error) {
-      console.error('Error calling AI chatbot:', error);
-      toast({
-        title: "Connection Error",
-        description: "Unable to reach AI assistant. Please try again.",
-        variant: "destructive"
-      });
-      return "I'm having trouble connecting right now. Please try your question again in a moment.";
-    }
+  const getResponse = async (userMessage: string): Promise<string> => {
+    // Return a simple response since OpenAI functionality has been removed
+    return "Thank you for your message. For personalized financial advice, please contact our team directly to schedule a consultation.";
   };
 
   const sendMessage = async () => {
@@ -78,19 +54,19 @@ const ChatBot = () => {
     setInputMessage("");
     setIsTyping(true);
 
-    // Get AI response
+    // Get response
     try {
-      const aiResponse = await getAIResponse(inputMessage);
+      const response = await getResponse(inputMessage);
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: aiResponse,
+        text: response,
         isBot: true,
         timestamp: new Date()
       };
       
       setMessages(prev => [...prev, botResponse]);
     } catch (error) {
-      console.error('Error getting AI response:', error);
+      console.error('Error getting response:', error);
     } finally {
       setIsTyping(false);
     }
