@@ -398,12 +398,6 @@ For a personalized consultation, please contact us to schedule a meeting.
                   </RiskScoreModal>
                 )}
               </div>
-              <Badge 
-                variant={riskScores.overall > 50 ? "destructive" : "secondary"}
-                className="mt-2 px-4 py-1 text-lg"
-              >
-                {getRiskLevel(riskScores.overall)} Risk
-              </Badge>
             </CardHeader>
           </Card>
 
