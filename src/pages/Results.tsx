@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import RiskProgressRing from "@/components/RiskProgressRing";
+import RiskScoreModal from "@/components/RiskScoreModal";
 import ChatBot from "@/components/ChatBot";
 import PredictiveInsights from "@/components/PredictiveInsights";
 import RiskExplanationDrawer from "@/components/RiskExplanationDrawer";
@@ -190,18 +191,31 @@ const Results = () => {
           {/* Overall Risk Score */}
           <div className="text-center mb-16">
             <div className="max-w-2xl mx-auto">
-              <RiskProgressRing 
-                score={riskScores.overall} 
-                size={200} 
-                strokeWidth={12}
-                className="mb-6"
-              />
+              {riskInputs && (
+                <RiskScoreModal riskScores={riskScores} riskInputs={riskInputs}>
+                  <div 
+                    role="button"
+                    tabIndex={0}
+                    className="cursor-pointer transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full inline-block mb-6"
+                    aria-label="Open risk score details"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.currentTarget.click();
+                      }
+                    }}
+                  >
+                    <RiskProgressRing 
+                      score={riskScores.overall} 
+                      size={200} 
+                      strokeWidth={12}
+                    />
+                  </div>
+                </RiskScoreModal>
+              )}
               <h2 className="text-3xl font-bold text-foreground mb-4 font-heading">
                 Overall Risk Level: {riskLevels.overall}
               </h2>
-              <p className="text-lg text-muted-foreground mb-6">
-                {urgencyMessage}
-              </p>
               <div className="bg-accent/10 border border-accent/20 rounded-lg p-4">
                 <p className="text-accent font-medium">
                   ⚠️ Remember: Life insurance premiums increase 4-8% each year you wait. 
