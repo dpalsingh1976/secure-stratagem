@@ -10,7 +10,7 @@ import RiskProgressRing from "@/components/RiskProgressRing";
 import RiskScoreModal from "@/components/RiskScoreModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { getLifeInsuranceExplanation, getLongevityRiskExplanation, getMarketRiskExplanation, getTaxEstateRiskExplanation } from "@/utils/riskExplanations";
+import { getLongevityRiskExplanation, getMarketRiskExplanation, getTaxEstateRiskExplanation } from "@/utils/riskExplanations";
 import { calculateAllRisks, getRiskLevel } from "@/utils/riskCalculations";
 import { mapAssessmentToRiskInputs } from "@/utils/assessmentDataMapper";
 
@@ -408,14 +408,7 @@ For a personalized consultation, please contact us to schedule a meeting.
                 key: 'lifeInsurance', 
                 label: 'Life Insurance Gap', 
                 icon: AlertTriangle, 
-                explanation: getLifeInsuranceExplanation(riskScores.lifeInsurance, { 
-                  age: parseInt(assessmentData.age), 
-                  annualIncome: assessmentData.annualIncome, 
-                  dependents: assessmentData.dependents, 
-                  retirementAge: assessmentData.retirementAge, 
-                  lifeInsurance: assessmentData.lifeInsurance, 
-                  retirementSavings: assessmentData.retirementSavings 
-                })
+                explanation: '' // Removed - handled by RiskScoreModal
               },
               { 
                 key: 'longevity', 
