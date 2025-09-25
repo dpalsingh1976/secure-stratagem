@@ -13,6 +13,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { getLongevityRiskExplanation, getMarketRiskExplanation, getTaxEstateRiskExplanation } from "@/utils/riskExplanations";
 import { calculateAllRisks, getRiskLevel } from "@/utils/riskCalculations";
 import { mapAssessmentToRiskInputs } from "@/utils/assessmentDataMapper";
+import CategoryRiskModal from "@/components/CategoryRiskModal";
+import { DialogTrigger } from "@/components/ui/dialog";
 
 interface AssessmentData {
   age: string;
@@ -451,12 +453,22 @@ For a personalized consultation, please contact us to schedule a meeting.
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="flex justify-center">
-                        <RiskProgressRing score={score} size={80} />
-                      </div>
-                      <p className="text-xs text-foreground leading-relaxed">
-                        {explanation}
-                      </p>
+                      <CategoryRiskModal 
+                        category={key as 'lifeInsurance' | 'longevity' | 'market' | 'tax'}
+                        score={score}
+                        riskInputs={riskInputs}
+                      >
+                        <DialogTrigger asChild>
+                          <div className="flex justify-center cursor-pointer hover:scale-105 transition-transform duration-200">
+                            <RiskProgressRing score={score} size={80} />
+                          </div>
+                        </DialogTrigger>
+                      </CategoryRiskModal>
+                      {explanation && (
+                        <p className="text-xs text-foreground leading-relaxed">
+                          {explanation}
+                        </p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
