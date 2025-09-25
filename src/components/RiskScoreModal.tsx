@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RiskProgressRing from "@/components/RiskProgressRing";
-import { Shield, Clock, TrendingUp, AlertTriangle, ArrowRight } from "lucide-react";
+import { Shield, Clock, TrendingUp, AlertTriangle, ArrowRight, BarChart3 } from "lucide-react";
 import { RiskInputs, RiskScores } from "@/types/riskTypes";
 import { formatCurrency } from "@/utils/riskCalculations";
 import { getRiskLevel } from "@/utils/riskCalculations";
@@ -214,34 +214,95 @@ const RiskScoreModal = ({ children, riskScores, riskInputs }: RiskScoreModalProp
           </Card>
 
           {/* Top Driver Panel */}
-          <Card className="border-l-4 border-l-primary">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <topDriver.icon className={`w-6 h-6 ${topDriver.color}`} />
-                <CardTitle className="text-lg">Top Priority</CardTitle>
+          <Card className="border-l-4 border-l-primary bg-gradient-to-br from-background to-muted/20">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-gradient-to-br from-primary to-primary/80">
+                  <topDriver.icon className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">🎯 Top Priority</CardTitle>
+                  <p className="text-sm text-muted-foreground">Immediate attention required</p>
+                </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="font-bold text-lg mb-2">{topDriverContent.headline}</h4>
-                <div className="text-sm text-muted-foreground mb-2">{topDriverContent.graphic}</div>
-                <p className="text-foreground">{topDriverContent.body}</p>
+            <CardContent className="space-y-6">
+              {/* Enhanced headline with modern styling */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-8 bg-gradient-to-b from-red-500 to-orange-500 rounded-full"></div>
+                  <h4 className="font-bold text-xl text-foreground">{topDriverContent.headline}</h4>
+                </div>
+                <div className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full inline-block">
+                  📊 {topDriverContent.graphic}
+                </div>
               </div>
 
-              {/* Visual elements for specific risks */}
+              {/* Enhanced Life Insurance Gap visualization */}
               {topDriver.category === "Life Insurance Gap" && topDriverContent.needVsHave && (
-                <div className="bg-muted p-3 rounded-lg">
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>Need: {topDriverContent.needVsHave.need}</span>
-                    <span>Have: {topDriverContent.needVsHave.have}</span>
+                <div className="space-y-4">
+                  {/* Beautiful explanation text */}
+                  <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 p-4 rounded-xl border border-red-200/50 dark:border-red-800/30">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                        <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-foreground leading-relaxed font-medium">
+                          {topDriverContent.body}
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 font-medium">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span>Urgent action recommended</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-full bg-background rounded-full h-3 overflow-hidden">
-                    <div 
-                      className="bg-green-500 h-full" 
-                      style={{ width: `${Math.min(100, (riskInputs.currentLifeCoverage + riskInputs.liquidAssets) / (riskInputs.debtsTotal + riskInputs.mortgageBalance + riskInputs.finalExpensesEstimate + riskInputs.educationFundNeeded + (riskInputs.incomeReplacementYears * riskInputs.annualIncome)) * 100)}%` }}
-                    />
+
+                  {/* Enhanced Need vs Have visualization */}
+                  <div className="bg-gradient-to-r from-background to-muted/30 p-5 rounded-xl border">
+                    <div className="space-y-4">
+                      <h5 className="font-semibold text-base flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-primary" />
+                        Coverage Analysis
+                      </h5>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center p-3 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800/30">
+                          <div className="text-2xl font-bold text-red-600 dark:text-red-400">{topDriverContent.needVsHave.need}</div>
+                          <div className="text-sm text-red-600/80 dark:text-red-400/80 font-medium">Total Need</div>
+                        </div>
+                        <div className="text-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800/30">
+                          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{topDriverContent.needVsHave.have}</div>
+                          <div className="text-sm text-green-600/80 dark:text-green-400/80 font-medium">Current Coverage</div>
+                        </div>
+                      </div>
+
+                      {/* Enhanced progress bar */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm font-medium">
+                          <span className="text-green-600 dark:text-green-400">Protected</span>
+                          <span className="text-red-600 dark:text-red-400">At Risk</span>
+                        </div>
+                        <div className="relative w-full bg-red-200 dark:bg-red-900/30 rounded-full h-4 overflow-hidden shadow-inner">
+                          <div 
+                            className="bg-gradient-to-r from-green-500 to-green-600 h-full transition-all duration-700 ease-out" 
+                            style={{ width: `${Math.min(100, (riskInputs.currentLifeCoverage + riskInputs.liquidAssets) / (riskInputs.debtsTotal + riskInputs.mortgageBalance + riskInputs.finalExpensesEstimate + riskInputs.educationFundNeeded + (riskInputs.incomeReplacementYears * riskInputs.annualIncome)) * 100)}%` }}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow">
+                            {Math.round((riskInputs.currentLifeCoverage + riskInputs.liquidAssets) / (riskInputs.debtsTotal + riskInputs.mortgageBalance + riskInputs.finalExpensesEstimate + riskInputs.educationFundNeeded + (riskInputs.incomeReplacementYears * riskInputs.annualIncome)) * 100)}% Covered
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-red-50 dark:bg-red-950/20 p-3 rounded-lg border border-red-200 dark:border-red-800/30">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-red-600 dark:text-red-400">Protection Gap:</span>
+                          <span className="text-lg font-bold text-red-600 dark:text-red-400">{topDriverContent.needVsHave.gap}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-sm text-red-600 mt-1">Gap: {topDriverContent.needVsHave.gap}</div>
                 </div>
               )}
 
