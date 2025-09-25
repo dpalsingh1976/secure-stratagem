@@ -19,8 +19,7 @@ export const getLifeInsuranceExplanation = (riskPercentage: number, data?: RiskE
 
 export const getLongevityRiskExplanation = (riskPercentage: number, data?: RiskExplanationData): string => {
   if (riskPercentage > 70) {
-    const yearsShortfall = data ? Math.round((parseInt(data.retirementAge) - data.age) * (riskPercentage / 100)) : Math.round(riskPercentage / 10);
-    return `You're projected to outlive your savings by ${yearsShortfall} years. This creates a critical gap for retirement income and healthcare costs. Ask about solutions that guarantee lifetime income, so you never outlive your savings.`;
+    return `Your savings may not be sufficient for your expected retirement years. Consider reviewing your retirement savings strategy.`;
   } else if (riskPercentage >= 30) {
     return `Your savings may be enough for early retirement years, but not for later years when expenses like healthcare rise. Consider guaranteed income solutions to protect your retirement lifestyle.`;
   } else {
@@ -29,11 +28,11 @@ export const getLongevityRiskExplanation = (riskPercentage: number, data?: RiskE
 };
 
 export const getMarketRiskExplanation = (riskPercentage: number): string => {
-  return `${riskPercentage}% exposure means your portfolio may drop during market downturns. Diversification and protection strategies can reduce this risk. Schedule a consultation to review portfolio protection options that can safeguard your wealth.`;
+  return `Your portfolio has ${riskPercentage}% market exposure. Consider reviewing your risk allocation strategy.`;
 };
 
 export const getTaxEstateRiskExplanation = (riskPercentage: number): string => {
-  return `Without proper estate and tax planning, up to ${riskPercentage}% of your assets could be lost to taxes instead of passing to your family. Speak with our estate planning specialists about strategies to protect your legacy.`;
+  return `Your estate and tax planning may need attention. Consider reviewing your estate planning strategy to optimize tax efficiency.`;
 };
 
 export const getOverallRiskMessage = (overallRisk: number, age: number): string => {

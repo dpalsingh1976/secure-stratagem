@@ -100,7 +100,7 @@ const RiskProgressRing = ({
             <span className="text-2xl font-bold" style={{ color: colors.color }}>
               {Math.round(animatedScore)}
             </span>
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-[10px] font-medium text-muted-foreground">
               RISK SCORE
             </span>
           </div>

@@ -416,26 +416,19 @@ For a personalized consultation, please contact us to schedule a meeting.
                 key: 'longevity', 
                 label: 'Longevity Risk', 
                 icon: Clock, 
-                explanation: getLongevityRiskExplanation(riskScores.longevity, { 
-                  age: parseInt(assessmentData.age), 
-                  annualIncome: assessmentData.annualIncome, 
-                  dependents: assessmentData.dependents, 
-                  retirementAge: assessmentData.retirementAge, 
-                  lifeInsurance: assessmentData.lifeInsurance, 
-                  retirementSavings: assessmentData.retirementSavings 
-                })
+                explanation: '' // Removed - handled by CategoryRiskModal
               },
               { 
                 key: 'market', 
                 label: 'Market Risk', 
                 icon: XCircle, 
-                explanation: getMarketRiskExplanation(riskScores.market)
+                explanation: '' // Removed - handled by CategoryRiskModal
               },
               { 
                 key: 'tax', 
                 label: 'Tax & Estate Risk', 
                 icon: AlertTriangle, 
-                explanation: getTaxEstateRiskExplanation(riskScores.tax)
+                explanation: '' // Removed - handled by CategoryRiskModal
               }
             ].map(({ key, label, icon: Icon, explanation }) => {
               const score = riskScores[key as keyof RiskScores];
