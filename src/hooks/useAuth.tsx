@@ -7,7 +7,7 @@ const TESTING_MODE = true;
 
 // Mock data for testing mode
 const MOCK_USER: User = {
-  id: 'test-user-id-123',
+  id: '12345678-1234-1234-1234-123456789abc',
   email: 'admin@test.com',
   aud: 'authenticated',
   role: 'authenticated',
