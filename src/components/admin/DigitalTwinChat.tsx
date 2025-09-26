@@ -38,7 +38,6 @@ export const DigitalTwinChat = () => {
       .from('iul_illustrations')
       .select('id, file_name, carrier_name, processing_status')
       .eq('user_id', user.id)
-      .eq('processing_status', 'completed')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -192,12 +191,15 @@ export const DigitalTwinChat = () => {
           </SelectTrigger>
           <SelectContent>
             {illustrations.map((illustration) => (
-              <SelectItem key={illustration.id} value={illustration.id}>
+              <SelectItem key={illustration.id} value={illustration.id} disabled={illustration.processing_status !== 'completed'}>
                 <div className="flex items-center gap-2">
                   <span>{illustration.file_name}</span>
                   {illustration.carrier_name && (
                     <Badge variant="outline">{illustration.carrier_name}</Badge>
                   )}
+                  <Badge variant={illustration.processing_status === 'completed' ? 'default' : 'secondary'}>
+                    {illustration.processing_status}
+                  </Badge>
                 </div>
               </SelectItem>
             ))}

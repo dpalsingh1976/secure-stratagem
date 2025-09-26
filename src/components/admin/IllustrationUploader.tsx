@@ -232,7 +232,7 @@ export const IllustrationUploader = () => {
   }, [user]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-none">
       {/* Upload Configuration */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="space-y-2">
@@ -261,11 +261,11 @@ export const IllustrationUploader = () => {
       </div>
 
       {/* Dropzone */}
-      <Card>
+      <Card className="w-full">
         <CardContent className="pt-6">
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors min-h-[200px] flex flex-col items-center justify-center ${
               isDragActive
                 ? 'border-primary bg-primary/5'
                 : 'border-muted-foreground/25 hover:border-primary hover:bg-primary/5'
@@ -302,9 +302,9 @@ export const IllustrationUploader = () => {
 
       {/* Uploaded Files */}
       {uploads.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           <h3 className="text-lg font-semibold">Uploaded Illustrations</h3>
-          <div className="space-y-3">
+          <div className="space-y-3 w-full">
             {uploads.map((upload) => (
               <Card key={upload.id}>
                 <CardContent className="pt-4">
