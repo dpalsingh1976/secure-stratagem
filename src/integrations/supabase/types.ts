@@ -188,6 +188,44 @@ export type Database = {
         }
         Relationships: []
       }
+      digital_twin_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          illustration_id: string
+          question: string
+          response: Json
+          simulation_results: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          illustration_id: string
+          question: string
+          response?: Json
+          simulation_results?: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          illustration_id?: string
+          question?: string
+          response?: Json
+          simulation_results?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digital_twin_conversations_illustration_id_fkey"
+            columns: ["illustration_id"]
+            isOneToOne: false
+            referencedRelation: "iul_illustrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_chunks: {
         Row: {
           chunk_index: number
@@ -274,6 +312,45 @@ export type Database = {
         }
         Relationships: []
       }
+      iul_illustrations: {
+        Row: {
+          carrier_name: string | null
+          created_at: string
+          extracted_data: Json
+          file_name: string
+          file_path: string
+          id: string
+          policy_type: string | null
+          processing_status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          carrier_name?: string | null
+          created_at?: string
+          extracted_data?: Json
+          file_name: string
+          file_path: string
+          id?: string
+          policy_type?: string | null
+          processing_status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          carrier_name?: string | null
+          created_at?: string
+          extracted_data?: Json
+          file_name?: string
+          file_path?: string
+          id?: string
+          policy_type?: string | null
+          processing_status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           ai_insights: string | null
@@ -322,6 +399,71 @@ export type Database = {
         }
         Relationships: []
       }
+      stress_test_scenarios: {
+        Row: {
+          created_at: string
+          id: string
+          illustration_id: string
+          parameters: Json
+          results: Json
+          scenario_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          illustration_id: string
+          parameters?: Json
+          results?: Json
+          scenario_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          illustration_id?: string
+          parameters?: Json
+          results?: Json
+          scenario_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stress_test_scenarios_illustration_id_fkey"
+            columns: ["illustration_id"]
+            isOneToOne: false
+            referencedRelation: "iul_illustrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -346,6 +488,13 @@ export type Database = {
       halfvec_typmod_in: {
         Args: { "": unknown[] }
         Returns: number
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
+        Returns: boolean
       }
       hnsw_bit_support: {
         Args: { "": unknown }
@@ -435,7 +584,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "advisor" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -562,6 +711,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["admin", "advisor", "user"],
+    },
   },
 } as const
