@@ -19,8 +19,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let illustrationId: string | null = null;
+  
   try {
-    const { illustrationId } = await req.json();
+    const requestBody = await req.json();
+    illustrationId = requestBody.illustrationId;
     console.log('Processing illustration:', illustrationId);
 
     // Update status to processing
@@ -56,9 +59,17 @@ serve(async (req) => {
 
     console.log('Downloaded file, processing with AI...');
 
-    // Convert file to base64 for AI processing
+    // Convert file to base64 for AI processing - handle large files safely
     const arrayBuffer = await fileData.arrayBuffer();
-    const base64Data = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    const uint8Array = new Uint8Array(arrayBuffer);
+    
+    // Convert in chunks to avoid stack overflow for large files
+    let base64Data = '';
+    const chunkSize = 1024 * 1024; // 1MB chunks
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.slice(i, i + chunkSize);
+      base64Data += btoa(String.fromCharCode.apply(null, Array.from(chunk)));
+    }
 
     // Use OpenAI to analyze the PDF content
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -147,9 +158,8 @@ serve(async (req) => {
     console.error('Error processing illustration:', error);
 
     // Update status to failed if we have the illustrationId
-    try {
-      const { illustrationId } = await req.json();
-      if (illustrationId) {
+    if (illustrationId) {
+      try {
         await supabase
           .from('iul_illustrations')
           .update({ 
@@ -157,9 +167,9 @@ serve(async (req) => {
             updated_at: new Date().toISOString()
           })
           .eq('id', illustrationId);
+      } catch (updateError) {
+        console.error('Error updating failed status:', updateError);
       }
-    } catch (updateError) {
-      console.error('Error updating failed status:', updateError);
     }
 
     return new Response(
