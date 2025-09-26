@@ -5,6 +5,9 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://fiqmtirctaqxhqnwfuqq.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpcW10aXJjdGFxeGhxbndmdXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODUxNjgsImV4cCI6MjA2NjI2MTE2OH0.AIgyTcnILi4lMJPQY5LUF2CGC1cVRSoLuk0baOKgvbQ";
 
+// Testing mode flag - should match the one in useAuth.tsx
+const TESTING_MODE = true;
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
@@ -15,3 +18,36 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
+
+// Set up mock authentication in testing mode
+if (TESTING_MODE) {
+  // Create a mock JWT token for testing
+  const mockJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoyMDY2MjYxMTY4LCJpYXQiOjE3NTA2ODUxNjgsImlzcyI6InN1cGFiYXNlIiwic3ViIjoiMTIzNDU2NzgtMTIzNC0xMjM0LTEyMzQtMTIzNDU2Nzg5YWJjIiwiZW1haWwiOiJhZG1pbkB0ZXN0LmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnt9LCJyb2xlIjoiYXV0aGVudGljYXRlZCJ9.mock_signature";
+  
+  const mockSession = {
+    access_token: mockJWT,
+    refresh_token: 'mock-refresh-token',
+    expires_in: 3600,
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    token_type: 'bearer',
+    user: {
+      id: '12345678-1234-1234-1234-123456789abc',
+      email: 'admin@test.com',
+      aud: 'authenticated',
+      role: 'authenticated',
+      email_confirmed_at: new Date().toISOString(),
+      phone: '',
+      confirmed_at: new Date().toISOString(),
+      last_sign_in_at: new Date().toISOString(),
+      app_metadata: { provider: 'email', providers: ['email'] },
+      user_metadata: {},
+      identities: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      is_anonymous: false
+    }
+  };
+
+  // Set the mock session
+  supabase.auth.setSession(mockSession as any);
+}
