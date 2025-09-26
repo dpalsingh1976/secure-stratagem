@@ -10,7 +10,7 @@ import { Upload, File, CheckCircle, XCircle, Loader2, Trash2 } from 'lucide-reac
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { IllustrationUpload, ProcessingStatus } from '@/types/iul';
+import { IllustrationUpload, ProcessingStatus, DbIllustrationUpload, mapDbToIllustrationUpload } from '@/types/iul';
 
 export const IllustrationUploader = () => {
   const [uploads, setUploads] = useState<IllustrationUpload[]>([]);
@@ -35,7 +35,7 @@ export const IllustrationUploader = () => {
       return;
     }
 
-    setUploads(data || []);
+    setUploads((data as DbIllustrationUpload[] || []).map(mapDbToIllustrationUpload));
   };
 
   // Upload file to storage
@@ -140,7 +140,7 @@ export const IllustrationUploader = () => {
         const illustration = await createIllustrationRecord(fileName, filePath);
 
         // Add to local state
-        setUploads(prev => [illustration, ...prev]);
+        setUploads(prev => [mapDbToIllustrationUpload(illustration as DbIllustrationUpload), ...prev]);
 
         // Start processing
         await processIllustration(illustration.id);
@@ -312,28 +312,28 @@ export const IllustrationUploader = () => {
                     <div className="flex items-center space-x-3">
                       <File className="h-8 w-8 text-primary" />
                       <div>
-                        <p className="font-medium">{upload.file_name}</p>
+                        <p className="font-medium">{upload.fileName}</p>
                         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                          {upload.carrier_name && (
-                            <span>Carrier: {upload.carrier_name}</span>
+                          {upload.carrierName && (
+                            <span>Carrier: {upload.carrierName}</span>
                           )}
-                          {upload.policy_type && (
-                            <span>Type: {upload.policy_type}</span>
+                          {upload.policyType && (
+                            <span>Type: {upload.policyType}</span>
                           )}
                           <span>•</span>
-                          <span>{new Date(upload.created_at).toLocaleDateString()}</span>
+                          <span>{new Date(upload.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge variant={getStatusColor(upload.processing_status)} className="flex items-center gap-1">
-                        {getStatusIcon(upload.processing_status)}
-                        {upload.processing_status.charAt(0).toUpperCase() + upload.processing_status.slice(1)}
+                      <Badge variant={getStatusColor(upload.processingStatus)} className="flex items-center gap-1">
+                        {getStatusIcon(upload.processingStatus)}
+                        {upload.processingStatus.charAt(0).toUpperCase() + upload.processingStatus.slice(1)}
                       </Badge>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => deleteIllustration(upload.id, upload.file_path)}
+                        onClick={() => deleteIllustration(upload.id, upload.filePath)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

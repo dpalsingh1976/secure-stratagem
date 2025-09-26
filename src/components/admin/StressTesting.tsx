@@ -12,7 +12,7 @@ import { AlertTriangle, TrendingDown, Zap, DollarSign, Clock, Play, Save, Downlo
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { StressTestScenario, ScenarioParameters, StressTestResults } from '@/types/iul';
+import { StressTestScenario, ScenarioParameters, StressTestResults, DbStressTestScenario, mapDbToStressTestScenario } from '@/types/iul';
 
 const predefinedScenarios: Partial<StressTestScenario>[] = [
   {
@@ -114,7 +114,7 @@ export const StressTesting = () => {
       return;
     }
 
-    setScenarios(data || []);
+    setScenarios((data as DbStressTestScenario[] || []).map(mapDbToStressTestScenario));
   };
 
   // Run stress test
@@ -466,9 +466,9 @@ export const StressTesting = () => {
                     {scenarios.map((scenario) => (
                       <div key={scenario.id} className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
-                          <p className="font-medium">{scenario.scenario_name}</p>
+                          <p className="font-medium">{scenario.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            Created: {new Date(scenario.created_at).toLocaleDateString()}
+                            Saved scenario
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -477,7 +477,7 @@ export const StressTesting = () => {
                             size="sm"
                             onClick={() => {
                               setSelectedScenario({
-                                name: scenario.scenario_name,
+                                name: scenario.name,
                                 parameters: scenario.parameters
                               });
                               setResults(scenario.results);

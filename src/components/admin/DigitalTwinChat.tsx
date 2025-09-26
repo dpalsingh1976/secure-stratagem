@@ -10,7 +10,7 @@ import { MessageSquare, Send, Bot, User, TrendingUp, AlertTriangle, CheckCircle 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { DigitalTwinQuestion, DigitalTwinResponse } from '@/types/iul';
+import { DigitalTwinQuestion, DigitalTwinResponse, DbDigitalTwinConversation, mapDbToDigitalTwinQuestion } from '@/types/iul';
 
 interface Message {
   id: string;
@@ -65,7 +65,7 @@ export const DigitalTwinChat = () => {
       return;
     }
 
-    const conversationMessages: Message[] = data.map(conv => [
+    const conversationMessages: Message[] = data.map((conv: DbDigitalTwinConversation) => [
       {
         id: `${conv.id}-question`,
         type: 'user' as const,
@@ -75,8 +75,8 @@ export const DigitalTwinChat = () => {
       {
         id: `${conv.id}-answer`,
         type: 'assistant' as const,
-        content: conv.response?.answer || 'Processing...',
-        response: conv.response,
+        content: (conv.response as DigitalTwinResponse)?.answer || 'Processing...',
+        response: conv.response as DigitalTwinResponse,
         timestamp: conv.created_at
       }
     ]).flat();

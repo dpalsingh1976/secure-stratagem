@@ -229,3 +229,66 @@ export interface IllustrationUpload {
   createdAt: string;
   updatedAt: string;
 }
+
+// Database schema types (snake_case)
+export interface DbIllustrationUpload {
+  id: string;
+  user_id: string;
+  file_name: string;
+  file_path: string;
+  carrier_name?: string;
+  policy_type?: string;
+  extracted_data: any;
+  processing_status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DbStressTestScenario {
+  id: string;
+  user_id: string;
+  illustration_id: string;
+  scenario_name: string;
+  parameters: any;
+  results: any;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DbDigitalTwinConversation {
+  id: string;
+  user_id: string;
+  illustration_id: string;
+  question: string;
+  response: any;
+  simulation_results: any;
+  created_at: string;
+}
+
+// Mapper functions
+export const mapDbToIllustrationUpload = (db: DbIllustrationUpload): IllustrationUpload => ({
+  id: db.id,
+  fileName: db.file_name,
+  filePath: db.file_path,
+  carrierName: db.carrier_name || undefined,
+  policyType: db.policy_type || undefined,
+  extractedData: db.extracted_data as IULPolicyData | null,
+  processingStatus: db.processing_status as ProcessingStatus,
+  createdAt: db.created_at,
+  updatedAt: db.updated_at,
+});
+
+export const mapDbToStressTestScenario = (db: DbStressTestScenario): StressTestScenario => ({
+  id: db.id,
+  name: db.scenario_name,
+  description: '', // Default empty description
+  parameters: db.parameters as ScenarioParameters,
+  results: db.results as StressTestResults,
+});
+
+export const mapDbToDigitalTwinQuestion = (db: DbDigitalTwinConversation): DigitalTwinQuestion => ({
+  id: db.id,
+  question: db.question,
+  timestamp: db.created_at,
+  response: db.response as DigitalTwinResponse,
+});
