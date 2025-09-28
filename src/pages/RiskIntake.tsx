@@ -105,13 +105,13 @@ export default function RiskIntake() {
 
   const progressPercentage = ((currentStep + 1) / STEPS.length) * 100;
 
-  const saveStepData = async (stepData: any, tableName: string) => {
+  const saveStepData = async (stepData: any) => {
     if (!clientId || !user) return;
 
     setIsLoading(true);
     try {
       const { error } = await supabase
-        .from(tableName)
+        .from('financial_profile')
         .upsert({ ...stepData, client_id: clientId })
         .select();
 
@@ -181,19 +181,16 @@ export default function RiskIntake() {
         }
         break;
       case 1:
-        await saveStepData(
-          { 
-            income_jsonb: incomeData,
-            expenses_jsonb: {
-              federal_taxes: incomeData.federal_taxes,
-              state_taxes: incomeData.state_taxes,
-              fixed_expenses: incomeData.fixed_expenses,
-              variable_expenses: incomeData.variable_expenses,
-              debt_service: incomeData.debt_service
-            }
-          },
-          'financial_profile'
-        );
+        await saveStepData({ 
+          income_jsonb: incomeData,
+          expenses_jsonb: {
+            federal_taxes: incomeData.federal_taxes,
+            state_taxes: incomeData.state_taxes,
+            fixed_expenses: incomeData.fixed_expenses,
+            variable_expenses: incomeData.variable_expenses,
+            debt_service: incomeData.debt_service
+          }
+        });
         break;
       // Assets and liabilities are saved individually as they're added
     }
