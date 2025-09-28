@@ -65,6 +65,71 @@ export type Database = {
         }
         Relationships: []
       }
+      assets: {
+        Row: {
+          asset_type: Database["public"]["Enums"]["asset_type_enum"]
+          client_id: string
+          cost_basis: number | null
+          created_at: string | null
+          current_value: number
+          expected_return_base: number | null
+          expected_return_high: number | null
+          expected_return_low: number | null
+          fee_bps: number | null
+          id: string
+          liquidity_score: number | null
+          meta_jsonb: Json | null
+          notes: string | null
+          tax_wrapper: Database["public"]["Enums"]["tax_wrapper_type"]
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          asset_type: Database["public"]["Enums"]["asset_type_enum"]
+          client_id: string
+          cost_basis?: number | null
+          created_at?: string | null
+          current_value: number
+          expected_return_base?: number | null
+          expected_return_high?: number | null
+          expected_return_low?: number | null
+          fee_bps?: number | null
+          id?: string
+          liquidity_score?: number | null
+          meta_jsonb?: Json | null
+          notes?: string | null
+          tax_wrapper: Database["public"]["Enums"]["tax_wrapper_type"]
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          asset_type?: Database["public"]["Enums"]["asset_type_enum"]
+          client_id?: string
+          cost_basis?: number | null
+          created_at?: string | null
+          current_value?: number
+          expected_return_base?: number | null
+          expected_return_high?: number | null
+          expected_return_low?: number | null
+          fee_bps?: number | null
+          id?: string
+          liquidity_score?: number | null
+          meta_jsonb?: Json | null
+          notes?: string | null
+          tax_wrapper?: Database["public"]["Enums"]["tax_wrapper_type"]
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assets_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_conversations: {
         Row: {
           created_at: string
@@ -187,6 +252,119 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      clients: {
+        Row: {
+          advisor_id: string
+          created_at: string | null
+          dob: string
+          filing_status: string
+          household_jsonb: Json | null
+          id: string
+          name_first: string
+          name_last: string
+          state: string
+          updated_at: string | null
+        }
+        Insert: {
+          advisor_id: string
+          created_at?: string | null
+          dob: string
+          filing_status: string
+          household_jsonb?: Json | null
+          id?: string
+          name_first: string
+          name_last: string
+          state: string
+          updated_at?: string | null
+        }
+        Update: {
+          advisor_id?: string
+          created_at?: string | null
+          dob?: string
+          filing_status?: string
+          household_jsonb?: Json | null
+          id?: string
+          name_first?: string
+          name_last?: string
+          state?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      computed_metrics: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          dime_need: number | null
+          disability_gap: number | null
+          id: string
+          lifetime_tax_drag_est: number | null
+          liquid_pct: number | null
+          liquidity_runway_months: number | null
+          ltc_gap: number | null
+          net_worth: number | null
+          protection_gap: number | null
+          retirement_gap_mo: number | null
+          scores_jsonb: Json | null
+          seq_risk_index: number | null
+          tax_bucket_later_pct: number | null
+          tax_bucket_never_pct: number | null
+          tax_bucket_now_pct: number | null
+          top_concentration_pct: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          dime_need?: number | null
+          disability_gap?: number | null
+          id?: string
+          lifetime_tax_drag_est?: number | null
+          liquid_pct?: number | null
+          liquidity_runway_months?: number | null
+          ltc_gap?: number | null
+          net_worth?: number | null
+          protection_gap?: number | null
+          retirement_gap_mo?: number | null
+          scores_jsonb?: Json | null
+          seq_risk_index?: number | null
+          tax_bucket_later_pct?: number | null
+          tax_bucket_never_pct?: number | null
+          tax_bucket_now_pct?: number | null
+          top_concentration_pct?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          dime_need?: number | null
+          disability_gap?: number | null
+          id?: string
+          lifetime_tax_drag_est?: number | null
+          liquid_pct?: number | null
+          liquidity_runway_months?: number | null
+          ltc_gap?: number | null
+          net_worth?: number | null
+          protection_gap?: number | null
+          retirement_gap_mo?: number | null
+          scores_jsonb?: Json | null
+          seq_risk_index?: number | null
+          tax_bucket_later_pct?: number | null
+          tax_bucket_never_pct?: number | null
+          tax_bucket_now_pct?: number | null
+          top_concentration_pct?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "computed_metrics_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       digital_twin_conversations: {
         Row: {
@@ -312,6 +490,106 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_profile: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          expenses_jsonb: Json | null
+          goals_jsonb: Json | null
+          horizons_jsonb: Json | null
+          id: string
+          income_jsonb: Json | null
+          preferences_jsonb: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          expenses_jsonb?: Json | null
+          goals_jsonb?: Json | null
+          horizons_jsonb?: Json | null
+          id?: string
+          income_jsonb?: Json | null
+          preferences_jsonb?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          expenses_jsonb?: Json | null
+          goals_jsonb?: Json | null
+          horizons_jsonb?: Json | null
+          id?: string
+          income_jsonb?: Json | null
+          preferences_jsonb?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_profile_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurances: {
+        Row: {
+          carrier: string | null
+          cash_value: number | null
+          client_id: string
+          created_at: string | null
+          expiry_year: number | null
+          face_amount: number | null
+          id: string
+          loan_balance: number | null
+          notes: string | null
+          policy_type: Database["public"]["Enums"]["insurance_type_enum"]
+          premium: number | null
+          riders_jsonb: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          carrier?: string | null
+          cash_value?: number | null
+          client_id: string
+          created_at?: string | null
+          expiry_year?: number | null
+          face_amount?: number | null
+          id?: string
+          loan_balance?: number | null
+          notes?: string | null
+          policy_type: Database["public"]["Enums"]["insurance_type_enum"]
+          premium?: number | null
+          riders_jsonb?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          carrier?: string | null
+          cash_value?: number | null
+          client_id?: string
+          created_at?: string | null
+          expiry_year?: number | null
+          face_amount?: number | null
+          id?: string
+          loan_balance?: number | null
+          notes?: string | null
+          policy_type?: Database["public"]["Enums"]["insurance_type_enum"]
+          premium?: number | null
+          riders_jsonb?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurances_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       iul_illustrations: {
         Row: {
           carrier_name: string | null
@@ -398,6 +676,138 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      liabilities: {
+        Row: {
+          balance: number
+          client_id: string
+          created_at: string | null
+          deductible: boolean | null
+          id: string
+          notes: string | null
+          payment_monthly: number
+          rate: number
+          term_months: number | null
+          type: Database["public"]["Enums"]["liability_type_enum"]
+          updated_at: string | null
+          variable: boolean | null
+        }
+        Insert: {
+          balance: number
+          client_id: string
+          created_at?: string | null
+          deductible?: boolean | null
+          id?: string
+          notes?: string | null
+          payment_monthly: number
+          rate: number
+          term_months?: number | null
+          type: Database["public"]["Enums"]["liability_type_enum"]
+          updated_at?: string | null
+          variable?: boolean | null
+        }
+        Update: {
+          balance?: number
+          client_id?: string
+          created_at?: string | null
+          deductible?: boolean | null
+          id?: string
+          notes?: string | null
+          payment_monthly?: number
+          rate?: number
+          term_months?: number | null
+          type?: Database["public"]["Enums"]["liability_type_enum"]
+          updated_at?: string | null
+          variable?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liabilities_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pensions_social: {
+        Row: {
+          client_id: string
+          cola: number | null
+          created_at: string | null
+          id: string
+          monthly_benefit_est: number
+          source: string
+          start_age: number
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          cola?: number | null
+          created_at?: string | null
+          id?: string
+          monthly_benefit_est: number
+          source: string
+          start_age: number
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          cola?: number | null
+          created_at?: string | null
+          id?: string
+          monthly_benefit_est?: number
+          source?: string
+          start_age?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pensions_social_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          id: string
+          pdf_url: string | null
+          public_link_id: string | null
+          report_jsonb: Json
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          id?: string
+          pdf_url?: string | null
+          public_link_id?: string | null
+          report_jsonb: Json
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          pdf_url?: string | null
+          public_link_id?: string | null
+          report_jsonb?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stress_test_scenarios: {
         Row: {
@@ -584,6 +994,65 @@ export type Database = {
       }
     }
     Enums: {
+      asset_type_enum:
+        | "cash_checking"
+        | "cash_savings"
+        | "cash_cd"
+        | "cash_money_market"
+        | "cash_tbills"
+        | "brokerage_equity"
+        | "brokerage_etf"
+        | "brokerage_mutual_fund"
+        | "brokerage_bond"
+        | "brokerage_options"
+        | "brokerage_alternatives"
+        | "brokerage_crypto"
+        | "retirement_401k"
+        | "retirement_403b"
+        | "retirement_457"
+        | "retirement_trad_ira"
+        | "retirement_sep"
+        | "retirement_simple"
+        | "retirement_roth_ira"
+        | "retirement_roth_401k"
+        | "education_529"
+        | "education_utma"
+        | "education_ugma"
+        | "insurance_term"
+        | "insurance_whole_life"
+        | "insurance_iul"
+        | "insurance_vul"
+        | "annuity_fia"
+        | "annuity_rila"
+        | "annuity_spia"
+        | "annuity_dia"
+        | "business_equity"
+        | "real_estate_primary"
+        | "real_estate_rental"
+        | "real_estate_land"
+        | "pension"
+        | "social_security"
+        | "hsa"
+      insurance_type_enum:
+        | "life_term"
+        | "life_whole"
+        | "life_iul"
+        | "life_vul"
+        | "disability_own_occ"
+        | "disability_any_occ"
+        | "ltc"
+        | "umbrella"
+        | "health"
+      liability_type_enum:
+        | "mortgage_primary"
+        | "mortgage_rental"
+        | "heloc"
+        | "student_loan"
+        | "auto_loan"
+        | "credit_card"
+        | "business_loan"
+        | "personal_loan"
+      tax_wrapper_type: "TAX_NOW" | "TAX_LATER" | "TAX_NEVER"
       user_role: "admin" | "advisor" | "user"
     }
     CompositeTypes: {
@@ -712,6 +1181,68 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      asset_type_enum: [
+        "cash_checking",
+        "cash_savings",
+        "cash_cd",
+        "cash_money_market",
+        "cash_tbills",
+        "brokerage_equity",
+        "brokerage_etf",
+        "brokerage_mutual_fund",
+        "brokerage_bond",
+        "brokerage_options",
+        "brokerage_alternatives",
+        "brokerage_crypto",
+        "retirement_401k",
+        "retirement_403b",
+        "retirement_457",
+        "retirement_trad_ira",
+        "retirement_sep",
+        "retirement_simple",
+        "retirement_roth_ira",
+        "retirement_roth_401k",
+        "education_529",
+        "education_utma",
+        "education_ugma",
+        "insurance_term",
+        "insurance_whole_life",
+        "insurance_iul",
+        "insurance_vul",
+        "annuity_fia",
+        "annuity_rila",
+        "annuity_spia",
+        "annuity_dia",
+        "business_equity",
+        "real_estate_primary",
+        "real_estate_rental",
+        "real_estate_land",
+        "pension",
+        "social_security",
+        "hsa",
+      ],
+      insurance_type_enum: [
+        "life_term",
+        "life_whole",
+        "life_iul",
+        "life_vul",
+        "disability_own_occ",
+        "disability_any_occ",
+        "ltc",
+        "umbrella",
+        "health",
+      ],
+      liability_type_enum: [
+        "mortgage_primary",
+        "mortgage_rental",
+        "heloc",
+        "student_loan",
+        "auto_loan",
+        "credit_card",
+        "business_loan",
+        "personal_loan",
+      ],
+      tax_wrapper_type: ["TAX_NOW", "TAX_LATER", "TAX_NEVER"],
       user_role: ["admin", "advisor", "user"],
     },
   },
