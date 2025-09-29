@@ -127,7 +127,6 @@ export const computeRiskMetrics = async (
   );
 
   return {
-    id: '', // Will be set by database
     client_id: clientId,
     net_worth: netWorth,
     liquid_pct: liquidPct,
@@ -152,9 +151,7 @@ export const computeRiskMetrics = async (
       inflation: inflationScore,
       tax: taxScore,
       overall: overallScore
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    }
   };
 };
 

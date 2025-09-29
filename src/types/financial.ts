@@ -130,7 +130,7 @@ export interface Insurance {
 }
 
 export interface ComputedMetrics {
-  id: string;
+  id?: string;
   client_id: string;
   net_worth: number;
   liquid_pct: number;
@@ -156,8 +156,8 @@ export interface ComputedMetrics {
     tax: number;
     overall: number;
   };
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Report {
