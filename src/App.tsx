@@ -13,6 +13,10 @@ import AdminDashboard from "./pages/AdminDashboard";
 import RiskIntake from "./pages/RiskIntake";
 import TaxBucketEstimator from "./pages/TaxBucketEstimator";
 import PolicyAssistant from "./pages/PolicyAssistant";
+import FNAReport from "./pages/FNAReport";
+import StressTesting from "./pages/StressTesting";
+import IULBanking from "./pages/IULBanking";
+import Resources from "./pages/Resources";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +45,10 @@ const App = () => (
             } />
             <Route path="/tax-bucket-estimator" element={<TaxBucketEstimator />} />
             <Route path="/policy-assistant" element={<PolicyAssistant />} />
+            <Route path="/fna-report" element={<FNAReport />} />
+            <Route path="/stress-test" element={<StressTesting />} />
+            <Route path="/iul" element={<IULBanking />} />
+            <Route path="/resources" element={<Resources />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +36,7 @@ const STEPS = [
 
 export default function RiskIntake() {
   const { user, hasRole } = useAuth();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [clientId, setClientId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -222,11 +224,48 @@ export default function RiskIntake() {
       if (metricsError) throw metricsError;
 
       setComputedMetrics(metrics);
-      setShowReport(true);
+
+      // Navigate to FNA Report with data
+      const totalIncome = incomeData.w2_income + incomeData.business_income + incomeData.rental_income;
+      const totalExpenses = incomeData.federal_taxes + incomeData.state_taxes + incomeData.fixed_expenses + incomeData.variable_expenses + incomeData.debt_service;
+      const totalAssets = assets.reduce((sum, asset) => sum + asset.current_value, 0);
+      const totalDebts = liabilities.reduce((sum, liability) => sum + liability.balance, 0);
+
+      // Map to RiskInputs format
+      const riskInputs = {
+        currentAge: new Date().getFullYear() - new Date(profileData.dob).getFullYear(),
+        plannedRetirementAge: profileData.retirement_age,
+        lifeExpectancyAge: 92,
+        annualIncome: totalIncome,
+        monthlyExpenses: totalExpenses / 12,
+        inflationRatePct: 3,
+        taxRatePct: 22,
+        currentLifeCoverage: protectionData.term_life_coverage + protectionData.permanent_life_db,
+        liquidAssets: totalAssets * 0.3, // Estimate
+        debtsTotal: totalDebts,
+        mortgageBalance: liabilities.find(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental')?.balance || 0,
+        finalExpensesEstimate: 15000,
+        educationFundNeeded: 0,
+        incomeReplacementYears: 10,
+        spouseIncomeOffsetPct: 0,
+        retirementIncomeSourcesAnnual: incomeData.pension_income + incomeData.social_security + incomeData.annuity_income,
+        investableAssets: totalAssets,
+        expectedReturnPct: 5,
+        withdrawalRatePct: 4,
+        hasEstateDocs: false,
+        beneficiariesUpdated: false
+      };
+
+      navigate('/fna-report', {
+        state: {
+          inputs: riskInputs,
+          clientName: `${profileData.name_first} ${profileData.name_last}`
+        }
+      });
 
       toast({
         title: "Report generated",
-        description: "Risk assessment completed successfully."
+        description: "Redirecting to your comprehensive report..."
       });
     } catch (error) {
       console.error('Error generating report:', error);
