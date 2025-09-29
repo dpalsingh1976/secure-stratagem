@@ -86,16 +86,17 @@ export function ReportModal({
     }
 
     // Liquidity recommendations
-    if (metrics.liquidity_runway_months < profileData.liquidity_buffer_months) {
+    const targetLiquidityMonths = 6; // Default 6 months emergency fund
+    if (metrics.liquidity_runway_months < targetLiquidityMonths) {
       recommendations.push({
         id: 'liquidity-shortfall',
         title: 'Increase Emergency Fund',
         priority: 'medium',
         category: 'Liquidity',
-        description: `Current liquidity runway of ${formatPercentage(metrics.liquidity_runway_months, 1)} months falls short of ${profileData.liquidity_buffer_months}-month target.`,
+        description: `Current liquidity runway of ${formatPercentage(metrics.liquidity_runway_months, 1)} months falls short of ${targetLiquidityMonths}-month target.`,
         impact: 'Adequate emergency fund prevents forced asset sales during market downturns.',
         nextSteps: [
-          `Build emergency fund to ${formatCurrency((incomeData.fixed_expenses + incomeData.variable_expenses) * profileData.liquidity_buffer_months)}`,
+          `Build emergency fund to ${formatCurrency((incomeData.fixed_expenses + incomeData.variable_expenses) * targetLiquidityMonths)}`,
           'Consider high-yield savings accounts or money market funds',
           'Automate monthly transfers to emergency fund'
         ]
@@ -120,13 +121,14 @@ export function ReportModal({
     }
 
     // Concentration risk
-    if (metrics.top_concentration_pct > profileData.concentration_threshold) {
+    const concentrationThreshold = 15; // Default 15% threshold
+    if (metrics.top_concentration_pct > concentrationThreshold) {
       recommendations.push({
         id: 'concentration-risk',
         title: 'Reduce Concentration Risk',
         priority: 'high',
         category: 'Diversification',
-        description: `Top holding represents ${formatPercentage(metrics.top_concentration_pct)}% of portfolio, exceeding ${formatPercentage(profileData.concentration_threshold)}% threshold.`,
+        description: `Top holding represents ${formatPercentage(metrics.top_concentration_pct)}% of portfolio, exceeding ${formatPercentage(concentrationThreshold)}% threshold.`,
         impact: 'Diversification reduces single-asset risk and improves risk-adjusted returns.',
         nextSteps: [
           'Gradually reduce concentrated position over 12-24 months',
@@ -630,7 +632,7 @@ export function ReportModal({
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">Current Coverage</div>
-                        <div className="text-2xl font-bold">{formatCurrency(protectionData.disability_benefit)}</div>
+                        <div className="text-2xl font-bold">{formatCurrency(0)}</div>
                       </div>
                     </div>
                     

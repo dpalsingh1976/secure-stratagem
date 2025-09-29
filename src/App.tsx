@@ -11,6 +11,8 @@ import Results from "./pages/Results";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import RiskIntake from "./pages/RiskIntake";
+import TaxBucketEstimator from "./pages/TaxBucketEstimator";
+import PolicyAssistant from "./pages/PolicyAssistant";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +39,8 @@ const App = () => (
                 <AdminDashboard />
               </AdminRoute>
             } />
+            <Route path="/tax-bucket-estimator" element={<TaxBucketEstimator />} />
+            <Route path="/policy-assistant" element={<PolicyAssistant />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

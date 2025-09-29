@@ -83,7 +83,7 @@ export const computeRiskMetrics = async (
 
   // Calculate disability gap
   const monthlyIncomeNeed = (annualIncome / 12) * 0.6; // 60% of income
-  const disabilityGap = Math.max(0, monthlyIncomeNeed - protectionData.disability_benefit);
+  const disabilityGap = monthlyIncomeNeed; // Assuming no disability coverage since field removed
 
   // Calculate LTC gap (basic estimate)
   const avgLtcCost = 5000; // $5000/month average
@@ -107,8 +107,8 @@ export const computeRiskMetrics = async (
 
   // Calculate risk scores (0-100 scale)
   const protectionScore = calculateProtectionScore(protectionGap, dimeNeed, disabilityGap, ltcGap);
-  const liquidityScore = calculateLiquidityScore(liquidityRunwayMonths, profileData.liquidity_buffer_months);
-  const concentrationScore = calculateConcentrationScore(topConcentrationPct, profileData.concentration_threshold);
+  const liquidityScore = calculateLiquidityScore(liquidityRunwayMonths, 6); // Default 6 months target
+  const concentrationScore = calculateConcentrationScore(topConcentrationPct, 15); // Default 15% threshold
   const volatilityScore = calculateVolatilityScore(sequenceRiskIndex, preferencesData.risk_tolerance);
   const longevityScore = calculateLongevityScore(retirementGapMo, monthlyRetirementNeed);
   const inflationScore = calculateInflationScore(taxBucketNeverPct, preferencesData.risk_tolerance);

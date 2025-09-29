@@ -11,7 +11,7 @@ import { IncomeExpensesForm } from '@/components/financial/IncomeExpensesForm';
 import { AssetsForm } from '@/components/financial/AssetsForm';
 import { LiabilitiesForm } from '@/components/financial/LiabilitiesForm';
 import { ProtectionHealthForm } from '@/components/financial/ProtectionHealthForm';
-import { RiskPreferencesForm } from '@/components/financial/RiskPreferencesForm';
+
 import { ReportModal } from '@/components/financial/ReportModal';
 import { computeRiskMetrics } from '@/utils/riskComputation';
 import type { 
@@ -21,7 +21,7 @@ import type {
   AssetFormData, 
   LiabilityFormData, 
   ProtectionHealthData, 
-  RiskPreferencesData,
+  
   ComputedMetrics
 } from '@/types/financial';
 
@@ -30,8 +30,7 @@ const STEPS = [
   { id: 'income', label: 'Income & Expenses', icon: DollarSign, description: 'Monthly income sources and expenses' },
   { id: 'assets', label: 'Assets', icon: BarChart3, description: 'All investments and holdings' },
   { id: 'liabilities', label: 'Liabilities', icon: FileText, description: 'Debts and obligations' },
-  { id: 'protection', label: 'Protection & Health', icon: Shield, description: 'Insurance coverage and health planning' },
-  { id: 'preferences', label: 'Risk Preferences', icon: Target, description: 'Risk tolerance and constraints' }
+  { id: 'protection', label: 'Protection & Health', icon: Shield, description: 'Insurance coverage and health planning' }
 ];
 
 export default function RiskIntake() {
@@ -52,9 +51,6 @@ export default function RiskIntake() {
     dependents: 0,
     retirement_age: 65,
     desired_monthly_income: 0,
-    drawdown_tolerance: 25,
-    liquidity_buffer_months: 6,
-    concentration_threshold: 10,
     insurance_priorities: []
   });
 
@@ -81,21 +77,11 @@ export default function RiskIntake() {
     term_life_years: 0,
     permanent_life_cv: 0,
     permanent_life_db: 0,
-    disability_coverage: 0,
-    disability_benefit: 0,
     ltc_daily_benefit: 0,
     ltc_benefit_period: 0,
     emergency_fund_months: 0
   });
 
-  const [preferencesData, setPreferencesData] = useState<RiskPreferencesData>({
-    risk_tolerance: 5,
-    loss_aversion: 5,
-    investment_knowledge: 3,
-    sequence_risk_sensitivity: 'medium',
-    tax_sensitivity: 'medium',
-    ethical_exclusions: []
-  });
 
   useEffect(() => {
     if (!user || !hasRole('advisor')) {
@@ -172,9 +158,6 @@ export default function RiskIntake() {
               goals_jsonb: {
                 retirement_age: profileData.retirement_age,
                 desired_monthly_income: profileData.desired_monthly_income,
-                drawdown_tolerance: profileData.drawdown_tolerance,
-                liquidity_buffer_months: profileData.liquidity_buffer_months,
-                concentration_threshold: profileData.concentration_threshold,
                 insurance_priorities: profileData.insurance_priorities
               }
             });
@@ -221,7 +204,14 @@ export default function RiskIntake() {
         assets,
         liabilities,
         protectionData,
-        preferencesData
+        preferencesData: {
+          risk_tolerance: 5,
+          loss_aversion: 5,
+          investment_knowledge: 3,
+          sequence_risk_sensitivity: 'medium',
+          tax_sensitivity: 'medium',
+          ethical_exclusions: []
+        }
       });
 
       // Save computed metrics
@@ -291,14 +281,6 @@ export default function RiskIntake() {
           <ProtectionHealthForm 
             data={protectionData} 
             onChange={setProtectionData}
-            onValidationChange={() => {}} 
-          />
-        );
-      case 5:
-        return (
-          <RiskPreferencesForm 
-            data={preferencesData} 
-            onChange={setPreferencesData}
             onValidationChange={() => {}} 
           />
         );

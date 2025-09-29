@@ -186,9 +186,6 @@ export interface ProfileGoalsData {
   dependents: number;
   retirement_age: number;
   desired_monthly_income: number;
-  drawdown_tolerance: number;
-  liquidity_buffer_months: number;
-  concentration_threshold: number;
   insurance_priorities: string[];
 }
 
@@ -238,8 +235,6 @@ export interface ProtectionHealthData {
   term_life_years: number;
   permanent_life_cv: number;
   permanent_life_db: number;
-  disability_coverage: number;
-  disability_benefit: number;
   ltc_daily_benefit: number;
   ltc_benefit_period: number;
   emergency_fund_months: number;

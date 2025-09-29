@@ -172,66 +172,6 @@ export function ProtectionHealthForm({ data, onChange, onValidationChange }: Pro
           </CardContent>
         </Card>
 
-        {/* Disability Insurance */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <User className="h-5 w-5 text-primary" />
-              <span>Disability Insurance</span>
-            </CardTitle>
-            <CardDescription>
-              Income protection in case of inability to work due to disability.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Label htmlFor="disabilityCoverage">Coverage Type</Label>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <InfoIcon className="h-4 w-4 text-gray-400" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Own occupation vs any occupation coverage</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <Select 
-                  value={data.disability_coverage?.toString() || ''} 
-                  onValueChange={(value) => handleInputChange('disability_coverage', parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select coverage type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">No Coverage</SelectItem>
-                    <SelectItem value="1">Own Occupation</SelectItem>
-                    <SelectItem value="2">Any Occupation</SelectItem>
-                    <SelectItem value="3">Modified Own Occupation</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="disabilityBenefit">Monthly Benefit</Label>
-                <Input
-                  id="disabilityBenefit"
-                  type="number"
-                  min="0"
-                  value={data.disability_benefit}
-                  onChange={(e) => handleInputChange('disability_benefit', parseFloat(e.target.value) || 0)}
-                  placeholder="Enter monthly benefit amount"
-                />
-                {data.disability_benefit > 0 && (
-                  <div className="text-sm text-gray-600">
-                    Annual benefit: {formatCurrency(data.disability_benefit * 12)}
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Long-Term Care Insurance */}
         <Card>
