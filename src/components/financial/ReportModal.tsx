@@ -60,27 +60,27 @@ export function ReportModal({
     if (score >= 80) return { 
       label: 'Critical', 
       color: 'bg-red-500', 
-      badgeClass: 'bg-red-600 text-white hover:bg-red-700 border-0'
+      badgeClass: 'bg-red-600 hover:bg-red-600 text-white font-bold'
     };
     if (score >= 60) return { 
       label: 'High', 
       color: 'bg-orange-500', 
-      badgeClass: 'bg-orange-600 text-white hover:bg-orange-700 border-0'
+      badgeClass: 'bg-orange-600 hover:bg-orange-600 text-white font-bold'
     };
     if (score >= 40) return { 
       label: 'Moderate', 
       color: 'bg-yellow-500', 
-      badgeClass: 'bg-yellow-600 text-white hover:bg-yellow-700 border-0'
+      badgeClass: 'bg-yellow-600 hover:bg-yellow-600 text-white font-bold'
     };
     if (score >= 20) return { 
       label: 'Low', 
       color: 'bg-blue-500', 
-      badgeClass: 'bg-blue-600 text-white hover:bg-blue-700 border-0'
+      badgeClass: 'bg-blue-600 hover:bg-blue-600 text-white font-bold'
     };
     return { 
       label: 'Minimal', 
       color: 'bg-green-500', 
-      badgeClass: 'bg-green-600 text-white hover:bg-green-700 border-0'
+      badgeClass: 'bg-green-600 hover:bg-green-600 text-white font-bold'
     };
   };
 
@@ -531,94 +531,118 @@ export function ReportModal({
             </TabsContent>
 
             <TabsContent value="coverage" className="space-y-6">
-              {/* DIME Calculation Summary */}
-              <Card className="border-2 border-primary/20">
-                <CardHeader className="bg-primary/5">
-                  <CardTitle className="flex items-center gap-2 text-2xl">
-                    <Shield className="h-6 w-6 text-primary" />
-                    <span>DIME Life Insurance Calculation</span>
+              {/* DIME Calculation Summary - Simplified and Clear */}
+              <Card className="border-4 border-primary shadow-xl">
+                <CardHeader className="bg-gradient-to-r from-primary to-primary/80 text-white">
+                  <CardTitle className="flex items-center gap-3 text-3xl">
+                    <Shield className="h-8 w-8" />
+                    <span>DIME Life Insurance Need Assessment</span>
                   </CardTitle>
-                  <CardDescription>
-                    Based on your inputs, here's your comprehensive protection need
+                  <CardDescription className="text-white/90 text-lg">
+                    Simple calculation of your total family protection need
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pt-6 space-y-6">
-                  {/* DIME Components */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-200">
-                      <div className="text-sm font-semibold text-blue-800 mb-1">D - Debts & Final Expenses</div>
-                      <div className="text-2xl font-bold text-blue-900">
-                        {formatCurrency(liabilities.reduce((sum, l) => sum + l.balance, 0) + 15000)}
-                      </div>
-                      <div className="text-xs text-blue-700 mt-1">
-                        Total debts + $15k final expenses
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border-2 border-purple-200">
-                      <div className="text-sm font-semibold text-purple-800 mb-1">I - Income Replacement</div>
-                      <div className="text-2xl font-bold text-purple-900">
-                        {formatCurrency((incomeData.w2_income + incomeData.business_income) * 10 * 0.8 / 12)}
-                      </div>
-                      <div className="text-xs text-purple-700 mt-1">
-                        10 years at 80% income replacement
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border-2 border-green-200">
-                      <div className="text-sm font-semibold text-green-800 mb-1">M - Mortgage Balance</div>
-                      <div className="text-2xl font-bold text-green-900">
-                        {formatCurrency(liabilities.filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental').reduce((sum, l) => sum + l.balance, 0))}
-                      </div>
-                      <div className="text-xs text-green-700 mt-1">
-                        Outstanding mortgage debt
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border-2 border-orange-200">
-                      <div className="text-sm font-semibold text-orange-800 mb-1">E - Education Expenses</div>
-                      <div className="text-2xl font-bold text-orange-900">
-                        {formatCurrency(profileData.dependents * 50000)}
-                      </div>
-                      <div className="text-xs text-orange-700 mt-1">
-                        $50,000 per dependent
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t-2 border-dashed border-gray-300 pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="text-center p-4 bg-primary/10 rounded-lg">
-                        <div className="text-sm text-muted-foreground mb-1">Total DIME Need</div>
-                        <div className="text-3xl font-bold text-primary">{formatCurrency(metrics.dime_need)}</div>
-                      </div>
-                      
-                      <div className="text-center p-4 bg-secondary/10 rounded-lg">
-                        <div className="text-sm text-muted-foreground mb-1">Current Coverage</div>
-                        <div className="text-3xl font-bold text-secondary">
-                          {formatCurrency(protectionData.term_life_coverage + protectionData.permanent_life_db)}
+                <CardContent className="pt-8 space-y-8">
+                  {/* DIME Components in Large, Clear Cards */}
+                  <div>
+                    <h3 className="text-xl font-bold mb-4 text-gray-700">What Makes Up Your Protection Need:</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
+                        <div className="text-lg font-bold mb-2 flex items-center gap-2">
+                          <span className="text-3xl">D</span> 
+                          <span>Debts & Final Expenses</span>
+                        </div>
+                        <div className="text-4xl font-black mb-2">
+                          {formatCurrency(liabilities.reduce((sum, l) => sum + l.balance, 0) + 15000)}
+                        </div>
+                        <div className="text-blue-100 text-sm">
+                          All debts + $15,000 final expenses
                         </div>
                       </div>
                       
-                      <div className="text-center p-4 bg-red-100 rounded-lg border-2 border-red-300">
-                        <div className="text-sm text-red-700 font-semibold mb-1">Protection Gap</div>
-                        <div className="text-3xl font-bold text-red-800">{formatCurrency(metrics.protection_gap)}</div>
+                      <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl text-white shadow-lg">
+                        <div className="text-lg font-bold mb-2 flex items-center gap-2">
+                          <span className="text-3xl">I</span>
+                          <span>Income Replacement</span>
+                        </div>
+                        <div className="text-4xl font-black mb-2">
+                          {formatCurrency((incomeData.w2_income + incomeData.business_income) * 10 * 0.8 / 12)}
+                        </div>
+                        <div className="text-purple-100 text-sm">
+                          10 years of income at 80% replacement
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl text-white shadow-lg">
+                        <div className="text-lg font-bold mb-2 flex items-center gap-2">
+                          <span className="text-3xl">M</span>
+                          <span>Mortgage Balance</span>
+                        </div>
+                        <div className="text-4xl font-black mb-2">
+                          {formatCurrency(liabilities.filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental').reduce((sum, l) => sum + l.balance, 0))}
+                        </div>
+                        <div className="text-green-100 text-sm">
+                          Outstanding home loan balance
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-xl text-white shadow-lg">
+                        <div className="text-lg font-bold mb-2 flex items-center gap-2">
+                          <span className="text-3xl">E</span>
+                          <span>Education Expenses</span>
+                        </div>
+                        <div className="text-4xl font-black mb-2">
+                          {formatCurrency(profileData.dependents * 50000)}
+                        </div>
+                        <div className="text-orange-100 text-sm">
+                          $50,000 per child for education
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* General Recommendation */}
-                  <div className="bg-amber-50 border-2 border-amber-200 p-6 rounded-lg">
-                    <h4 className="font-bold text-amber-900 mb-3 flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5" />
-                      General Recommendation
+                  {/* Bottom Line Results - Big and Clear */}
+                  <div className="border-t-4 border-dashed border-gray-300 pt-8">
+                    <h3 className="text-2xl font-bold mb-6 text-center text-gray-800">Your Protection Summary:</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="text-center p-8 bg-blue-50 rounded-xl border-2 border-blue-200 shadow-md">
+                        <div className="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide">Total Need (DIME)</div>
+                        <div className="text-5xl font-black text-blue-900 mb-2">{formatCurrency(metrics.dime_need)}</div>
+                        <div className="text-xs text-blue-600">What your family needs</div>
+                      </div>
+                      
+                      <div className="text-center p-8 bg-green-50 rounded-xl border-2 border-green-200 shadow-md">
+                        <div className="text-sm font-semibold text-green-700 mb-2 uppercase tracking-wide">Current Coverage</div>
+                        <div className="text-5xl font-black text-green-900 mb-2">
+                          {formatCurrency(protectionData.term_life_coverage + protectionData.permanent_life_db)}
+                        </div>
+                        <div className="text-xs text-green-600">What you have now</div>
+                      </div>
+                      
+                      <div className="text-center p-8 bg-red-50 rounded-xl border-4 border-red-400 shadow-lg">
+                        <div className="text-sm font-bold text-red-700 mb-2 uppercase tracking-wide flex items-center justify-center gap-2">
+                          <AlertTriangle className="h-4 w-4" />
+                          Protection Gap
+                        </div>
+                        <div className="text-5xl font-black text-red-900 mb-2">{formatCurrency(metrics.protection_gap)}</div>
+                        <div className="text-xs text-red-700 font-semibold">Additional coverage needed</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* General Recommendation - Clear and Simple */}
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-4 border-amber-300 p-8 rounded-xl shadow-lg">
+                    <h4 className="text-2xl font-bold text-amber-900 mb-4 flex items-center gap-3">
+                      <AlertTriangle className="h-6 w-6" />
+                      What This Means For You
                     </h4>
-                    <p className="text-amber-900 leading-relaxed">
-                      Based on your DIME inputs, {metrics.protection_gap > 0 
-                        ? `you may have a protection gap of ${formatCurrency(metrics.protection_gap)}` 
-                        : 'your current coverage appears adequate'}. 
-                      For a full strategy solution tailored to your specific situation, 
-                      please consult a licensed financial professional.
+                    <p className="text-lg text-amber-900 leading-relaxed mb-4">
+                      {metrics.protection_gap > 0 
+                        ? `Based on your DIME calculation, you may have a protection gap of ${formatCurrency(metrics.protection_gap)}. This means your family may not be fully protected if something happens to you.` 
+                        : 'Based on your DIME calculation, your current life insurance coverage appears adequate for your family\'s needs.'}
+                    </p>
+                    <p className="text-base text-amber-800 font-semibold bg-white/50 p-4 rounded-lg">
+                      📋 <strong>Next Step:</strong> For a complete strategy tailored to your specific situation, please consult with a licensed financial professional who can review all your options.
                     </p>
                   </div>
                 </CardContent>

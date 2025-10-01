@@ -1,13 +1,17 @@
+import { useState } from "react";
 import { Shield, Calculator, FileText, Upload, Lock, TrendingUp, CheckCircle, Award, ArrowRight, BarChart3, PieChart, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-financial.jpg";
+import RiskIntake from "@/pages/RiskIntake";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [showRiskAssessment, setShowRiskAssessment] = useState(false);
 
   const calculators = [
     {
@@ -104,7 +108,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-accent hover:bg-accent/90 text-white text-xl px-12 py-8 shadow-2xl hover:shadow-accent/50 transform hover:scale-105 transition-all font-bold border-4 border-white/20"
-                onClick={() => navigate('/admin/risk-intake')}
+                onClick={() => setShowRiskAssessment(true)}
               >
                 <FileText className="w-6 h-6 mr-3" />
                 Start Risk Assessment Now
@@ -367,6 +371,15 @@ const Index = () => {
       </section>
 
       <Footer />
+
+      {/* Risk Assessment Modal */}
+      <Dialog open={showRiskAssessment} onOpenChange={setShowRiskAssessment}>
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden p-0">
+          <div className="overflow-y-auto max-h-[95vh]">
+            <RiskIntake isModal={true} onClose={() => setShowRiskAssessment(false)} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

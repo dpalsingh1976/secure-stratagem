@@ -6,7 +6,12 @@ import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, Users, DollarSign, Shield, Target, BarChart3 } from 'lucide-react';
+import { ArrowLeft, FileText, Users, DollarSign, Shield, Target, BarChart3, X } from 'lucide-react';
+
+interface RiskIntakeProps {
+  isModal?: boolean;
+  onClose?: () => void;
+}
 import { ProfileGoalsForm } from '@/components/financial/ProfileGoalsForm';
 import { IncomeExpensesForm } from '@/components/financial/IncomeExpensesForm';
 import { AssetsForm } from '@/components/financial/AssetsForm';
@@ -34,7 +39,7 @@ const STEPS = [
   { id: 'protection', label: 'Protection & Health', icon: Shield, description: 'Insurance coverage and health planning' }
 ];
 
-export default function RiskIntake() {
+export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps = {}) {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
@@ -337,16 +342,25 @@ export default function RiskIntake() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm" onClick={handleBack}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
+              {!isModal && (
+                <Button variant="outline" size="sm" onClick={handleBack}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+              )}
               <h1 className="text-3xl font-bold text-gray-900">
                 Financial Risk Assessment
               </h1>
             </div>
-            <div className="text-sm text-gray-600">
-              Step {currentStep + 1} of {STEPS.length}
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-gray-600">
+                Step {currentStep + 1} of {STEPS.length}
+              </div>
+              {isModal && onClose && (
+                <Button variant="ghost" size="sm" onClick={onClose}>
+                  <X className="h-5 h-5" />
+                </Button>
+              )}
             </div>
           </div>
 
