@@ -1,44 +1,8 @@
-import { useState } from "react";
 import { Shield, Phone, Mail, Clock, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import EnhancedAssessmentModal from "@/components/EnhancedAssessmentModal";
 
 const Footer = () => {
-  const [isAssessmentOpen, setIsAssessmentOpen] = useState(false);
-  
   return (
     <footer className="bg-foreground text-white">
-      {/* Call to action section */}
-      <div className="bg-gradient-primary py-16">
-        <div className="container-financial text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4 font-heading">
-            Ready to Secure Your Family's Future?
-          </h2>
-          <p className="text-xl opacity-95 mb-8 max-w-2xl mx-auto">
-            Take the first step towards comprehensive financial protection. 
-            Your 5-minute assessment could save your family decades of financial stress.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              variant="secondary"
-              className="text-lg px-8 py-4 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200"
-              onClick={() => setIsAssessmentOpen(true)}
-            >
-              Start Free Assessment Now
-            </Button>
-            <Button 
-              size="lg"
-              variant="secondary"
-              className="text-lg px-8 py-4"
-            >
-              <Phone className="w-5 h-5 mr-2" />
-              Call for Consultation
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Main footer content */}
       <div className="py-16 bg-slate-900">
         <div className="container-financial">
@@ -119,15 +83,10 @@ const Footer = () => {
       <div className="bg-accent py-2">
         <div className="container-financial text-center">
           <p className="text-sm font-medium text-white">
-            🚨 Important: Life insurance rates increase with age. Every year you wait costs more. Get your assessment today.
+        🚨 Important: Life insurance rates increase with age. Every year you wait costs more. Get your assessment today.
           </p>
         </div>
       </div>
-      
-      <EnhancedAssessmentModal 
-        open={isAssessmentOpen} 
-        onOpenChange={setIsAssessmentOpen} 
-      />
     </footer>
   );
 };

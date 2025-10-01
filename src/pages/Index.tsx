@@ -375,6 +375,9 @@ const Index = () => {
       {/* Risk Assessment Modal */}
       <Dialog open={showRiskAssessment} onOpenChange={setShowRiskAssessment}>
         <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden p-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Financial Risk Assessment</DialogTitle>
+          </DialogHeader>
           <div className="overflow-y-auto max-h-[95vh]">
             <RiskIntake isModal={true} onClose={() => setShowRiskAssessment(false)} />
           </div>
