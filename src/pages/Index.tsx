@@ -99,16 +99,16 @@ const Index = () => {
               Discover risks, calculate your needs, and explore advanced retirement strategies with professional-grade tools.
             </p>
 
-            {/* Primary CTA */}
-            <div className="mb-8">
+            {/* Primary CTA - Highly Visible */}
+            <div className="mb-8 flex justify-center">
               <Button 
                 size="lg" 
-                className="bg-accent hover:bg-accent/90 text-white text-lg px-8 py-7 shadow-2xl hover:shadow-accent/50 transform hover:scale-105 transition-all font-semibold"
+                className="bg-accent hover:bg-accent/90 text-white text-xl px-12 py-8 shadow-2xl hover:shadow-accent/50 transform hover:scale-105 transition-all font-bold border-4 border-white/20"
                 onClick={() => navigate('/admin/risk-intake')}
               >
-                <FileText className="w-5 h-5 mr-2" />
-                Start Risk Assessment
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <FileText className="w-6 h-6 mr-3" />
+                Start Risk Assessment Now
+                <ArrowRight className="w-6 h-6 ml-3" />
               </Button>
             </div>
 
@@ -196,7 +196,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {calculators.map((calc, index) => {
               const Icon = calc.icon;
               return (

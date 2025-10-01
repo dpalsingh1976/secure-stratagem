@@ -57,11 +57,31 @@ export function ReportModal({
   const [isExporting, setIsExporting] = useState(false);
 
   const getRiskLevel = (score: number) => {
-    if (score >= 80) return { label: 'Critical', color: 'bg-red-500', textColor: 'text-red-700' };
-    if (score >= 60) return { label: 'High', color: 'bg-orange-500', textColor: 'text-orange-700' };
-    if (score >= 40) return { label: 'Moderate', color: 'bg-yellow-500', textColor: 'text-yellow-700' };
-    if (score >= 20) return { label: 'Low', color: 'bg-blue-500', textColor: 'text-blue-700' };
-    return { label: 'Minimal', color: 'bg-green-500', textColor: 'text-green-700' };
+    if (score >= 80) return { 
+      label: 'Critical', 
+      color: 'bg-red-500', 
+      badgeClass: 'bg-red-600 text-white hover:bg-red-700 border-0'
+    };
+    if (score >= 60) return { 
+      label: 'High', 
+      color: 'bg-orange-500', 
+      badgeClass: 'bg-orange-600 text-white hover:bg-orange-700 border-0'
+    };
+    if (score >= 40) return { 
+      label: 'Moderate', 
+      color: 'bg-yellow-500', 
+      badgeClass: 'bg-yellow-600 text-white hover:bg-yellow-700 border-0'
+    };
+    if (score >= 20) return { 
+      label: 'Low', 
+      color: 'bg-blue-500', 
+      badgeClass: 'bg-blue-600 text-white hover:bg-blue-700 border-0'
+    };
+    return { 
+      label: 'Minimal', 
+      color: 'bg-green-500', 
+      badgeClass: 'bg-green-600 text-white hover:bg-green-700 border-0'
+    };
   };
 
   const generateRecommendations = (): RiskRecommendation[] => {
@@ -213,10 +233,10 @@ export function ReportModal({
             <TabsContent value="summary" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
+                  <CardTitle className="flex items-center gap-3">
                     <div className={`w-4 h-4 rounded-full ${getRiskLevel(metrics.scores_jsonb.overall).color}`} />
                     <span>Overall Risk Score: {metrics.scores_jsonb.overall}/100</span>
-                    <Badge variant="outline" className={getRiskLevel(metrics.scores_jsonb.overall).textColor}>
+                    <Badge className={getRiskLevel(metrics.scores_jsonb.overall).badgeClass}>
                       {getRiskLevel(metrics.scores_jsonb.overall).label}
                     </Badge>
                   </CardTitle>
@@ -253,16 +273,16 @@ export function ReportModal({
                       'Longevity': metrics.scores_jsonb.longevity,
                       'Inflation': metrics.scores_jsonb.inflation,
                       'Tax': metrics.scores_jsonb.tax
-                    }).map(([category, score]) => {
+                     }).map(([category, score]) => {
                       const level = getRiskLevel(score);
                       return (
-                        <div key={category} className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3 flex-1">
-                            <span className="font-medium w-32">{category}</span>
+                        <div key={category} className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3 flex-1">
+                            <span className="font-medium w-40">{category}</span>
                             <Progress value={score} className="flex-1" />
                             <span className="text-sm font-medium w-16">{score}/100</span>
                           </div>
-                          <Badge variant="outline" className={`ml-4 ${level.textColor}`}>
+                          <Badge className={level.badgeClass}>
                             {level.label}
                           </Badge>
                         </div>
@@ -511,39 +531,100 @@ export function ReportModal({
             </TabsContent>
 
             <TabsContent value="coverage" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Shield className="h-5 w-5 text-primary" />
-                      <span>Life Insurance Analysis</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-sm text-gray-600">DIME Method Need</div>
-                        <div className="text-2xl font-bold">{formatCurrency(metrics.dime_need)}</div>
+              {/* DIME Calculation Summary */}
+              <Card className="border-2 border-primary/20">
+                <CardHeader className="bg-primary/5">
+                  <CardTitle className="flex items-center gap-2 text-2xl">
+                    <Shield className="h-6 w-6 text-primary" />
+                    <span>DIME Life Insurance Calculation</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Based on your inputs, here's your comprehensive protection need
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-6">
+                  {/* DIME Components */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-200">
+                      <div className="text-sm font-semibold text-blue-800 mb-1">D - Debts & Final Expenses</div>
+                      <div className="text-2xl font-bold text-blue-900">
+                        {formatCurrency(liabilities.reduce((sum, l) => sum + l.balance, 0) + 15000)}
                       </div>
-                      <div>
-                        <div className="text-sm text-gray-600">Current Coverage</div>
-                        <div className="text-2xl font-bold">{formatCurrency(protectionData.term_life_coverage + protectionData.permanent_life_db)}</div>
+                      <div className="text-xs text-blue-700 mt-1">
+                        Total debts + $15k final expenses
                       </div>
                     </div>
                     
-                    <div className="bg-red-50 p-4 rounded-lg">
-                      <div className="text-sm text-red-700 font-medium">Protection Gap</div>
-                      <div className="text-3xl font-bold text-red-800">{formatCurrency(metrics.protection_gap)}</div>
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border-2 border-purple-200">
+                      <div className="text-sm font-semibold text-purple-800 mb-1">I - Income Replacement</div>
+                      <div className="text-2xl font-bold text-purple-900">
+                        {formatCurrency((incomeData.w2_income + incomeData.business_income) * 10 * 0.8 / 12)}
+                      </div>
+                      <div className="text-xs text-purple-700 mt-1">
+                        10 years at 80% income replacement
+                      </div>
                     </div>
+                    
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border-2 border-green-200">
+                      <div className="text-sm font-semibold text-green-800 mb-1">M - Mortgage Balance</div>
+                      <div className="text-2xl font-bold text-green-900">
+                        {formatCurrency(liabilities.filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental').reduce((sum, l) => sum + l.balance, 0))}
+                      </div>
+                      <div className="text-xs text-green-700 mt-1">
+                        Outstanding mortgage debt
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border-2 border-orange-200">
+                      <div className="text-sm font-semibold text-orange-800 mb-1">E - Education Expenses</div>
+                      <div className="text-2xl font-bold text-orange-900">
+                        {formatCurrency(profileData.dependents * 50000)}
+                      </div>
+                      <div className="text-xs text-orange-700 mt-1">
+                        $50,000 per dependent
+                      </div>
+                    </div>
+                  </div>
 
-                    <div className="text-sm space-y-2">
-                      <div>• <strong>Debt Payoff:</strong> {formatCurrency(liabilities.reduce((sum, l) => sum + l.balance, 0))}</div>
-                      <div>• <strong>Income Replacement:</strong> 10 years at 80% replacement</div>
-                      <div>• <strong>Education Fund:</strong> {formatCurrency(profileData.dependents * 50000)}</div>
-                      <div>• <strong>Final Expenses:</strong> {formatCurrency(15000)}</div>
+                  <div className="border-t-2 border-dashed border-gray-300 pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center p-4 bg-primary/10 rounded-lg">
+                        <div className="text-sm text-muted-foreground mb-1">Total DIME Need</div>
+                        <div className="text-3xl font-bold text-primary">{formatCurrency(metrics.dime_need)}</div>
+                      </div>
+                      
+                      <div className="text-center p-4 bg-secondary/10 rounded-lg">
+                        <div className="text-sm text-muted-foreground mb-1">Current Coverage</div>
+                        <div className="text-3xl font-bold text-secondary">
+                          {formatCurrency(protectionData.term_life_coverage + protectionData.permanent_life_db)}
+                        </div>
+                      </div>
+                      
+                      <div className="text-center p-4 bg-red-100 rounded-lg border-2 border-red-300">
+                        <div className="text-sm text-red-700 font-semibold mb-1">Protection Gap</div>
+                        <div className="text-3xl font-bold text-red-800">{formatCurrency(metrics.protection_gap)}</div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+
+                  {/* General Recommendation */}
+                  <div className="bg-amber-50 border-2 border-amber-200 p-6 rounded-lg">
+                    <h4 className="font-bold text-amber-900 mb-3 flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5" />
+                      General Recommendation
+                    </h4>
+                    <p className="text-amber-900 leading-relaxed">
+                      Based on your DIME inputs, {metrics.protection_gap > 0 
+                        ? `you may have a protection gap of ${formatCurrency(metrics.protection_gap)}` 
+                        : 'your current coverage appears adequate'}. 
+                      For a full strategy solution tailored to your specific situation, 
+                      please consult a licensed financial professional.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <Card>
                   <CardHeader>
