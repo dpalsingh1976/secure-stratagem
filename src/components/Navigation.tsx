@@ -21,14 +21,20 @@ const Navigation = () => {
   ];
 
   const calculatorItems = [
+    { path: '/admin/risk-intake', label: 'DIME Life Insurance Calculator', icon: Calculator },
     { path: '/tax-bucket-estimator', label: '7702 Tax-Free Estimator', icon: Calculator },
-    { path: '/admin/risk-intake', label: 'DIME Calculator', icon: Calculator },
-    { path: '/stress-test', label: 'IUL vs 401k/IRA', icon: Calculator },
+    { path: '/stress-test', label: 'IUL vs 401k/IRA Comparison', icon: Calculator },
+    { path: '/annuity-calculator', label: 'Annuity Income Calculator', icon: Calculator },
+    { path: '/longevity-calculator', label: 'Longevity Risk Calculator', icon: Calculator },
+    { path: '/inflation-stress-test', label: 'Inflation & Market Stress Test', icon: Calculator },
   ];
 
   const strategyItems = [
     { path: '/iul', label: 'Retirement Strategies', icon: Landmark, protected: true },
-    { path: '/resources', label: 'Resources', icon: BookOpen },
+  ];
+
+  const otherItems = [
+    { path: '/about', label: 'About / Contact', icon: BookOpen },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -118,6 +124,25 @@ const Navigation = () => {
                 </Link>
               );
             })}
+
+            {/* Other Items */}
+            {otherItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                    isActive(item.path)
+                      ? 'bg-muted text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Desktop Sign In */}
@@ -177,6 +202,7 @@ const Navigation = () => {
                 </div>
 
                 <div className="border-t pt-4">
+                  <p className="text-xs font-semibold text-muted-foreground px-4 mb-2">STRATEGIES</p>
                   {strategyItems.map((item) => {
                     const Icon = item.icon;
                     return (
@@ -197,6 +223,27 @@ const Navigation = () => {
                             Members
                           </span>
                         )}
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                <div className="border-t pt-4 mt-4">
+                  {otherItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setIsOpen(false)}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                          isActive(item.path)
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                        }`}
+                      >
+                        <Icon className="w-5 h-5" />
+                        {item.label}
                       </Link>
                     );
                   })}

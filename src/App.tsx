@@ -17,6 +17,10 @@ import FNAReport from "./pages/FNAReport";
 import StressTesting from "./pages/StressTesting";
 import IULBanking from "./pages/IULBanking";
 import Resources from "./pages/Resources";
+import AnnuityCalculator from "./pages/AnnuityCalculator";
+import LongevityCalculator from "./pages/LongevityCalculator";
+import InflationStressTest from "./pages/InflationStressTest";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +53,10 @@ const App = () => (
             <Route path="/stress-test" element={<StressTesting />} />
             <Route path="/iul" element={<IULBanking />} />
             <Route path="/resources" element={<Resources />} />
+            <Route path="/annuity-calculator" element={<AnnuityCalculator />} />
+            <Route path="/longevity-calculator" element={<LongevityCalculator />} />
+            <Route path="/inflation-stress-test" element={<InflationStressTest />} />
+            <Route path="/about" element={<About />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -31,6 +31,27 @@ const Index = () => {
       color: "accent",
       path: "/stress-test",
     },
+    {
+      title: "Annuity Income Calculator",
+      description: "Estimate guaranteed lifetime income from annuities",
+      icon: PieChart,
+      color: "primary",
+      path: "/annuity-calculator",
+    },
+    {
+      title: "Longevity Risk Calculator",
+      description: "Calculate how long your retirement savings will last",
+      icon: Calculator,
+      color: "secondary",
+      path: "/longevity-calculator",
+    },
+    {
+      title: "Inflation Stress Test",
+      description: "Analyze market volatility and inflation impact on savings",
+      icon: BarChart3,
+      color: "accent",
+      path: "/inflation-stress-test",
+    },
   ];
 
   const getColorClasses = (color: string) => {
@@ -78,8 +99,8 @@ const Index = () => {
               Discover risks, calculate your needs, and explore advanced retirement strategies with professional-grade tools.
             </p>
 
-            {/* Primary CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            {/* Primary CTA */}
+            <div className="mb-8">
               <Button 
                 size="lg" 
                 className="bg-accent hover:bg-accent/90 text-white text-lg px-8 py-7 shadow-2xl hover:shadow-accent/50 transform hover:scale-105 transition-all font-semibold"
@@ -88,15 +109,6 @@ const Index = () => {
                 <FileText className="w-5 h-5 mr-2" />
                 Start Risk Assessment
                 <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="bg-white/10 hover:bg-white/20 border-white/30 text-white text-lg px-8 py-7 shadow-xl backdrop-blur-sm font-semibold"
-                onClick={() => window.scrollTo({ top: document.getElementById('calculators')?.offsetTop || 0, behavior: 'smooth' })}
-              >
-                <Calculator className="w-5 h-5 mr-2" />
-                Explore Calculators
               </Button>
             </div>
 

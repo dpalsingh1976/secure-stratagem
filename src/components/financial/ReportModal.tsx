@@ -67,90 +67,44 @@ export function ReportModal({
   const generateRecommendations = (): RiskRecommendation[] => {
     const recommendations: RiskRecommendation[] = [];
     
-    // Protection recommendations
+    // General recommendation based on DIME assessment
+    const totalGaps = [
+      metrics.protection_gap > 0,
+      metrics.liquidity_runway_months < 6,
+      metrics.tax_bucket_never_pct < 20,
+      metrics.retirement_gap_mo > 1000
+    ].filter(Boolean).length;
+
+    if (totalGaps > 0) {
+      recommendations.push({
+        id: 'general-recommendation',
+        title: 'Financial Planning Consultation Recommended',
+        priority: 'high',
+        category: 'General',
+        description: `Based on your DIME inputs and financial assessment, ${totalGaps > 1 ? 'several areas' : 'an area'} may need attention.`,
+        impact: 'Addressing these gaps can help protect your family and secure your retirement.',
+        nextSteps: [
+          'Review your DIME calculation results carefully',
+          'Consider consulting with a licensed financial professional',
+          'Explore our calculators to understand different planning strategies',
+          'Evaluate your current insurance coverage and retirement savings'
+        ]
+      });
+    }
+
+    // Add specific gap information without product recommendations
     if (metrics.protection_gap > 0) {
       recommendations.push({
-        id: 'protection-gap',
-        title: 'Close Life Insurance Protection Gap',
+        id: 'protection-gap-info',
+        title: 'Life Insurance Coverage Gap Identified',
         priority: 'high',
         category: 'Protection',
-        description: `Current protection gap of ${formatCurrency(metrics.protection_gap)} leaves family exposed to financial hardship.`,
-        impact: `Securing additional coverage protects ${formatCurrency(metrics.dime_need)} in total family needs.`,
+        description: `Based on your DIME calculation, there is a protection gap of ${formatCurrency(metrics.protection_gap)}.`,
+        impact: `Your total family needs are estimated at ${formatCurrency(metrics.dime_need)}.`,
         nextSteps: [
-          'Consider term life insurance for immediate, cost-effective coverage',
-          'Evaluate permanent life insurance for long-term wealth building',
-          'Review beneficiary designations on all policies'
-        ],
-        estimatedCost: 'From $50-200/month depending on age and health'
-      });
-    }
-
-    // Liquidity recommendations
-    const targetLiquidityMonths = 6; // Default 6 months emergency fund
-    if (metrics.liquidity_runway_months < targetLiquidityMonths) {
-      recommendations.push({
-        id: 'liquidity-shortfall',
-        title: 'Increase Emergency Fund',
-        priority: 'medium',
-        category: 'Liquidity',
-        description: `Current liquidity runway of ${formatPercentage(metrics.liquidity_runway_months, 1)} months falls short of ${targetLiquidityMonths}-month target.`,
-        impact: 'Adequate emergency fund prevents forced asset sales during market downturns.',
-        nextSteps: [
-          `Build emergency fund to ${formatCurrency((incomeData.fixed_expenses + incomeData.variable_expenses) * targetLiquidityMonths)}`,
-          'Consider high-yield savings accounts or money market funds',
-          'Automate monthly transfers to emergency fund'
-        ]
-      });
-    }
-
-    // Tax bucket optimization
-    if (metrics.tax_bucket_never_pct < 20) {
-      recommendations.push({
-        id: 'tax-free-optimization',
-        title: 'Optimize Tax-Free Bucket Allocation',
-        priority: 'medium',
-        category: 'Tax Strategy',
-        description: `Only ${formatPercentage(metrics.tax_bucket_never_pct)}% of assets are in tax-free vehicles, limiting long-term growth potential.`,
-        impact: 'Tax-free growth can significantly reduce lifetime tax burden and provide sequence-of-returns protection.',
-        nextSteps: [
-          'Maximize Roth IRA contributions via backdoor if income limits apply',
-          'Consider cash value life insurance for tax-free growth and access',
-          'Evaluate HSA maximization for triple tax advantage'
-        ]
-      });
-    }
-
-    // Concentration risk
-    const concentrationThreshold = 15; // Default 15% threshold
-    if (metrics.top_concentration_pct > concentrationThreshold) {
-      recommendations.push({
-        id: 'concentration-risk',
-        title: 'Reduce Concentration Risk',
-        priority: 'high',
-        category: 'Diversification',
-        description: `Top holding represents ${formatPercentage(metrics.top_concentration_pct)}% of portfolio, exceeding ${formatPercentage(concentrationThreshold)}% threshold.`,
-        impact: 'Diversification reduces single-asset risk and improves risk-adjusted returns.',
-        nextSteps: [
-          'Gradually reduce concentrated position over 12-24 months',
-          'Use tax-loss harvesting to minimize tax impact',
-          'Reinvest proceeds in diversified index funds or ETFs'
-        ]
-      });
-    }
-
-    // Retirement gap
-    if (metrics.retirement_gap_mo > 1000) {
-      recommendations.push({
-        id: 'retirement-shortfall',
-        title: 'Address Retirement Income Gap',
-        priority: 'high',
-        category: 'Longevity',
-        description: `Projected monthly retirement income shortfall of ${formatCurrency(metrics.retirement_gap_mo)}.`,
-        impact: 'Additional savings and income planning needed to maintain lifestyle in retirement.',
-        nextSteps: [
-          'Increase retirement plan contributions by at least 2% annually',
-          'Consider deferred annuity for guaranteed income floor',
-          'Evaluate working 1-2 additional years to improve retirement security'
+          'Review your current life insurance coverage',
+          'Discuss coverage options with a licensed insurance agent',
+          'Consider your family\'s long-term financial security needs'
         ]
       });
     }
