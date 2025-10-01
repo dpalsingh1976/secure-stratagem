@@ -46,8 +46,10 @@ const Footer = () => {
             {/* Company info */}
             <div className="lg:col-span-2">
               <div className="flex items-center gap-2 mb-6">
-                <Shield className="w-8 h-8 text-accent" />
-                <span className="text-2xl font-bold font-heading">Smart Risk Analyzer</span>
+                <div className="p-1.5 bg-gradient-primary rounded-lg">
+                  <Shield className="w-7 h-7 text-white" />
+                </div>
+                <span className="text-2xl font-bold font-heading">Secure Future Planner</span>
               </div>
               <p className="text-gray-300 mb-6 leading-relaxed">
                 Advanced financial risk assessment platform helping families identify 
@@ -100,7 +102,7 @@ const Footer = () => {
           <div className="border-t border-gray-700 mt-12 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="text-gray-400 text-sm">
-                © 2024 Smart Risk Analyzer. All rights reserved.
+                © 2025 Secure Future Planner. All rights reserved.
               </div>
               <div className="flex items-center gap-6 text-sm text-gray-400">
                 <a href="#" className="hover:text-accent transition-colors">Privacy Policy</a>
