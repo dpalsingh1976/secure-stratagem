@@ -271,7 +271,7 @@ export function ReportModal({
                         <p className="text-sm text-green-700 mb-2">10 × Annual Income (Standard DIME)</p>
                         <p className="text-2xl font-bold text-green-900">
                           {formatCurrency(
-                            (incomeData.w2_income + incomeData.business_income) * 12 * 10
+                            (incomeData.w2_income + incomeData.business_income) * 10
                           )}
                         </p>
                       </CardContent>
