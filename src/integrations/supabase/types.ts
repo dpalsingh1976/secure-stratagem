@@ -883,6 +883,18 @@ export type Database = {
         Args: { "": string } | { "": unknown }
         Returns: unknown
       }
+      get_report_by_public_link: {
+        Args: { _public_link_id: string }
+        Returns: {
+          client_id: string
+          created_at: string | null
+          id: string
+          pdf_url: string | null
+          public_link_id: string | null
+          report_jsonb: Json
+          updated_at: string | null
+        }[]
+      }
       halfvec_avg: {
         Args: { "": number[] }
         Returns: unknown
