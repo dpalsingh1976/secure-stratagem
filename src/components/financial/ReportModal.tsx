@@ -196,7 +196,7 @@ export function ReportModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="max-w-6xl h-[90vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -220,8 +220,8 @@ export function ReportModal({
           </div>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+          <TabsList className="grid w-full grid-cols-5 flex-shrink-0">
             <TabsTrigger value="summary">Summary</TabsTrigger>
             <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
             <TabsTrigger value="tax-buckets">Tax Buckets</TabsTrigger>
@@ -229,7 +229,7 @@ export function ReportModal({
             <TabsTrigger value="appendix">Appendix</TabsTrigger>
           </TabsList>
 
-          <div className="overflow-y-auto flex-1 mt-4">
+          <div className="overflow-y-auto flex-1 mt-4 pr-2">
             <TabsContent value="summary" className="space-y-6">
               {/* DIME Calculation Summary - Prominent Display */}
               <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
@@ -249,11 +249,15 @@ export function ReportModal({
                       <CardContent className="pt-6">
                         <div className="flex items-center gap-3 mb-2">
                           <DollarSign className="w-6 h-6 text-blue-600" />
-                          <h4 className="font-bold text-blue-900">Debt</h4>
+                          <h4 className="font-bold text-blue-900">Debt (Non-Mortgage)</h4>
                         </div>
-                        <p className="text-sm text-blue-700 mb-2">All outstanding liabilities</p>
+                        <p className="text-sm text-blue-700 mb-2">Credit cards, auto loans, etc.</p>
                         <p className="text-2xl font-bold text-blue-900">
-                          {formatCurrency(liabilities.reduce((sum, l) => sum + l.balance, 0))}
+                          {formatCurrency(
+                            liabilities
+                              .filter(l => l.type !== 'mortgage_primary' && l.type !== 'mortgage_rental')
+                              .reduce((sum, l) => sum + l.balance, 0)
+                          )}
                         </p>
                       </CardContent>
                     </Card>
@@ -264,9 +268,12 @@ export function ReportModal({
                           <TrendingUp className="w-6 h-6 text-green-600" />
                           <h4 className="font-bold text-green-900">Income Replacement</h4>
                         </div>
-                        <p className="text-sm text-green-700 mb-2">10 years of annual income</p>
+                        <p className="text-sm text-green-700 mb-2">80% × Annual Income × Years</p>
                         <p className="text-2xl font-bold text-green-900">
-                          {formatCurrency((incomeData.w2_income + incomeData.business_income) * 10)}
+                          {formatCurrency(
+                            (incomeData.w2_income + incomeData.business_income) * 12 * 0.8 * 
+                            Math.min(Math.max(0, profileData.retirement_age - new Date().getFullYear() + new Date(profileData.dob).getFullYear()), 10)
+                          )}
                         </p>
                       </CardContent>
                     </Card>
@@ -277,9 +284,13 @@ export function ReportModal({
                           <Shield className="w-6 h-6 text-purple-600" />
                           <h4 className="font-bold text-purple-900">Mortgage Balance</h4>
                         </div>
-                        <p className="text-sm text-purple-700 mb-2">Primary residence debt</p>
+                        <p className="text-sm text-purple-700 mb-2">Primary & rental property mortgages</p>
                         <p className="text-2xl font-bold text-purple-900">
-                          {formatCurrency(liabilities.find(l => l.type === 'mortgage_primary')?.balance || 0)}
+                          {formatCurrency(
+                            liabilities
+                              .filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental')
+                              .reduce((sum, l) => sum + l.balance, 0)
+                          )}
                         </p>
                       </CardContent>
                     </Card>
@@ -290,9 +301,9 @@ export function ReportModal({
                           <AlertTriangle className="w-6 h-6 text-orange-600" />
                           <h4 className="font-bold text-orange-900">Education & Final Expenses</h4>
                         </div>
-                        <p className="text-sm text-orange-700 mb-2">Future obligations</p>
+                        <p className="text-sm text-orange-700 mb-2">{profileData.dependents} dependents + final costs</p>
                         <p className="text-2xl font-bold text-orange-900">
-                          {formatCurrency(15000)}
+                          {formatCurrency(profileData.dependents * 100000 + 15000)}
                         </p>
                       </CardContent>
                     </Card>

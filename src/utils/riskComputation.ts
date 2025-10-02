@@ -63,16 +63,27 @@ export const computeRiskMetrics = async (
   const taxBucketNeverPct = totalAssets > 0 ? (taxBuckets.TAX_NEVER / totalAssets) * 100 : 0;
 
   // Calculate DIME method life insurance need
-  const totalDebt = totalLiabilities;
-  const annualIncome = (incomeData.w2_income + incomeData.business_income) * 12;
-  const incomeReplacementYears = Math.max(0, profileData.retirement_age - getCurrentAge(profileData.dob));
-  const incomeReplacement = annualIncome * incomeReplacementYears * 0.8; // 80% replacement
+  // D = Debt (excluding mortgage to avoid double counting)
+  // I = Income replacement (years until retirement × annual income × replacement ratio)
+  // M = Mortgage balance
+  // E = Education & final expenses
+  
   const mortgageBalance = liabilities
     .filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental')
     .reduce((sum, l) => sum + l.balance, 0);
-  const educationExpenses = profileData.dependents * 50000; // Estimate $50k per dependent
-
-  const dimeNeed = totalDebt + incomeReplacement + mortgageBalance + educationExpenses;
+  
+  const nonMortgageDebt = liabilities
+    .filter(l => l.type !== 'mortgage_primary' && l.type !== 'mortgage_rental')
+    .reduce((sum, l) => sum + l.balance, 0);
+  
+  const annualIncome = (incomeData.w2_income + incomeData.business_income) * 12;
+  const yearsToRetirement = Math.max(0, profileData.retirement_age - getCurrentAge(profileData.dob));
+  const incomeReplacement = annualIncome * 0.8 * Math.min(yearsToRetirement, 10); // 80% replacement, cap at 10 years
+  
+  const finalExpenses = 15000; // Funeral and final expenses
+  const educationExpenses = profileData.dependents * 100000; // $100k per dependent for education
+  
+  const dimeNeed = nonMortgageDebt + incomeReplacement + mortgageBalance + educationExpenses + finalExpenses;
   const existingLifeInsurance = protectionData.term_life_coverage + protectionData.permanent_life_db;
   const protectionGap = Math.max(0, dimeNeed - existingLifeInsurance - liquidAssets);
 
@@ -101,9 +112,9 @@ export const computeRiskMetrics = async (
   const taxableAssets = taxBuckets.TAX_NOW;
   const avgTaxRate = 0.22; // Assume 22% average tax rate
   const avgReturn = 0.06; // 6% average return
-  const yearsToRetirement = Math.max(1, profileData.retirement_age - getCurrentAge(profileData.dob));
+  // Reuse yearsToRetirement from above (already calculated at line 80)
   
-  const lifetimeTaxDragEst = taxableAssets * avgReturn * avgTaxRate * yearsToRetirement;
+  const lifetimeTaxDragEst = taxableAssets * avgReturn * avgTaxRate * Math.max(1, yearsToRetirement);
 
   // Calculate risk scores (0-100 scale)
   const protectionScore = calculateProtectionScore(protectionGap, dimeNeed, disabilityGap, ltcGap);
