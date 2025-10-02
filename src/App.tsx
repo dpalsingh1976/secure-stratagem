@@ -21,6 +21,7 @@ import AnnuityCalculator from "./pages/AnnuityCalculator";
 import LongevityCalculator from "./pages/LongevityCalculator";
 import InflationStressTest from "./pages/InflationStressTest";
 import About from "./pages/About";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/longevity-calculator" element={<LongevityCalculator />} />
             <Route path="/inflation-stress-test" element={<InflationStressTest />} />
             <Route path="/about" element={<About />} />
+            <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
