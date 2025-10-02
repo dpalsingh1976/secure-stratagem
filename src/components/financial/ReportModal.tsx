@@ -10,6 +10,7 @@ import { Download, Share2, AlertTriangle, CheckCircle, Info, TrendingUp, Trendin
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency, formatPercentage } from '@/utils/riskComputation';
+import jsPDF from 'jspdf';
 import type { 
   ComputedMetrics,
   ProfileGoalsData,
@@ -185,7 +186,172 @@ export function ReportModal({
   const exportToPDF = async () => {
     setIsExporting(true);
     try {
-      // Save report data first (aligned to DIME)
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      let yPos = margin;
+
+      // Helper function to add new page if needed
+      const checkPageBreak = (height: number) => {
+        if (yPos + height > pageHeight - margin) {
+          pdf.addPage();
+          yPos = margin;
+          return true;
+        }
+        return false;
+      };
+
+      // Header
+      pdf.setFillColor(41, 128, 185);
+      pdf.rect(0, 0, pageWidth, 40, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(22);
+      pdf.text('Financial Risk Assessment Report', margin, 20);
+      pdf.setFontSize(12);
+      pdf.text(`${profileData.name_first} ${profileData.name_last}`, margin, 30);
+      pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - margin, 30, { align: 'right' });
+      
+      yPos = 50;
+      pdf.setTextColor(0, 0, 0);
+
+      // DIME Analysis Section
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('DIME Life Insurance Needs Analysis', margin, yPos);
+      yPos += 10;
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      
+      // DIME Components
+      const dimeData = [
+        ['Component', 'Amount'],
+        ['Debt (Non-Mortgage) + Final Expenses', formatCurrency(DIME.nonMortgageDebt + DIME.FINAL_EXPENSES)],
+        ['Income Replacement (10 years)', formatCurrency(DIME.incomeReplacement)],
+        ['Mortgage Balance', formatCurrency(DIME.mortgageBalance)],
+        ['Education Expenses', formatCurrency(DIME.education)],
+        ['', ''],
+        ['Total DIME Need', formatCurrency(DIME.dime_need)],
+        ['Current Coverage', formatCurrency(DIME.currentCoverage)],
+        ['Protection Gap', formatCurrency(DIME.protection_gap)]
+      ];
+
+      dimeData.forEach((row, index) => {
+        checkPageBreak(8);
+        if (index === 0 || index === 6) {
+          pdf.setFont('helvetica', 'bold');
+        } else {
+          pdf.setFont('helvetica', 'normal');
+        }
+        pdf.text(row[0], margin, yPos);
+        pdf.text(row[1], pageWidth - margin, yPos, { align: 'right' });
+        yPos += 7;
+        if (index === 4 || index === 8) {
+          pdf.line(margin, yPos, pageWidth - margin, yPos);
+          yPos += 5;
+        }
+      });
+
+      // Overall Risk Score
+      checkPageBreak(30);
+      yPos += 10;
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Overall Risk Assessment', margin, yPos);
+      yPos += 10;
+
+      pdf.setFontSize(12);
+      pdf.text(`Risk Score: ${metrics.scores_jsonb.overall}/100`, margin, yPos);
+      pdf.text(`Level: ${getRiskLevel(metrics.scores_jsonb.overall).label}`, margin, yPos + 7);
+      yPos += 20;
+
+      // Key Metrics
+      pdf.setFontSize(14);
+      pdf.text('Key Financial Metrics', margin, yPos);
+      yPos += 8;
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      const metricsData = [
+        ['Net Worth', formatCurrency(metrics.net_worth)],
+        ['Liquidity Runway', `${metrics.liquidity_runway_months} months`],
+        ['Tax-Never Allocation', `${metrics.tax_bucket_never_pct}%`],
+        ['Retirement Gap', formatCurrency(metrics.retirement_gap_mo)]
+      ];
+
+      metricsData.forEach(([label, value]) => {
+        checkPageBreak(7);
+        pdf.text(`${label}:`, margin, yPos);
+        pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
+        yPos += 7;
+      });
+
+      // Recommendations
+      checkPageBreak(30);
+      yPos += 10;
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Recommendations', margin, yPos);
+      yPos += 10;
+
+      const recommendations = generateRecommendations();
+      recommendations.forEach((rec, index) => {
+        checkPageBreak(25);
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${index + 1}. ${rec.title}`, margin, yPos);
+        yPos += 7;
+        
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        const descLines = pdf.splitTextToSize(rec.description, pageWidth - 2 * margin);
+        descLines.forEach((line: string) => {
+          checkPageBreak(7);
+          pdf.text(line, margin + 5, yPos);
+          yPos += 5;
+        });
+        yPos += 5;
+      });
+
+      // Tax Buckets
+      checkPageBreak(40);
+      yPos += 10;
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Tax Diversification', margin, yPos);
+      yPos += 10;
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      const taxData = [
+        ['Tax Now (Taxable)', `${metrics.tax_bucket_now_pct}%`],
+        ['Tax Later (Tax-Deferred)', `${metrics.tax_bucket_later_pct}%`],
+        ['Tax Never (Tax-Free)', `${metrics.tax_bucket_never_pct}%`]
+      ];
+
+      taxData.forEach(([label, value]) => {
+        checkPageBreak(7);
+        pdf.text(label, margin, yPos);
+        pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
+        yPos += 7;
+      });
+
+      // Footer
+      const pageCount = pdf.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(128, 128, 128);
+        pdf.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+        pdf.text('The Prosperity Financial', margin, pageHeight - 10);
+        pdf.text('theprosperityfinancial.com', pageWidth - margin, pageHeight - 10, { align: 'right' });
+      }
+
+      // Save the PDF
+      pdf.save(`Financial-Assessment-${profileData.name_last}-${new Date().toISOString().split('T')[0]}.pdf`);
+
+      // Also save to database
       const reportData = {
         summary: {
           client_name: `${profileData.name_first} ${profileData.name_last}`,
@@ -213,25 +379,23 @@ export function ReportModal({
         }
       };
 
-      const { error } = await supabase
+      await supabase
         .from('reports')
         .insert([{
           client_id: clientId,
           report_jsonb: reportData as any,
-          pdf_url: null // Would be generated by a background service
+          pdf_url: null
         }]);
 
-      if (error) throw error;
-
       toast({
-        title: "Report saved",
-        description: "Risk assessment report has been saved successfully."
+        title: "PDF Generated",
+        description: "Your financial assessment report has been downloaded."
       });
     } catch (error) {
-      console.error('Error exporting report:', error);
+      console.error('Error generating PDF:', error);
       toast({
         title: "Export failed",
-        description: "There was an error exporting the report.",
+        description: "There was an error generating the PDF report.",
         variant: "destructive"
       });
     } finally {
