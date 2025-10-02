@@ -74,7 +74,7 @@ const RiskScoreModal = ({ children, riskScores, riskInputs }: RiskScoreModalProp
     if (topDriver.category === "Life Insurance Gap") {
       const need = riskInputs.debtsTotal + riskInputs.mortgageBalance + riskInputs.finalExpensesEstimate + 
                    riskInputs.educationFundNeeded + 
-                   (riskInputs.incomeReplacementYears * (riskInputs.annualIncome * (1 - riskInputs.spouseIncomeOffsetPct / 100)));
+                   (riskInputs.annualIncome * 10); // Standard DIME: 10x annual income
       const available = riskInputs.currentLifeCoverage + riskInputs.liquidAssets;
       const gap = Math.max(0, need - available);
       const per100k = need > 0 ? Math.round((100000 / need) * 100) : 0;
@@ -287,10 +287,10 @@ const RiskScoreModal = ({ children, riskScores, riskInputs }: RiskScoreModalProp
                         <div className="relative w-full bg-red-200 dark:bg-red-900/30 rounded-full h-4 overflow-hidden shadow-inner">
                           <div 
                             className="bg-gradient-to-r from-green-500 to-green-600 h-full transition-all duration-700 ease-out" 
-                            style={{ width: `${Math.min(100, (riskInputs.currentLifeCoverage + riskInputs.liquidAssets) / (riskInputs.debtsTotal + riskInputs.mortgageBalance + riskInputs.finalExpensesEstimate + riskInputs.educationFundNeeded + (riskInputs.incomeReplacementYears * riskInputs.annualIncome)) * 100)}%` }}
+                            style={{ width: `${Math.min(100, (riskInputs.currentLifeCoverage + riskInputs.liquidAssets) / (riskInputs.debtsTotal + riskInputs.mortgageBalance + riskInputs.finalExpensesEstimate + riskInputs.educationFundNeeded + (riskInputs.annualIncome * 10)) * 100)}%` }}
                           />
                           <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow">
-                            {Math.round((riskInputs.currentLifeCoverage + riskInputs.liquidAssets) / (riskInputs.debtsTotal + riskInputs.mortgageBalance + riskInputs.finalExpensesEstimate + riskInputs.educationFundNeeded + (riskInputs.incomeReplacementYears * riskInputs.annualIncome)) * 100)}% Covered
+                            {Math.round((riskInputs.currentLifeCoverage + riskInputs.liquidAssets) / (riskInputs.debtsTotal + riskInputs.mortgageBalance + riskInputs.finalExpensesEstimate + riskInputs.educationFundNeeded + (riskInputs.annualIncome * 10)) * 100)}% Covered
                           </div>
                         </div>
                       </div>

@@ -32,7 +32,7 @@ export const calculateLifeInsuranceRisk = (inputs: RiskInputs): { exposurePct: n
     inputs.mortgageBalance + 
     inputs.finalExpensesEstimate + 
     inputs.educationFundNeeded + 
-    (inputs.incomeReplacementYears * (inputs.annualIncome * (1 - inputs.spouseIncomeOffsetPct / 100)));
+    (inputs.annualIncome * 10); // Standard DIME: 10x annual income
 
   const available = inputs.currentLifeCoverage + inputs.liquidAssets;
   const gap = Math.max(0, need - available);
