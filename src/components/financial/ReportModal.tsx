@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,6 +56,54 @@ export function ReportModal({
   const [activeTab, setActiveTab] = useState('summary');
   const [isExporting, setIsExporting] = useState(false);
 
+  // ----------------------------
+  // ONE SOURCE OF TRUTH: DIME
+  // ----------------------------
+  const DIME = useMemo(() => {
+    const FINAL_EXPENSES = 15000;   // keep final expenses in D
+    const INCOME_YEARS   = 10;      // standard DIME
+    const REPLACEMENT_RT = 1.0;     // 100% replacement (set to 0.8 if desired)
+    const EDU_PER_CHILD  = 100000;  // pick a number and be consistent
+
+    const nonMortgageDebt = liabilities
+      .filter(l => l.type !== 'mortgage_primary' && l.type !== 'mortgage_rental')
+      .reduce((sum, l) => sum + (l.balance || 0), 0);
+
+    const mortgageBalance = liabilities
+      .filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental')
+      .reduce((sum, l) => sum + (l.balance || 0), 0);
+
+    const annualIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
+    const incomeReplacement = annualIncome * INCOME_YEARS * REPLACEMENT_RT; // annual
+
+    const education = (profileData.dependents || 0) * EDU_PER_CHILD;
+
+    const dime_need =
+      nonMortgageDebt +
+      FINAL_EXPENSES +
+      incomeReplacement +
+      mortgageBalance +
+      education;
+
+    const currentCoverage =
+      (protectionData.term_life_coverage || 0) +
+      (protectionData.permanent_life_db || 0);
+
+    const protection_gap = Math.max(0, dime_need - currentCoverage);
+
+    return {
+      FINAL_EXPENSES,
+      EDU_PER_CHILD,
+      nonMortgageDebt,
+      mortgageBalance,
+      incomeReplacement,
+      education,
+      dime_need,
+      currentCoverage,
+      protection_gap
+    };
+  }, [liabilities, incomeData, profileData, protectionData]);
+
   const getRiskLevel = (score: number) => {
     if (score >= 80) return { 
       label: 'Critical', 
@@ -87,9 +135,9 @@ export function ReportModal({
   const generateRecommendations = (): RiskRecommendation[] => {
     const recommendations: RiskRecommendation[] = [];
     
-    // General recommendation based on DIME assessment
+    // Use DIME (single source) instead of metrics for consistency
     const totalGaps = [
-      metrics.protection_gap > 0,
+      DIME.protection_gap > 0,
       metrics.liquidity_runway_months < 6,
       metrics.tax_bucket_never_pct < 20,
       metrics.retirement_gap_mo > 1000
@@ -112,15 +160,14 @@ export function ReportModal({
       });
     }
 
-    // Add specific gap information without product recommendations
-    if (metrics.protection_gap > 0) {
+    if (DIME.protection_gap > 0) {
       recommendations.push({
         id: 'protection-gap-info',
         title: 'Life Insurance Coverage Gap Identified',
         priority: 'high',
         category: 'Protection',
-        description: `Based on your DIME calculation, there is a protection gap of ${formatCurrency(metrics.protection_gap)}.`,
-        impact: `Your total family needs are estimated at ${formatCurrency(metrics.dime_need)}.`,
+        description: `Based on your DIME calculation, there is a protection gap of ${formatCurrency(DIME.protection_gap)}.`,
+        impact: `Your total family needs are estimated at ${formatCurrency(DIME.dime_need)}.`,
         nextSteps: [
           'Review your current life insurance coverage',
           'Discuss coverage options with a licensed insurance agent',
@@ -138,7 +185,7 @@ export function ReportModal({
   const exportToPDF = async () => {
     setIsExporting(true);
     try {
-      // Save report data first
+      // Save report data first (aligned to DIME)
       const reportData = {
         summary: {
           client_name: `${profileData.name_first} ${profileData.name_last}`,
@@ -146,7 +193,7 @@ export function ReportModal({
           overall_risk_score: metrics.scores_jsonb.overall,
           net_worth: metrics.net_worth,
           key_metrics: {
-            protection_gap: metrics.protection_gap,
+            protection_gap: DIME.protection_gap,
             liquidity_months: metrics.liquidity_runway_months,
             concentration_pct: metrics.top_concentration_pct,
             retirement_gap: metrics.retirement_gap_mo
@@ -159,8 +206,8 @@ export function ReportModal({
           tax_never: { percent: metrics.tax_bucket_never_pct, amount: assets.filter(a => a.tax_wrapper === 'TAX_NEVER').reduce((sum, a) => sum + a.current_value, 0) }
         },
         coverage_analysis: {
-          dime_need: metrics.dime_need,
-          protection_gap: metrics.protection_gap,
+          dime_need: DIME.dime_need,
+          protection_gap: DIME.protection_gap,
           disability_gap: metrics.disability_gap,
           ltc_gap: metrics.ltc_gap
         }
@@ -251,13 +298,9 @@ export function ReportModal({
                           <DollarSign className="w-6 h-6 text-blue-600" />
                           <h4 className="font-bold text-blue-900">Debt (Non-Mortgage)</h4>
                         </div>
-                        <p className="text-sm text-blue-700 mb-2">Credit cards, auto loans, etc.</p>
+                        <p className="text-sm text-blue-700 mb-2">Credit cards, auto loans, etc. + final expenses</p>
                         <p className="text-2xl font-bold text-blue-900">
-                          {formatCurrency(
-                            liabilities
-                              .filter(l => l.type !== 'mortgage_primary' && l.type !== 'mortgage_rental')
-                              .reduce((sum, l) => sum + l.balance, 0)
-                          )}
+                          {formatCurrency(DIME.nonMortgageDebt + DIME.FINAL_EXPENSES)}
                         </p>
                       </CardContent>
                     </Card>
@@ -268,11 +311,9 @@ export function ReportModal({
                           <TrendingUp className="w-6 h-6 text-green-600" />
                           <h4 className="font-bold text-green-900">Income Replacement</h4>
                         </div>
-                        <p className="text-sm text-green-700 mb-2">10 × Annual Income (Standard DIME)</p>
+                        <p className="text-sm text-green-700 mb-2">10 × Annual Income (100% replacement)</p>
                         <p className="text-2xl font-bold text-green-900">
-                          {formatCurrency(
-                            (incomeData.w2_income + incomeData.business_income) * 10
-                          )}
+                          {formatCurrency(DIME.incomeReplacement)}
                         </p>
                       </CardContent>
                     </Card>
@@ -285,11 +326,7 @@ export function ReportModal({
                         </div>
                         <p className="text-sm text-purple-700 mb-2">Primary & rental property mortgages</p>
                         <p className="text-2xl font-bold text-purple-900">
-                          {formatCurrency(
-                            liabilities
-                              .filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental')
-                              .reduce((sum, l) => sum + l.balance, 0)
-                          )}
+                          {formatCurrency(DIME.mortgageBalance)}
                         </p>
                       </CardContent>
                     </Card>
@@ -302,7 +339,7 @@ export function ReportModal({
                         </div>
                         <p className="text-sm text-orange-700 mb-2">{profileData.dependents} dependents + final costs</p>
                         <p className="text-2xl font-bold text-orange-900">
-                          {formatCurrency(profileData.dependents * 100000 + 15000)}
+                          {formatCurrency(DIME.education + DIME.FINAL_EXPENSES)}
                         </p>
                       </CardContent>
                     </Card>
@@ -316,7 +353,7 @@ export function ReportModal({
                         <p className="text-white/90 text-sm">Recommended life insurance coverage</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-4xl font-bold">{formatCurrency(metrics.dime_need)}</p>
+                        <p className="text-4xl font-bold">{formatCurrency(DIME.dime_need)}</p>
                       </div>
                     </div>
                   </div>
@@ -327,18 +364,18 @@ export function ReportModal({
                       <CardContent className="pt-6 text-center">
                         <p className="text-sm text-blue-700 mb-1">Current Coverage</p>
                         <p className="text-2xl font-bold text-blue-900">
-                          {formatCurrency(protectionData.term_life_coverage + protectionData.permanent_life_db)}
+                          {formatCurrency(DIME.currentCoverage)}
                         </p>
                       </CardContent>
                     </Card>
 
-                    <Card className={`border-2 ${metrics.protection_gap > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                    <Card className={`border-2 ${DIME.protection_gap > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
                       <CardContent className="pt-6 text-center">
-                        <p className={`text-sm mb-1 ${metrics.protection_gap > 0 ? 'text-red-700' : 'text-green-700'}`}>
+                        <p className={`text-sm mb-1 ${DIME.protection_gap > 0 ? 'text-red-700' : 'text-green-700'}`}>
                           Protection Gap
                         </p>
-                        <p className={`text-2xl font-bold ${metrics.protection_gap > 0 ? 'text-red-900' : 'text-green-900'}`}>
-                          {formatCurrency(Math.max(0, metrics.protection_gap))}
+                        <p className={`text-2xl font-bold ${DIME.protection_gap > 0 ? 'text-red-900' : 'text-green-900'}`}>
+                          {formatCurrency(DIME.protection_gap)}
                         </p>
                       </CardContent>
                     </Card>
@@ -347,7 +384,7 @@ export function ReportModal({
                       <CardContent className="pt-6 text-center">
                         <p className="text-sm text-green-700 mb-1">Coverage Ratio</p>
                         <p className="text-2xl font-bold text-green-900">
-                          {metrics.dime_need > 0 ? Math.round(((protectionData.term_life_coverage + protectionData.permanent_life_db) / metrics.dime_need) * 100) : 0}%
+                          {DIME.dime_need > 0 ? Math.round((DIME.currentCoverage / DIME.dime_need) * 100) : 0}%
                         </p>
                       </CardContent>
                     </Card>
@@ -360,7 +397,7 @@ export function ReportModal({
                       <div>
                         <h4 className="font-semibold text-amber-900 mb-2">Financial Planning Recommendation</h4>
                         <p className="text-amber-800">
-                          Based on your DIME inputs, {metrics.protection_gap > 0 ? 'you may have a gap.' : 'your coverage appears adequate.'} 
+                          Based on your DIME inputs, {DIME.protection_gap > 0 ? 'you may have a gap.' : 'your coverage appears adequate.'} 
                           {' '}For a full strategy solution, please consult a licensed financial professional.
                         </p>
                       </div>
@@ -692,10 +729,10 @@ export function ReportModal({
                           <span>Debts & Final Expenses</span>
                         </div>
                         <div className="text-4xl font-black mb-2">
-                          {formatCurrency(liabilities.reduce((sum, l) => sum + l.balance, 0) + 15000)}
+                          {formatCurrency(DIME.nonMortgageDebt + DIME.FINAL_EXPENSES)}
                         </div>
                         <div className="text-blue-100 text-sm">
-                          All debts + $15,000 final expenses
+                          All non-mortgage debts + ${DIME.FINAL_EXPENSES.toLocaleString()} final expenses
                         </div>
                       </div>
                       
@@ -704,11 +741,14 @@ export function ReportModal({
                           <span className="text-3xl">I</span>
                           <span>Income Replacement</span>
                         </div>
-                        <div className="text-4xl font-black mb-2">
-                          {formatCurrency((incomeData.w2_income + incomeData.business_income) * 10 * 0.8 / 12)}
+                        <div className="text-4xl font-black mb-1">
+                          {formatCurrency(DIME.incomeReplacement)}
+                        </div>
+                        <div className="text-purple-100 text-xs">
+                          ≈ {formatCurrency(DIME.incomeReplacement / 12)}/mo (display only)
                         </div>
                         <div className="text-purple-100 text-sm">
-                          10 years of income at 80% replacement
+                          10 years of income at 100% replacement
                         </div>
                       </div>
                       
@@ -718,7 +758,7 @@ export function ReportModal({
                           <span>Mortgage Balance</span>
                         </div>
                         <div className="text-4xl font-black mb-2">
-                          {formatCurrency(liabilities.filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental').reduce((sum, l) => sum + l.balance, 0))}
+                          {formatCurrency(DIME.mortgageBalance)}
                         </div>
                         <div className="text-green-100 text-sm">
                           Outstanding home loan balance
@@ -731,10 +771,10 @@ export function ReportModal({
                           <span>Education Expenses</span>
                         </div>
                         <div className="text-4xl font-black mb-2">
-                          {formatCurrency(profileData.dependents * 50000)}
+                          {formatCurrency(DIME.education)}
                         </div>
                         <div className="text-orange-100 text-sm">
-                          $50,000 per child for education
+                          ${DIME.EDU_PER_CHILD.toLocaleString()} per dependent
                         </div>
                       </div>
                     </div>
@@ -746,14 +786,14 @@ export function ReportModal({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="text-center p-8 bg-blue-50 rounded-xl border-2 border-blue-200 shadow-md">
                         <div className="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide">Total Need (DIME)</div>
-                        <div className="text-5xl font-black text-blue-900 mb-2">{formatCurrency(metrics.dime_need)}</div>
+                        <div className="text-5xl font-black text-blue-900 mb-2">{formatCurrency(DIME.dime_need)}</div>
                         <div className="text-xs text-blue-600">What your family needs</div>
                       </div>
                       
                       <div className="text-center p-8 bg-green-50 rounded-xl border-2 border-green-200 shadow-md">
                         <div className="text-sm font-semibold text-green-700 mb-2 uppercase tracking-wide">Current Coverage</div>
                         <div className="text-5xl font-black text-green-900 mb-2">
-                          {formatCurrency(protectionData.term_life_coverage + protectionData.permanent_life_db)}
+                          {formatCurrency(DIME.currentCoverage)}
                         </div>
                         <div className="text-xs text-green-600">What you have now</div>
                       </div>
@@ -763,7 +803,7 @@ export function ReportModal({
                           <AlertTriangle className="h-4 w-4" />
                           Protection Gap
                         </div>
-                        <div className="text-5xl font-black text-red-900 mb-2">{formatCurrency(metrics.protection_gap)}</div>
+                        <div className="text-5xl font-black text-red-900 mb-2">{formatCurrency(DIME.protection_gap)}</div>
                         <div className="text-xs text-red-700 font-semibold">Additional coverage needed</div>
                       </div>
                     </div>
@@ -776,8 +816,8 @@ export function ReportModal({
                       What This Means For You
                     </h4>
                     <p className="text-lg text-amber-900 leading-relaxed mb-4">
-                      {metrics.protection_gap > 0 
-                        ? `Based on your DIME calculation, you may have a protection gap of ${formatCurrency(metrics.protection_gap)}. This means your family may not be fully protected if something happens to you.` 
+                      {DIME.protection_gap > 0 
+                        ? `Based on your DIME calculation, you may have a protection gap of ${formatCurrency(DIME.protection_gap)}. This means your family may not be fully protected if something happens to you.` 
                         : 'Based on your DIME calculation, your current life insurance coverage appears adequate for your family\'s needs.'}
                     </p>
                     <p className="text-base text-amber-800 font-semibold bg-white/50 p-4 rounded-lg">
@@ -893,7 +933,7 @@ export function ReportModal({
                       <li>• Inflation rate: 3% annually</li>
                       <li>• Life expectancy: Age 92</li>
                       <li>• Income replacement in retirement: 80%</li>
-                      <li>• Education costs: $50,000 per dependent</li>
+                      <li>• Education costs: $100,000 per dependent (shown in DIME)</li>
                     </ul>
                   </div>
 
