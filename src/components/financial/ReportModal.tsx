@@ -268,11 +268,10 @@ export function ReportModal({
                           <TrendingUp className="w-6 h-6 text-green-600" />
                           <h4 className="font-bold text-green-900">Income Replacement</h4>
                         </div>
-                        <p className="text-sm text-green-700 mb-2">80% × Annual Income × Years</p>
+                        <p className="text-sm text-green-700 mb-2">10 × Annual Income (Standard DIME)</p>
                         <p className="text-2xl font-bold text-green-900">
                           {formatCurrency(
-                            (incomeData.w2_income + incomeData.business_income) * 12 * 0.8 * 
-                            Math.min(Math.max(0, profileData.retirement_age - new Date().getFullYear() + new Date(profileData.dob).getFullYear()), 10)
+                            (incomeData.w2_income + incomeData.business_income) * 12 * 10
                           )}
                         </p>
                       </CardContent>
