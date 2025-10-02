@@ -66,7 +66,7 @@ export const computeRiskMetrics = async (
   const totalDebt = totalLiabilities;
   const annualIncome = (incomeData.w2_income + incomeData.business_income) * 12;
   const incomeReplacementYears = Math.max(0, profileData.retirement_age - getCurrentAge(profileData.dob));
-  const incomeReplacement = annualIncome * 10; // 80% replacement
+  const incomeReplacement = annualIncome * 10; // Standard DIME: 10x annual income
   const mortgageBalance = liabilities
     .filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental')
     .reduce((sum, l) => sum + l.balance, 0);
