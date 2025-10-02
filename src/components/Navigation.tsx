@@ -40,60 +40,55 @@ const Navigation = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-border shadow-sm">
+    <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
       <div className="container-financial">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="p-1.5 bg-gradient-primary rounded-lg">
-              <Shield className="w-6 h-6 text-white" />
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <div className="p-1 bg-gradient-primary rounded-md">
+              <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Secure Future Planner
+            <span className="text-lg font-bold font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent whitespace-nowrap">
+              Secure Future
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-                    item.highlight
-                      ? isActive(item.path)
-                        ? 'bg-primary text-primary-foreground shadow-md'
-                        : 'bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground'
-                      : isActive(item.path)
-                      ? 'bg-muted text-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {item.label}
-                </Link>
-              );
-            })}
+          <div className="hidden lg:flex items-center gap-0.5 flex-1 justify-center">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`px-3 py-1.5 text-sm font-medium transition-all whitespace-nowrap relative ${
+                  item.highlight
+                    ? isActive(item.path)
+                      ? 'text-primary'
+                      : 'text-foreground hover:text-primary'
+                    : isActive(item.path)
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                } ${isActive(item.path) ? 'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full' : ''}`}
+              >
+                {item.label}
+              </Link>
+            ))}
 
             {/* Calculators Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-1 text-sm font-medium">
-                  <Calculator className="w-4 h-4" />
+                <Button variant="ghost" size="sm" className="gap-1 text-sm font-medium h-8 px-3">
                   Calculators
-                  <ChevronDown className="w-3 h-3" />
+                  <ChevronDown className="w-3 h-3 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="center" className="w-64">
                 {calculatorItems.map((item) => {
                   const Icon = item.icon;
                   return (
                     <DropdownMenuItem key={item.path} asChild>
                       <Link to={item.path} className="flex items-center gap-2 cursor-pointer">
-                        <Icon className="w-4 h-4" />
-                        {item.label}
+                        <Icon className="w-4 h-4 opacity-70" />
+                        <span className="text-sm">{item.label}</span>
                       </Link>
                     </DropdownMenuItem>
                   );
@@ -102,54 +97,46 @@ const Navigation = () => {
             </DropdownMenu>
 
             {/* Strategy Items */}
-            {strategyItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                    isActive(item.path)
-                      ? 'bg-muted text-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {item.label}
-                  {item.protected && (
-                    <span className="ml-1 px-1.5 py-0.5 text-xs bg-accent text-accent-foreground rounded">
-                      Members
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+            {strategyItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`px-3 py-1.5 text-sm font-medium transition-all whitespace-nowrap relative flex items-center gap-1.5 ${
+                  isActive(item.path)
+                    ? 'text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {item.label}
+                {item.protected && (
+                  <span className="px-1.5 py-0.5 text-[10px] bg-accent text-accent-foreground rounded">
+                    Pro
+                  </span>
+                )}
+              </Link>
+            ))}
 
             {/* Other Items */}
-            {otherItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                    isActive(item.path)
-                      ? 'bg-muted text-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {item.label}
-                </Link>
-              );
-            })}
+            {otherItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`px-3 py-1.5 text-sm font-medium transition-all whitespace-nowrap relative ${
+                  isActive(item.path)
+                    ? 'text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
 
           {/* Desktop Sign In */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block shrink-0">
             <Link to="/auth">
-              <Button variant="outline" size="sm">
-                <LogIn className="w-4 h-4 mr-2" />
+              <Button variant="ghost" size="sm" className="h-8 gap-1.5">
+                <LogIn className="w-4 h-4" />
                 Sign In
               </Button>
             </Link>
