@@ -52,6 +52,7 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
   const [profileData, setProfileData] = useState<ProfileGoalsData>({
     name_first: '',
     name_last: '',
+    email: '',
     dob: '',
     state: '',
     filing_status: 'single',

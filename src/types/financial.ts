@@ -28,6 +28,7 @@ export interface Client {
   advisor_id: string;
   name_first: string;
   name_last: string;
+  email: string;
   dob: string;
   state: string;
   filing_status: FilingStatus;
@@ -180,6 +181,7 @@ export interface Report {
 export interface ProfileGoalsData {
   name_first: string;
   name_last: string;
+  email: string;
   dob: string;
   state: string;
   filing_status: FilingStatus;

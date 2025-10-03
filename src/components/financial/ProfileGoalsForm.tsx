@@ -40,8 +40,11 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
     onChange(newData);
 
     // Basic validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const isValid = newData.name_first.length > 0 && 
                    newData.name_last.length > 0 && 
+                   newData.email.length > 0 &&
+                   emailRegex.test(newData.email) &&
                    newData.dob.length > 0 && 
                    newData.state.length > 0;
     onValidationChange(isValid);
@@ -97,6 +100,17 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
                   value={data.name_last}
                   onChange={(e) => handleInputChange('name_last', e.target.value)}
                   placeholder="Enter last name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={data.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  placeholder="your.email@example.com"
                 />
               </div>
 

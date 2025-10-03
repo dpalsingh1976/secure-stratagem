@@ -258,6 +258,7 @@ export type Database = {
           advisor_id: string
           created_at: string | null
           dob: string
+          email: string | null
           filing_status: string
           household_jsonb: Json | null
           id: string
@@ -270,6 +271,7 @@ export type Database = {
           advisor_id: string
           created_at?: string | null
           dob: string
+          email?: string | null
           filing_status: string
           household_jsonb?: Json | null
           id?: string
@@ -282,6 +284,7 @@ export type Database = {
           advisor_id?: string
           created_at?: string | null
           dob?: string
+          email?: string | null
           filing_status?: string
           household_jsonb?: Json | null
           id?: string
