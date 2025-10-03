@@ -204,5 +204,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAdvisor,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
