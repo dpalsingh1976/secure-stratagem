@@ -59,6 +59,18 @@ export default function PolicyAssistant() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to upload policy documents",
+        variant: "destructive"
+      });
+      // Redirect to auth page
+      window.location.href = '/auth';
+      return;
+    }
+
     // Validate file type
     const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!validTypes.includes(file.type)) {
@@ -99,7 +111,7 @@ export default function PolicyAssistant() {
       const { data: docData, error: docError } = await supabase
         .from('documents')
         .insert({
-          user_id: user!.id,
+          user_id: user?.id || '12345678-1234-1234-1234-123456789abc',
           filename: fileName,
           original_filename: file.name,
           mime_type: file.type,
