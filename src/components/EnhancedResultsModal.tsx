@@ -242,6 +242,7 @@ ${scores.tax > 50 ? '• Estate Planning: Documentation needs updating' : ''}
       const { error } = await supabase
         .from('leads')
         .insert({
+          name: contact.name,
           email: contact.email,
           phone: contact.phone || null,
           assessment_data: data as any,
@@ -253,11 +254,16 @@ ${scores.tax > 50 ? '• Estate Planning: Documentation needs updating' : ''}
 
       if (error) throw error;
       setLeadSaved(true);
+      toast({
+        title: "Assessment Saved",
+        description: "Your financial risk assessment has been saved successfully.",
+        variant: "default"
+      });
     } catch (error) {
       console.error('Error saving lead:', error);
       toast({
-        title: "Information Saved",
-        description: "Your assessment has been saved locally.",
+        title: "Note",
+        description: "Your assessment results are displayed but couldn't be saved to the database.",
         variant: "default"
       });
     }
