@@ -5,10 +5,10 @@ import { Loader2 } from 'lucide-react';
 
 interface AdminRouteProps {
   children: ReactNode;
-  requiredRole?: 'admin' | 'advisor';
+  requiredRole?: 'admin' | 'advisor' | 'user';
 }
 
-export const AdminRoute = ({ children, requiredRole = 'advisor' }: AdminRouteProps) => {
+export const AdminRoute = ({ children, requiredRole = 'user' }: AdminRouteProps) => {
   const { user, userRole, loading, hasRole } = useAuth();
 
   if (loading) {

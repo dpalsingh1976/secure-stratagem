@@ -99,7 +99,7 @@ export default function PolicyAssistant() {
       const { data: docData, error: docError } = await supabase
         .from('documents')
         .insert({
-          user_id: user?.id || null,
+          user_id: user!.id,
           filename: fileName,
           original_filename: file.name,
           mime_type: file.type,

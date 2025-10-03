@@ -49,7 +49,11 @@ const App = () => (
               </AdminRoute>
             } />
             <Route path="/tax-bucket-estimator" element={<TaxBucketEstimator />} />
-            <Route path="/policy-assistant" element={<PolicyAssistant />} />
+            <Route path="/policy-assistant" element={
+              <AdminRoute requiredRole="user">
+                <PolicyAssistant />
+              </AdminRoute>
+            } />
             <Route path="/fna-report" element={<FNAReport />} />
             <Route path="/stress-test" element={<StressTesting />} />
             <Route path="/iul" element={<IULBanking />} />
