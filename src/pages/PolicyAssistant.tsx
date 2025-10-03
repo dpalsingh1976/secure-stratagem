@@ -5,8 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, MessageSquare, FileText, Upload, Lightbulb, Search } from 'lucide-react';
+import { ArrowLeft, MessageSquare, FileText, Upload, Lightbulb, Search, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const COMMON_QUESTIONS = [
   {
@@ -40,19 +43,127 @@ const COMMON_QUESTIONS = [
 
 export default function PolicyAssistant() {
   const { user, hasRole } = useAuth();
+  const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedDocumentId, setUploadedDocumentId] = useState<string | null>(null);
   const [question, setQuestion] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [conversation, setConversation] = useState<Array<{
     type: 'user' | 'assistant';
     content: string;
     timestamp: Date;
   }>>([]);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF or DOC file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload a file smaller than 10MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    setSelectedFile(file);
+
+    try {
+      // Upload to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `policy-documents/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Create document record
+      const { data: docData, error: docError } = await supabase
+        .from('documents')
+        .insert({
+          user_id: user?.id || null,
+          filename: fileName,
+          original_filename: file.name,
+          mime_type: file.type,
+          file_size: file.size,
+          storage_path: filePath,
+          upload_status: 'uploaded',
+          metadata: { type: 'policy_document' }
+        })
+        .select()
+        .single();
+
+      if (docError) throw docError;
+
+      setUploadedDocumentId(docData.id);
+      
+      toast({
+        title: "Document uploaded",
+        description: "Your policy document is ready for analysis"
+      });
+
+      // Auto-analyze the document
+      await analyzeDocument(docData.id, null);
+
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Failed to upload document",
+        variant: "destructive"
+      });
+      setSelectedFile(null);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const analyzeDocument = async (documentId: string, userQuestion: string | null) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-policy', {
+        body: { 
+          documentId,
+          question: userQuestion 
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        const assistantMessage = {
+          type: 'assistant' as const,
+          content: data.analysis,
+          timestamp: new Date()
+        };
+        setConversation(prev => [...prev, assistantMessage]);
+      } else {
+        throw new Error(data.error || 'Analysis failed');
+      }
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast({
+        title: "Analysis failed",
+        description: error instanceof Error ? error.message : "Failed to analyze document",
+        variant: "destructive"
+      });
     }
   };
 
@@ -61,7 +172,6 @@ export default function PolicyAssistant() {
 
     setIsProcessing(true);
     
-    // Add user question to conversation
     const userMessage = {
       type: 'user' as const,
       content: question,
@@ -70,29 +180,41 @@ export default function PolicyAssistant() {
     
     setConversation(prev => [...prev, userMessage]);
 
-    // Simulate AI processing (in real app, this would call an AI service)
-    setTimeout(() => {
-      const assistantMessage = {
-        type: 'assistant' as const,
-        content: `I understand you're asking about: "${question}". 
+    try {
+      if (uploadedDocumentId) {
+        // Analyze with document context
+        await analyzeDocument(uploadedDocumentId, question);
+      } else {
+        // Answer general question without document
+        const { data, error } = await supabase.functions.invoke('analyze-policy', {
+          body: { 
+            documentId: null,
+            question 
+          }
+        });
 
-Based on common policy documentation and industry practices, here are some key points to consider:
+        if (error) throw error;
 
-• Life insurance policies typically have a contestability period of 2 years
-• Premium payments should be made consistently to avoid policy lapse
-• Policy loans may affect the death benefit and cash value growth
-• Regular policy reviews help ensure coverage meets changing needs
-
-${selectedFile ? `I've also analyzed your uploaded document "${selectedFile.name}" and found relevant sections that may apply to your question.` : ''}
-
-Would you like me to elaborate on any specific aspect of this topic?`,
-        timestamp: new Date()
-      };
-      
-      setConversation(prev => [...prev, assistantMessage]);
+        if (data.success) {
+          const assistantMessage = {
+            type: 'assistant' as const,
+            content: data.analysis,
+            timestamp: new Date()
+          };
+          setConversation(prev => [...prev, assistantMessage]);
+        }
+      }
       setQuestion('');
+    } catch (error) {
+      console.error('Question error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process your question",
+        variant: "destructive"
+      });
+    } finally {
       setIsProcessing(false);
-    }, 2000);
+    }
   };
 
   const handlePresetQuestion = (presetQuestion: string) => {
@@ -184,6 +306,16 @@ Would you like me to elaborate on any specific aspect of this topic?`,
 
                 {/* Input Area */}
                 <div className="space-y-3">
+                  {/* Upload Alert */}
+                  {!selectedFile && (
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Upload your insurance policy document (PDF or DOC) to get AI-powered analysis of coverage, gaps, and improvement suggestions.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   {/* File Upload */}
                   <div className="flex items-center space-x-3">
                     <div className="flex-1">
@@ -191,7 +323,11 @@ Would you like me to elaborate on any specific aspect of this topic?`,
                         <div className="flex items-center space-x-2 p-2 border border-dashed border-gray-300 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors">
                           <Upload className="h-4 w-4 text-gray-500" />
                           <span className="text-sm text-gray-600">
-                            {selectedFile ? selectedFile.name : 'Upload policy document (PDF, DOC)'}
+                            {isUploading 
+                              ? 'Uploading and analyzing...' 
+                              : selectedFile 
+                                ? selectedFile.name 
+                                : 'Upload policy document (PDF, DOC)'}
                           </span>
                         </div>
                       </Label>
@@ -201,12 +337,13 @@ Would you like me to elaborate on any specific aspect of this topic?`,
                         accept=".pdf,.doc,.docx"
                         onChange={handleFileUpload}
                         className="hidden"
+                        disabled={isUploading}
                       />
                     </div>
                     {selectedFile && (
                       <Badge variant="outline">
                         <FileText className="h-3 w-3 mr-1" />
-                        Uploaded
+                        Analyzed
                       </Badge>
                     )}
                   </div>
