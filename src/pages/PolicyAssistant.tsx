@@ -10,6 +10,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const COMMON_QUESTIONS = [
   {
@@ -49,6 +51,11 @@ export default function PolicyAssistant() {
   const [question, setQuestion] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [conversation, setConversation] = useState<Array<{
     type: 'user' | 'assistant';
     content: string;
@@ -61,13 +68,9 @@ export default function PolicyAssistant() {
 
     // Check if user is authenticated
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to upload policy documents",
-        variant: "destructive"
-      });
-      // Redirect to auth page
-      window.location.href = '/auth';
+      setPendingFile(file);
+      setShowAuthModal(true);
+      event.target.value = ''; // Reset file input
       return;
     }
 
@@ -231,6 +234,76 @@ export default function PolicyAssistant() {
 
   const handlePresetQuestion = (presetQuestion: string) => {
     setQuestion(presetQuestion);
+  };
+
+  const handleAuth = async (isSignUp: boolean) => {
+    if (!email || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both email and password",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsAuthenticating(true);
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/policy-assistant`
+          }
+        });
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Account created!",
+          description: "Please check your email to verify your account"
+        });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Welcome back!",
+          description: "Successfully signed in"
+        });
+      }
+      
+      setShowAuthModal(false);
+      setEmail('');
+      setPassword('');
+      
+      // Process pending file after successful auth
+      if (pendingFile) {
+        setTimeout(() => {
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(pendingFile);
+          const input = document.getElementById('file-upload') as HTMLInputElement;
+          if (input) {
+            input.files = dataTransfer.files;
+            const event = new Event('change', { bubbles: true });
+            input.dispatchEvent(event);
+          }
+          setPendingFile(null);
+        }, 500);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Authentication failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsAuthenticating(false);
+    }
   };
 
   const formatTime = (date: Date) => {
@@ -442,6 +515,85 @@ export default function PolicyAssistant() {
             )}
           </div>
         </div>
+
+        {/* Auth Modal */}
+        <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Sign in to continue</DialogTitle>
+              <DialogDescription>
+                Create an account or sign in to upload and analyze your policy documents
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Tabs defaultValue="signin" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin">Sign In</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="signin" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">Email</Label>
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">Password</Label>
+                  <Input
+                    id="signin-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  className="w-full" 
+                  onClick={() => handleAuth(false)}
+                  disabled={isAuthenticating}
+                >
+                  {isAuthenticating ? 'Signing in...' : 'Sign In'}
+                </Button>
+              </TabsContent>
+              
+              <TabsContent value="signup" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Password</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  className="w-full" 
+                  onClick={() => handleAuth(true)}
+                  disabled={isAuthenticating}
+                >
+                  {isAuthenticating ? 'Creating account...' : 'Create Account'}
+                </Button>
+              </TabsContent>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
