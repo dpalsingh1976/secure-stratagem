@@ -6,7 +6,7 @@ const SUPABASE_URL = "https://fiqmtirctaqxhqnwfuqq.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpcW10aXJjdGFxeGhxbndmdXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODUxNjgsImV4cCI6MjA2NjI2MTE2OH0.AIgyTcnILi4lMJPQY5LUF2CGC1cVRSoLuk0baOKgvbQ";
 
 // Testing mode flag - should match the one in useAuth.tsx
-const TESTING_MODE = false;
+const TESTING_MODE = true;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

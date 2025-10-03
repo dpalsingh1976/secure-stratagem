@@ -3,7 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 // Testing mode flag - set to true to bypass authentication
-const TESTING_MODE = false;
+const TESTING_MODE = true;
 
 // Mock data for testing mode
 const MOCK_USER: User = {
