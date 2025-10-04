@@ -323,34 +323,100 @@ const Results = () => {
           </div>
 
           {/* Call to Action */}
-          <div className="text-center">
-            <Card className="card-financial bg-gradient-card max-w-4xl mx-auto">
-              <CardHeader>
-                <CardTitle className="text-2xl font-heading">
-                  Ready to Take Action on Your Financial Future?
+          <div className="text-center space-y-6">
+            {/* Primary CTAs - Action-Oriented */}
+            <Card className="card-financial bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border-2 border-primary/20 max-w-5xl mx-auto shadow-2xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-3xl font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  🎯 Take Action Now - Protect Your Financial Future
                 </CardTitle>
-                <CardDescription className="text-lg">
-                  Schedule a free consultation with our licensed financial professionals 
-                  to discuss your personalized protection strategy.
+                <CardDescription className="text-lg text-foreground">
+                  Your personalized analysis shows opportunities to optimize your protection strategy. 
+                  <span className="font-semibold text-primary"> Don't wait - secure your future today!</span>
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <Button size="lg" className="btn-primary">
-                    <Calendar className="w-5 h-5 mr-2" />
-                    Schedule Free Consultation
+              <CardContent className="space-y-6">
+                {/* Primary Action Buttons */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Buy Insurance CTA */}
+                  <Card className="bg-gradient-to-br from-green-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors">
+                          <Shield className="w-8 h-8" />
+                        </div>
+                        <div className="text-left flex-1">
+                          <h3 className="text-xl font-bold mb-2">Get Instant Term Insurance Quote</h3>
+                          <p className="text-white/90 text-sm mb-4">
+                            Lock in your rate today • Coverage in 24 hours • No medical exam options available
+                          </p>
+                          <Button 
+                            size="lg" 
+                            className="w-full bg-white text-green-600 hover:bg-white/90 font-bold"
+                            onClick={() => window.open('https://www.policygenius.com', '_blank')}
+                          >
+                            Compare Quotes Now →
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Schedule Strategy Call CTA */}
+                  <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors">
+                          <Calendar className="w-8 h-8" />
+                        </div>
+                        <div className="text-left flex-1">
+                          <h3 className="text-xl font-bold mb-2">Book Your Free Strategy Session</h3>
+                          <p className="text-white/90 text-sm mb-4">
+                            Expert analysis • Custom solutions • Tax optimization strategies • Retirement planning
+                          </p>
+                          <Button 
+                            size="lg" 
+                            className="w-full bg-white text-blue-600 hover:bg-white/90 font-bold"
+                            onClick={() => window.open('https://calendly.com', '_blank')}
+                          >
+                            Schedule Now (Free) →
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Secondary Actions */}
+                <div className="flex flex-wrap gap-3 justify-center pt-4 border-t border-primary/20">
+                  <Button size="lg" variant="outline" className="gap-2">
+                    <Phone className="w-5 h-5" />
+                    Call: 1-800-RISK-PRO
                   </Button>
-                  <Button size="lg" variant="outline">
-                    <Phone className="w-5 h-5 mr-2" />
-                    Call Now: 1-800-RISK-PRO
-                  </Button>
-                  <Button size="lg" variant="outline">
-                    <Mail className="w-5 h-5 mr-2" />
-                    Email Questions
+                  <Button size="lg" variant="outline" className="gap-2">
+                    <Mail className="w-5 h-5" />
+                    Email Expert
                   </Button>
                 </div>
-                <div className="mt-6 text-sm text-muted-foreground">
-                  ✓ No obligation consultation • ✓ Licensed professionals • ✓ Personalized solutions
+
+                {/* Trust Indicators */}
+                <div className="flex flex-wrap gap-6 justify-center text-sm text-muted-foreground pt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>No obligation</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Licensed professionals</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Personalized solutions</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>10,000+ clients served</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

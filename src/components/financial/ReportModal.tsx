@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { Download, Share2, AlertTriangle, CheckCircle, Info, TrendingUp, TrendingDown, Shield, DollarSign } from 'lucide-react';
+import { Download, Share2, AlertTriangle, CheckCircle, Info, TrendingUp, TrendingDown, Shield, DollarSign, Calendar } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency, formatPercentage } from '@/utils/riskComputation';
@@ -1125,6 +1125,49 @@ export function ReportModal({
             </TabsContent>
           </div>
         </Tabs>
+
+        {/* Action CTAs at Bottom */}
+        <div className="sticky bottom-0 bg-gradient-to-r from-primary/5 to-secondary/5 border-t-2 border-primary/20 p-6 mt-8">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-xl font-bold text-center mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Ready to Implement These Recommendations?
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Buy Insurance CTA */}
+              <Button 
+                size="lg" 
+                className="h-auto py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0 shadow-lg hover:shadow-xl transition-all group"
+                onClick={() => window.open('https://www.policygenius.com', '_blank')}
+              >
+                <div className="flex items-center gap-3">
+                  <Shield className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                  <div className="text-left">
+                    <div className="font-bold text-base">Get Term Insurance Quote</div>
+                    <div className="text-xs text-white/90">Compare rates • Instant approval</div>
+                  </div>
+                </div>
+              </Button>
+
+              {/* Schedule Strategy Call CTA */}
+              <Button 
+                size="lg" 
+                className="h-auto py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all group"
+                onClick={() => window.open('https://calendly.com', '_blank')}
+              >
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                  <div className="text-left">
+                    <div className="font-bold text-base">Book Strategy Session</div>
+                    <div className="text-xs text-white/90">Free consultation • Expert advice</div>
+                  </div>
+                </div>
+              </Button>
+            </div>
+            <p className="text-center text-xs text-muted-foreground mt-3">
+              ✓ No obligation • ✓ Licensed advisors • ✓ Personalized solutions
+            </p>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
