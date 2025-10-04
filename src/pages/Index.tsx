@@ -6,12 +6,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import heroImage from "@/assets/hero-financial.jpg";
 import RiskIntake from "@/pages/RiskIntake";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [showRiskAssessment, setShowRiskAssessment] = useState(false);
+
+  const handleUploadClick = () => {
+    if (loading) return;
+    if (!user) {
+      navigate('/auth?redirect=/policy-assistant');
+    } else {
+      navigate('/policy-assistant');
+    }
+  };
 
   const calculators = [
     {
@@ -169,7 +180,8 @@ const Index = () => {
                     <Button 
                       size="lg" 
                       className="bg-secondary hover:bg-secondary/90"
-                      onClick={() => navigate('/policy-assistant')}
+                      onClick={handleUploadClick}
+                      disabled={loading}
                     >
                       <Upload className="w-5 h-5 mr-2" />
                       Upload Policy Now

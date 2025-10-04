@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,10 +17,13 @@ export default function Auth() {
   const [error, setError] = useState('');
   const { user, signIn, signUp } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectUrl = searchParams.get('redirect') || '/';
 
   // Redirect if already authenticated
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={redirectUrl} replace />;
   }
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -37,6 +40,7 @@ export default function Auth() {
         title: "Welcome back!",
         description: "Successfully signed in to your account.",
       });
+      navigate(redirectUrl);
     }
     
     setLoading(false);
@@ -56,6 +60,7 @@ export default function Auth() {
         title: "Account created!",
         description: "Please check your email to verify your account.",
       });
+      navigate(redirectUrl);
     }
     
     setLoading(false);
