@@ -92,10 +92,11 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
 
 
   useEffect(() => {
-    if (!user || !hasRole('advisor')) {
+    // Only require authentication when not in modal mode (standalone advisor page)
+    if (!isModal && (!user || !hasRole('advisor'))) {
       window.location.href = '/auth';
     }
-  }, [user, hasRole]);
+  }, [user, hasRole, isModal]);
 
   const progressPercentage = ((currentStep + 1) / STEPS.length) * 100;
 
