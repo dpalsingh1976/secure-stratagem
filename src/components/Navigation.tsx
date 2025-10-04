@@ -49,7 +49,7 @@ const Navigation = () => {
               <Shield className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-bold font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent whitespace-nowrap">
-              Secure Future
+               Guardian Shield
             </span>
           </Link>
 
