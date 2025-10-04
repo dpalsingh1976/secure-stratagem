@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,6 +56,20 @@ export function ReportModal({
 }: ReportModalProps) {
   const [activeTab, setActiveTab] = useState('summary');
   const [isExporting, setIsExporting] = useState(false);
+  const [showCTA, setShowCTA] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Show CTA after 10 seconds
+      const timer = setTimeout(() => {
+        setShowCTA(true);
+      }, 10000);
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowCTA(false);
+    }
+  }, [isOpen]);
 
   // ----------------------------
   // ONE SOURCE OF TRUTH: DIME
@@ -1127,22 +1141,23 @@ export function ReportModal({
         </Tabs>
 
         {/* Action CTAs at Bottom */}
-        <div className="sticky bottom-0 bg-gradient-to-r from-primary/5 to-secondary/5 border-t-2 border-primary/20 p-6 mt-8">
-          <div className="max-w-4xl mx-auto">
-            <h3 className="text-xl font-bold text-center mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Ready to Implement These Recommendations?
-            </h3>
+        {showCTA && (
+          <div className="sticky bottom-0 bg-gradient-to-r from-primary/5 to-secondary/5 border-t-2 border-primary/20 p-6 mt-8 animate-fade-in">
+            <div className="max-w-4xl mx-auto">
+              <h3 className="text-xl font-bold text-center mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Ready to Implement These Recommendations?
+              </h3>
             <div className="grid md:grid-cols-2 gap-4">
               {/* Buy Insurance CTA */}
               <Button 
                 size="lg" 
                 className="h-auto py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0 shadow-lg hover:shadow-xl transition-all group"
-                onClick={() => window.open('https://www.policygenius.com', '_blank')}
+                onClick={() => window.open('https://agents.ethoslife.com/invite/6b8bb', '_blank')}
               >
                 <div className="flex items-center gap-3">
                   <Shield className="w-6 h-6 group-hover:scale-110 transition-transform" />
                   <div className="text-left">
-                    <div className="font-bold text-base">Get Term Insurance Quote</div>
+                    <div className="font-bold text-base">Get Term Quote Now</div>
                     <div className="text-xs text-white/90">Compare rates • Instant approval</div>
                   </div>
                 </div>
@@ -1167,7 +1182,8 @@ export function ReportModal({
               ✓ No obligation • ✓ Licensed advisors • ✓ Personalized solutions
             </p>
           </div>
-        </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -65,6 +65,8 @@ const ResultsModal = ({ open, onOpenChange, assessmentData, onClose }: ResultsMo
     overall: ""
   });
 
+  const [showCTA, setShowCTA] = useState(false);
+
   useEffect(() => {
     if (assessmentData) {
       // Calculate risk scores based on assessment data
@@ -80,6 +82,13 @@ const ResultsModal = ({ open, onOpenChange, assessmentData, onClose }: ResultsMo
         overall: getRiskLevel(scores.overall)
       };
       setRiskLevels(levels);
+
+      // Show CTA after 10 seconds
+      const timer = setTimeout(() => {
+        setShowCTA(true);
+      }, 10000);
+
+      return () => clearTimeout(timer);
     }
   }, [assessmentData]);
 
@@ -356,21 +365,26 @@ const ResultsModal = ({ open, onOpenChange, assessmentData, onClose }: ResultsMo
           )}
 
           {/* Call to Action with Term Coverage Link */}
-          <div className="text-center">
-            <Card className="card-financial bg-gradient-card">
-              <CardHeader>
-                <CardTitle className="text-xl font-heading">
-                  Ready to Protect Your Family's Future?
-                </CardTitle>
+          {showCTA && (
+            <div className="text-center animate-fade-in">
+              <Card className="card-financial bg-gradient-card">
+                <CardHeader>
+                  <CardTitle className="text-xl font-heading">
+                    Ready to Implement These Recommendations?
+                  </CardTitle>
                 <CardDescription>
                   Take immediate action to secure your financial protection
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-4">
-                  <Button size="lg" className="btn-primary">
+                  <Button 
+                    size="lg" 
+                    className="btn-primary"
+                    onClick={() => window.open('https://agents.ethoslife.com/invite/6b8bb', '_blank')}
+                  >
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    Get Term Life Insurance Quote
+                    Get Term Quote Now
                   </Button>
                   <Button size="lg" variant="outline">
                     <Calendar className="w-4 h-4 mr-2" />
@@ -396,7 +410,8 @@ const ResultsModal = ({ open, onOpenChange, assessmentData, onClose }: ResultsMo
                 </div>
               </CardContent>
             </Card>
-          </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

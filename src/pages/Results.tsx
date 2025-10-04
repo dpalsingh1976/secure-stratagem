@@ -43,6 +43,7 @@ const Results = () => {
 
   const [personalizedData, setPersonalizedData] = useState<any>(null);
   const [riskInputs, setRiskInputs] = useState<RiskInputs | null>(null);
+  const [showCTA, setShowCTA] = useState(false);
 
   useEffect(() => {
     // Get assessment data from sessionStorage
@@ -68,6 +69,13 @@ const Results = () => {
         overall: getRiskLevel(scores.overall)
       };
       setRiskLevels(levels);
+
+      // Show CTA after 10 seconds
+      const timer = setTimeout(() => {
+        setShowCTA(true);
+      }, 10000);
+
+      return () => clearTimeout(timer);
     } else {
       // Redirect back to assessment if no data
       window.location.href = '/assessment';
@@ -323,13 +331,14 @@ const Results = () => {
           </div>
 
           {/* Call to Action */}
-          <div className="text-center space-y-6">
-            {/* Primary CTAs - Action-Oriented */}
-            <Card className="card-financial bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border-2 border-primary/20 max-w-5xl mx-auto shadow-2xl">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-3xl font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  🎯 Take Action Now - Protect Your Financial Future
-                </CardTitle>
+          {showCTA && (
+            <div className="text-center space-y-6 animate-fade-in">
+              {/* Primary CTAs - Action-Oriented */}
+              <Card className="card-financial bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border-2 border-primary/20 max-w-5xl mx-auto shadow-2xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-3xl font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    🎯 Ready to Implement These Recommendations?
+                  </CardTitle>
                 <CardDescription className="text-lg text-foreground">
                   Your personalized analysis shows opportunities to optimize your protection strategy. 
                   <span className="font-semibold text-primary"> Don't wait - secure your future today!</span>
@@ -353,9 +362,9 @@ const Results = () => {
                           <Button 
                             size="lg" 
                             className="w-full bg-white text-green-600 hover:bg-white/90 font-bold"
-                            onClick={() => window.open('https://www.policygenius.com', '_blank')}
+                            onClick={() => window.open('https://agents.ethoslife.com/invite/6b8bb', '_blank')}
                           >
-                            Compare Quotes Now →
+                            Get Term Quote Now →
                           </Button>
                         </div>
                       </div>
@@ -420,7 +429,8 @@ const Results = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
+            </div>
+          )}
         </div>
       </main>
 
