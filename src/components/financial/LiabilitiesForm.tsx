@@ -66,7 +66,11 @@ export function LiabilitiesForm({ data, onChange, clientId, onValidationChange }
   };
 
   const saveLiability = async (index: number) => {
-    if (!clientId) return;
+    // Skip database save if no client ID or temporary ID (unauthenticated user)
+    if (!clientId || clientId.startsWith('temp-')) {
+      setEditingIndex(null);
+      return;
+    }
 
     try {
       const liability = data[index];

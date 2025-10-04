@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -40,7 +39,6 @@ const STEPS = [
 ];
 
 export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps = {}) {
-  const { user, hasRole } = useAuth();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [clientId, setClientId] = useState<string | null>(null);
@@ -91,17 +89,12 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
   });
 
 
-  useEffect(() => {
-    // Only require authentication when not in modal mode (standalone advisor page)
-    if (!isModal && (!user || !hasRole('advisor'))) {
-      window.location.href = '/auth';
-    }
-  }, [user, hasRole, isModal]);
 
   const progressPercentage = ((currentStep + 1) / STEPS.length) * 100;
 
   const saveStepData = async (stepData: any) => {
-    if (!clientId || !user) return;
+    // Skip database save if no client ID (unauthenticated user)
+    if (!clientId) return;
 
     setIsLoading(true);
     try {
@@ -129,62 +122,25 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
   };
 
   const handleNext = async () => {
-    // Save current step data before proceeding
-    switch (currentStep) {
-      case 0:
-        if (!clientId) {
-          // Create new client
-          const { data: client, error } = await supabase
-            .from('clients')
-            .insert({
-              advisor_id: user?.id,
-              name_first: profileData.name_first,
-              name_last: profileData.name_last,
-              dob: profileData.dob,
-              state: profileData.state,
-              filing_status: profileData.filing_status,
-              household_jsonb: { dependents: profileData.dependents }
-            })
-            .select()
-            .single();
+    // For first step, generate a temporary client ID for unauthenticated users
+    if (currentStep === 0 && !clientId) {
+      // Generate temporary ID for local tracking
+      const tempId = `temp-${Date.now()}`;
+      setClientId(tempId);
+    }
 
-          if (error) {
-            toast({
-              title: "Error creating client",
-              description: error.message,
-              variant: "destructive"
-            });
-            return;
-          }
-
-          setClientId(client.id);
-
-          // Save financial profile
-          await supabase
-            .from('financial_profile')
-            .insert({
-              client_id: client.id,
-              goals_jsonb: {
-                retirement_age: profileData.retirement_age,
-                desired_monthly_income: profileData.desired_monthly_income,
-                insurance_priorities: profileData.insurance_priorities
-              }
-            });
+    // Save to database only if we have a real (non-temporary) client ID
+    if (currentStep === 1 && clientId && !clientId.startsWith('temp-')) {
+      await saveStepData({ 
+        income_jsonb: incomeData,
+        expenses_jsonb: {
+          federal_taxes: incomeData.federal_taxes,
+          state_taxes: incomeData.state_taxes,
+          fixed_expenses: incomeData.fixed_expenses,
+          variable_expenses: incomeData.variable_expenses,
+          debt_service: incomeData.debt_service
         }
-        break;
-      case 1:
-        await saveStepData({ 
-          income_jsonb: incomeData,
-          expenses_jsonb: {
-            federal_taxes: incomeData.federal_taxes,
-            state_taxes: incomeData.state_taxes,
-            fixed_expenses: incomeData.fixed_expenses,
-            variable_expenses: incomeData.variable_expenses,
-            debt_service: incomeData.debt_service
-          }
-        });
-        break;
-      // Assets and liabilities are saved individually as they're added
+      });
     }
 
     if (currentStep < STEPS.length - 1) {
@@ -206,7 +162,7 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
 
     setIsLoading(true);
     try {
-      // Compute risk metrics
+      // Compute risk metrics (works with temp ID for unauthenticated users)
       const metrics = await computeRiskMetrics(clientId, {
         profileData,
         incomeData,
@@ -223,16 +179,18 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
         }
       });
 
-      // Save computed metrics
-      const { error: metricsError } = await supabase
-        .from('computed_metrics')
-        .upsert({ ...metrics, client_id: clientId });
+      // Only save to database if not a temporary ID
+      if (!clientId.startsWith('temp-')) {
+        const { error: metricsError } = await supabase
+          .from('computed_metrics')
+          .upsert({ ...metrics, client_id: clientId });
 
-      if (metricsError) throw metricsError;
+        if (metricsError) throw metricsError;
+      }
 
       setComputedMetrics(metrics);
 
-      // Show report modal instead of navigating
+      // Show report modal
       setShowReport(true);
 
       toast({

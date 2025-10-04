@@ -54,7 +54,11 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange }: Ass
   };
 
   const saveAsset = async (index: number) => {
-    if (!clientId) return;
+    // Skip database save if no client ID or temporary ID (unauthenticated user)
+    if (!clientId || clientId.startsWith('temp-')) {
+      setEditingIndex(null);
+      return;
+    }
 
     try {
       const asset = data[index];
