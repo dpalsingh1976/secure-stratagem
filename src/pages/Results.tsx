@@ -1,13 +1,69 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as DateCalendar } from "@/components/ui/calendar";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+// ----- Booking dialog state -----
+const [bookingOpen, setBookingOpen] = useState(false);
+const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+const [selectedTime, setSelectedTime] = useState<string>("");
+const [fullName, setFullName] = useState("");
+const [email, setEmail] = useState("");
+const [phone, setPhone] = useState("");
+const [submitting, setSubmitting] = useState(false);
+
+const timeSlots: string[] = Array.from({ length: ((17 - 9) * 2) }, (_, i) => {
+  const hour = 9 + Math.floor(i / 2);
+  const mins = i % 2 === 0 ? "00" : "30";
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const hr12 = ((hour - 1) % 12) + 1;
+  return `${hr12.toString().padStart(2,"0")}:${mins} ${ampm}`;
+});
+
+async function submitBooking() {
+  if (!selectedDate || !selectedTime || !fullName || !email) {
+    toast({ title: "Missing information", description: "Please pick a date, time, and enter your name & email." });
+    return;
+  }
+  try {
+    setSubmitting(true);
+    const { error } = await supabase.from("appointments").insert({
+      customer_name: fullName,
+      customer_email: email,
+      customer_phone: phone || null,
+      event_date: selectedDate.toISOString().slice(0,10),
+      event_time: selectedTime,
+      event_type: "Strategy Session",
+      status: "pending"
+    });
+    if (error) throw error;
+    toast({ title: "Booked!", description: "Your free strategy session has been scheduled. We’ll email you details shortly." });
+    setBookingOpen(false);
+    // reset
+    setSelectedDate(undefined);
+    setSelectedTime("");
+    setFullName(""); setEmail(""); setPhone("");
+  } catch (e:any) {
+    toast({ title: "Could not book", description: e.message || "Please try again." });
+  } finally {
+    setSubmitting(false);
+  }
+}
+
+
 import RiskProgressRing from "@/components/RiskProgressRing";
 import RiskScoreModal from "@/components/RiskScoreModal";
 import ChatBot from "@/components/ChatBot";
 import PredictiveInsights from "@/components/PredictiveInsights";
 import RiskExplanationDrawer from "@/components/RiskExplanationDrawer";
 
-import { Phone, Mail, Calendar, Download, Share2, AlertTriangle, TrendingUp, Shield, Clock } from "lucide-react";
+import { Phone, Mail, Calendar as CalendarIcon, Download, Share2, AlertTriangle, TrendingUp, Shield, Clock } from "lucide-react";
 import { RiskInputs, RiskScores as IRiskScores } from "@/types/riskTypes";
 import { calculateAllRisks, getRiskLevel } from "@/utils/riskCalculations";
 import { mapAssessmentToRiskInputs } from "@/utils/assessmentDataMapper";
@@ -386,7 +442,7 @@ const Results = () => {
                           <Button 
                             size="lg" 
                             className="w-full bg-white text-blue-600 hover:bg-white/90 font-bold"
-                            onClick={() => window.open('https://calendly.com', '_blank')}
+                            onClick={() => setBookingOpen(true)}
                           >
                             Schedule Now (Free) →
                           </Button>
@@ -435,7 +491,77 @@ const Results = () => {
       </main>
 
       <ChatBot />
+    
+{/* Booking Dialog */}
+<Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+  <DialogContent className="sm:max-w-[600px]">
+    <DialogHeader>
+      <DialogTitle>Book Your Free Strategy Session</DialogTitle>
+    </DialogHeader>
+
+    <div className="grid gap-6">
+      {/* Date picker */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Date</Label>
+          <DateCalendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={setSelectedDate}
+            disabled={(date) => date < new Date(new Date().toDateString())}
+            className="rounded-md border"
+          />
+        </div>
+
+        {/* Time slots */}
+        <div className="space-y-2">
+          <Label>Available Times</Label>
+          <div className="grid grid-cols-2 gap-2 max-h-[320px] overflow-auto pr-1">
+            {timeSlots.map((slot) => (
+              <button
+                key={slot}
+                onClick={() => setSelectedTime(slot)}
+                className={[
+                  "text-sm border rounded-md px-3 py-2 text-left",
+                  selectedTime === slot ? "border-primary ring-2 ring-primary/30" : "hover:bg-muted"
+                ].join(" ")}
+              >
+                {slot}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Times shown in your local timezone.
+          </p>
+        </div>
+      </div>
+
+      {/* Contact info */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Full name</Label>
+          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Doe" />
+        </div>
+        <div className="space-y-2">
+          <Label>Email</Label>
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@email.com" />
+        </div>
+        <div className="space-y-2 md:col-span-2">
+          <Label>Phone (optional)</Label>
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 555 123 4567" />
+        </div>
+      </div>
     </div>
+
+    <DialogFooter className="mt-4">
+      <Button variant="outline" onClick={() => setBookingOpen(false)}>Cancel</Button>
+      <Button onClick={submitBooking} disabled={submitting || !selectedDate || !selectedTime || !fullName || !email}>
+        {submitting ? "Booking..." : "Confirm Booking"}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+</div>
   );
 };
 
