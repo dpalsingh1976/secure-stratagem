@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.predictive-insights]
 verify_jwt = false
+
+[functions.manage-appointments]
+verify_jwt = false
