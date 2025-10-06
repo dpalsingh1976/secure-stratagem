@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Download, Calendar, Mail, AlertTriangle, CheckCircle, XCircle, Clock, ArrowRight, Calculator } from "lucide-react";
 import RiskProgressRing from "@/components/RiskProgressRing";
 import RiskScoreModal from "@/components/RiskScoreModal";
+import BookingCalendar from "@/components/BookingCalendar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { getLongevityRiskExplanation, getMarketRiskExplanation, getTaxEstateRiskExplanation } from "@/utils/riskExplanations";
@@ -364,9 +365,10 @@ For a personalized consultation, please contact us to schedule a meeting.
     }
   };
 
+  const [bookingOpen, setBookingOpen] = useState(false);
+
   const scheduleConsultation = () => {
-    // Open calendar booking in new tab
-    window.open('https://calendly.com/secure-stratagem', '_blank');
+    setBookingOpen(true);
   };
 
   return (
@@ -574,6 +576,8 @@ For a personalized consultation, please contact us to schedule a meeting.
           </Card>
         </div>
       </DialogContent>
+
+      <BookingCalendar open={bookingOpen} onOpenChange={setBookingOpen} />
     </Dialog>
   );
 };

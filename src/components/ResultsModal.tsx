@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import RiskProgressRing from "@/components/RiskProgressRing";
+import BookingCalendar from "@/components/BookingCalendar";
 import { Phone, Mail, Calendar, Download, Share2, AlertTriangle, TrendingUp, Shield, Clock, ExternalLink } from "lucide-react";
 import { getLifeInsuranceExplanation, getLongevityRiskExplanation, getMarketRiskExplanation, getTaxEstateRiskExplanation, getOverallRiskMessage } from "@/utils/riskExplanations";
 
@@ -66,6 +67,7 @@ const ResultsModal = ({ open, onOpenChange, assessmentData, onClose }: ResultsMo
   });
 
   const [showCTA, setShowCTA] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   useEffect(() => {
     if (assessmentData) {
@@ -386,7 +388,11 @@ const ResultsModal = ({ open, onOpenChange, assessmentData, onClose }: ResultsMo
                     <ExternalLink className="w-4 h-4 mr-2" />
                     Get Term Quote Now
                   </Button>
-                  <Button size="lg" variant="outline">
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    onClick={() => setBookingOpen(true)}
+                  >
                     <Calendar className="w-4 h-4 mr-2" />
                     Schedule Free Consultation
                   </Button>
@@ -414,6 +420,8 @@ const ResultsModal = ({ open, onOpenChange, assessmentData, onClose }: ResultsMo
           )}
         </div>
       </DialogContent>
+
+      <BookingCalendar open={bookingOpen} onOpenChange={setBookingOpen} />
     </Dialog>
   );
 };

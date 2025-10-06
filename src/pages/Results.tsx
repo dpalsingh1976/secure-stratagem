@@ -6,6 +6,7 @@ import RiskScoreModal from "@/components/RiskScoreModal";
 import ChatBot from "@/components/ChatBot";
 import PredictiveInsights from "@/components/PredictiveInsights";
 import RiskExplanationDrawer from "@/components/RiskExplanationDrawer";
+import BookingCalendar from "@/components/BookingCalendar";
 
 import { Phone, Mail, Calendar, Download, Share2, AlertTriangle, TrendingUp, Shield, Clock } from "lucide-react";
 import { RiskInputs, RiskScores as IRiskScores } from "@/types/riskTypes";
@@ -44,6 +45,7 @@ const Results = () => {
   const [personalizedData, setPersonalizedData] = useState<any>(null);
   const [riskInputs, setRiskInputs] = useState<RiskInputs | null>(null);
   const [showCTA, setShowCTA] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   useEffect(() => {
     // Get assessment data from sessionStorage
@@ -80,6 +82,12 @@ const Results = () => {
       // Redirect back to assessment if no data
       window.location.href = '/assessment';
     }
+  }, []);
+
+  useEffect(() => {
+    const handleOpenBooking = () => setBookingOpen(true);
+    window.addEventListener('openBooking', handleOpenBooking);
+    return () => window.removeEventListener('openBooking', handleOpenBooking);
   }, []);
 
   // Risk calculation is now handled by the new rule-based system
@@ -386,7 +394,7 @@ const Results = () => {
                           <Button 
                             size="lg" 
                             className="w-full bg-white text-blue-600 hover:bg-white/90 font-bold"
-                            onClick={() => window.open('https://calendly.com', '_blank')}
+                            onClick={() => setBookingOpen(true)}
                           >
                             Schedule Now (Free) →
                           </Button>

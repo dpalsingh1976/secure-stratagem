@@ -1167,7 +1167,10 @@ export function ReportModal({
               <Button 
                 size="lg" 
                 className="h-auto py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all group"
-                onClick={() => window.open('https://calendly.com', '_blank')}
+                onClick={() => {
+                  const event = new CustomEvent('openBooking');
+                  window.dispatchEvent(event);
+                }}
               >
                 <div className="flex items-center gap-3">
                   <Calendar className="w-6 h-6 group-hover:scale-110 transition-transform" />
