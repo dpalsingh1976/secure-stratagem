@@ -22,7 +22,7 @@ serve(async (req) => {
 
     switch (action) {
       case 'create': {
-        const { data, error } = await supabaseClient
+        const { error } = await supabaseClient
           .from('appointments')
           .insert({
             customer_name: appointmentData.customerName,
@@ -33,14 +33,12 @@ serve(async (req) => {
             event_type: 'consultation',
             special_requests: appointmentData.notes || null,
             status: 'pending'
-          })
-          .select()
-          .single();
+          });
 
         if (error) throw error;
 
         return new Response(
-          JSON.stringify({ success: true, appointment: data }),
+          JSON.stringify({ success: true }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       }
