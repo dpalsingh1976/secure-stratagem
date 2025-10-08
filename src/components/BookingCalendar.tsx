@@ -26,12 +26,7 @@ const BookingCalendar = ({ open, onOpenChange }: BookingCalendarProps) => {
   const [bookedSlots, setBookedSlots] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
 
-  // Fetch availability when dialog opens
-  useEffect(() => {
-    if (open) {
-      fetchAvailability();
-    }
-  }, [open]);
+  console.log('BookingCalendar rendered, open:', open);
 
   const fetchAvailability = async () => {
     try {
@@ -58,6 +53,15 @@ const BookingCalendar = ({ open, onOpenChange }: BookingCalendarProps) => {
       toast.error('Unable to load booking calendar. Please try again.');
     }
   };
+
+  // Fetch availability when dialog opens
+  useEffect(() => {
+    console.log('useEffect triggered, open:', open);
+    if (open) {
+      console.log('Calling fetchAvailability...');
+      fetchAvailability();
+    }
+  }, [open]);
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
