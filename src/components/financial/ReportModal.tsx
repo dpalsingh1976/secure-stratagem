@@ -11,6 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency, formatPercentage } from '@/utils/riskComputation';
 import jsPDF from 'jspdf';
+import BookingCalendar from '@/components/BookingCalendar';
 import type { 
   ComputedMetrics,
   ProfileGoalsData,
@@ -57,6 +58,7 @@ export function ReportModal({
   const [activeTab, setActiveTab] = useState('summary');
   const [isExporting, setIsExporting] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -1167,10 +1169,7 @@ export function ReportModal({
               <Button 
                 size="lg" 
                 className="h-auto py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all group"
-                onClick={() => {
-                  const event = new CustomEvent('openBooking');
-                  window.dispatchEvent(event);
-                }}
+                onClick={() => setBookingOpen(true)}
               >
                 <div className="flex items-center gap-3">
                   <Calendar className="w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -1188,6 +1187,8 @@ export function ReportModal({
           </div>
         )}
       </DialogContent>
+      
+      <BookingCalendar open={bookingOpen} onOpenChange={setBookingOpen} />
     </Dialog>
   );
 }
