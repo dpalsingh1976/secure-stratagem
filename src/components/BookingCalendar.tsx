@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,20 +26,36 @@ const BookingCalendar = ({ open, onOpenChange }: BookingCalendarProps) => {
   const [bookedSlots, setBookedSlots] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
 
+  // Fetch availability when dialog opens
+  useEffect(() => {
+    if (open) {
+      fetchAvailability();
+    }
+  }, [open]);
+
   const fetchAvailability = async () => {
     try {
+      console.log('Fetching availability...');
       const { data, error } = await supabase.functions.invoke('manage-appointments', {
         body: { action: 'get-availability' }
       });
 
-      if (error) throw error;
+      console.log('Availability response:', { data, error });
+
+      if (error) {
+        console.error('Availability error:', error);
+        toast.error('Failed to fetch available time slots');
+        throw error;
+      }
 
       if (data?.success) {
-        setBookedSlots(new Set(data.bookedSlots));
-        setAvailableSlots(data.availableSlots);
+        setBookedSlots(new Set(data.bookedSlots || []));
+        setAvailableSlots(data.availableSlots || []);
+        console.log('Available slots:', data.availableSlots);
       }
     } catch (error) {
       console.error('Error fetching availability:', error);
+      toast.error('Unable to load booking calendar. Please try again.');
     }
   };
 
@@ -72,6 +88,14 @@ const BookingCalendar = ({ open, onOpenChange }: BookingCalendarProps) => {
 
     setLoading(true);
     try {
+      console.log('Booking appointment:', {
+        name,
+        email,
+        phone,
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        time: selectedTime
+      });
+
       const { data, error } = await supabase.functions.invoke('manage-appointments', {
         body: {
           action: 'create',
@@ -86,21 +110,29 @@ const BookingCalendar = ({ open, onOpenChange }: BookingCalendarProps) => {
         }
       });
 
-      if (error) throw error;
+      console.log('Booking response:', { data, error });
+
+      if (error) {
+        console.error('Booking error:', error);
+        throw error;
+      }
 
       if (data?.success) {
-        toast.success('Appointment booked successfully!');
+        toast.success('Appointment booked successfully! We will contact you shortly.');
         onOpenChange(false);
+        // Reset form
         setName("");
         setEmail("");
         setPhone("");
         setNotes("");
         setSelectedDate(undefined);
         setSelectedTime("");
+      } else {
+        throw new Error('Booking failed');
       }
     } catch (error) {
       console.error('Error booking appointment:', error);
-      toast.error('Failed to book appointment');
+      toast.error('Failed to book appointment. Please try again or contact us directly.');
     } finally {
       setLoading(false);
     }
