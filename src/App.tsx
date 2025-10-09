@@ -38,6 +38,11 @@ const App = () => (
             <Route path="/assessment" element={<Assessment />} />
             <Route path="/results" element={<Results />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/admin" element={
+              <AdminRoute requiredRole="advisor">
+                <AdminDashboard />
+              </AdminRoute>
+            } />
             <Route path="/admin/risk-intake" element={
               <AdminRoute requiredRole="advisor">
                 <RiskIntake />

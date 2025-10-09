@@ -41,20 +41,27 @@ serve(async (req) => {
         if (error) throw error;
 
         // Send email notification to advisor
-        await resend.emails.send({
-          from: "Appointments <onboarding@resend.dev>",
-          to: ["davindes@theprosperityfinancial.com"],
-          subject: `New Strategy Session Booked - ${appointmentData.customerName}`,
-          html: `
-            <h2>New Appointment Booked</h2>
-            <p><strong>Client:</strong> ${appointmentData.customerName}</p>
-            <p><strong>Email:</strong> ${appointmentData.customerEmail}</p>
-            <p><strong>Phone:</strong> ${appointmentData.customerPhone || 'Not provided'}</p>
-            <p><strong>Date:</strong> ${appointmentData.eventDate}</p>
-            <p><strong>Time:</strong> ${appointmentData.eventTime}</p>
-            ${appointmentData.notes ? `<p><strong>Notes:</strong> ${appointmentData.notes}</p>` : ''}
-          `,
-        });
+        try {
+          console.log('Attempting to send email notification...');
+          const emailResult = await resend.emails.send({
+            from: "Appointments <onboarding@resend.dev>",
+            to: ["davindes@theprosperityfinancial.com"],
+            subject: `New Strategy Session Booked - ${appointmentData.customerName}`,
+            html: `
+              <h2>New Appointment Booked</h2>
+              <p><strong>Client:</strong> ${appointmentData.customerName}</p>
+              <p><strong>Email:</strong> ${appointmentData.customerEmail}</p>
+              <p><strong>Phone:</strong> ${appointmentData.customerPhone || 'Not provided'}</p>
+              <p><strong>Date:</strong> ${appointmentData.eventDate}</p>
+              <p><strong>Time:</strong> ${appointmentData.eventTime}</p>
+              ${appointmentData.notes ? `<p><strong>Notes:</strong> ${appointmentData.notes}</p>` : ''}
+            `,
+          });
+          console.log('Email sent successfully:', emailResult);
+        } catch (emailError) {
+          console.error('Failed to send email:', emailError);
+          // Don't throw - we still want to return success for the appointment booking
+        }
 
         return new Response(
           JSON.stringify({ success: true }),
