@@ -4,12 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { Upload, MessageSquare, TrendingUp, LogOut, Shield, Database } from 'lucide-react';
+import { Upload, MessageSquare, TrendingUp, LogOut, Shield, Database, CalendarDays } from 'lucide-react';
 import { IllustrationUploader } from '@/components/admin/IllustrationUploader';
 import { DigitalTwinChat } from '@/components/admin/DigitalTwinChat';
 import { StressTesting } from '@/components/admin/StressTesting';
 import { MarketComparison } from '@/components/admin/MarketComparison';
 import { ComplianceReports } from '@/components/admin/ComplianceReports';
+import { AppointmentsManager } from '@/components/admin/AppointmentsManager';
 
 export default function AdminDashboard() {
   const { user, userRole, signOut } = useAuth();
@@ -65,10 +66,10 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsList className="grid w-full grid-cols-6 mb-8">
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
-              <span className="hidden sm:inline">Upload Illustration</span>
+              <span className="hidden sm:inline">Upload</span>
             </TabsTrigger>
             <TabsTrigger value="digital-twin" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
@@ -76,15 +77,19 @@ export default function AdminDashboard() {
             </TabsTrigger>
             <TabsTrigger value="stress-test" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Stress Testing</span>
+              <span className="hidden sm:inline">Stress Test</span>
             </TabsTrigger>
             <TabsTrigger value="market-comparison" className="flex items-center gap-2">
               <Database className="h-4 w-4" />
-              <span className="hidden sm:inline">Market Analysis</span>
+              <span className="hidden sm:inline">Market</span>
             </TabsTrigger>
             <TabsTrigger value="compliance" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
               <span className="hidden sm:inline">Compliance</span>
+            </TabsTrigger>
+            <TabsTrigger value="appointments" className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              <span className="hidden sm:inline">Appointments</span>
             </TabsTrigger>
           </TabsList>
 
@@ -169,6 +174,23 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <ComplianceReports />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="appointments" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5" />
+                  Appointments Management
+                </CardTitle>
+                <CardDescription>
+                  View and manage all strategy session appointments from clients.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AppointmentsManager />
               </CardContent>
             </Card>
           </TabsContent>

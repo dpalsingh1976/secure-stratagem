@@ -1,5 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,6 +39,22 @@ serve(async (req) => {
           });
 
         if (error) throw error;
+
+        // Send email notification to advisor
+        await resend.emails.send({
+          from: "Appointments <onboarding@resend.dev>",
+          to: ["davindes@theprosperityfinancial.com"],
+          subject: `New Strategy Session Booked - ${appointmentData.customerName}`,
+          html: `
+            <h2>New Appointment Booked</h2>
+            <p><strong>Client:</strong> ${appointmentData.customerName}</p>
+            <p><strong>Email:</strong> ${appointmentData.customerEmail}</p>
+            <p><strong>Phone:</strong> ${appointmentData.customerPhone || 'Not provided'}</p>
+            <p><strong>Date:</strong> ${appointmentData.eventDate}</p>
+            <p><strong>Time:</strong> ${appointmentData.eventTime}</p>
+            ${appointmentData.notes ? `<p><strong>Notes:</strong> ${appointmentData.notes}</p>` : ''}
+          `,
+        });
 
         return new Response(
           JSON.stringify({ success: true }),
