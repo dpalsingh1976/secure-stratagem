@@ -44,7 +44,7 @@ serve(async (req) => {
         try {
           console.log('Attempting to send email notification...');
           const emailResult = await resend.emails.send({
-            from: "Appointments <onboarding@resend.dev>",
+            from: "Appointments <appointments@theprosperityfinancial.com>",
             to: ["davindes@theprosperityfinancial.com"],
             subject: `New Strategy Session Booked - ${appointmentData.customerName}`,
             html: `
