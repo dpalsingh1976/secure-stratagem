@@ -29,10 +29,6 @@ const Navigation = () => {
     { path: '/inflation-stress-test', label: 'Inflation & Market Stress Test', icon: Calculator },
   ];
 
-  const strategyItems = [
-    { path: '/iul', label: 'Retirement Strategies', icon: Landmark, protected: true },
-  ];
-
   const otherItems = [
     { path: '/about', label: 'About / Contact', icon: BookOpen },
   ];
@@ -95,26 +91,6 @@ const Navigation = () => {
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* Strategy Items */}
-            {strategyItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`px-3 py-1.5 text-sm font-medium transition-all whitespace-nowrap relative flex items-center gap-1.5 ${
-                  isActive(item.path)
-                    ? 'text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {item.label}
-                {item.protected && (
-                  <span className="px-1.5 py-0.5 text-[10px] bg-accent text-accent-foreground rounded">
-                    Pro
-                  </span>
-                )}
-              </Link>
-            ))}
 
             {/* Other Items */}
             {otherItems.map((item) => (
@@ -183,33 +159,6 @@ const Navigation = () => {
                       >
                         <Icon className="w-4 h-4" />
                         {item.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                <div className="border-t pt-4">
-                  <p className="text-xs font-semibold text-muted-foreground px-4 mb-2">STRATEGIES</p>
-                  {strategyItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        onClick={() => setIsOpen(false)}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
-                          isActive(item.path)
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" />
-                        {item.label}
-                        {item.protected && (
-                          <span className="ml-auto px-2 py-1 text-xs bg-accent text-accent-foreground rounded">
-                            Members
-                          </span>
-                        )}
                       </Link>
                     );
                   })}
