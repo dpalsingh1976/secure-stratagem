@@ -7,14 +7,47 @@ import { Shield, Mail, Phone, MapPin, Award, Users, Target } from "lucide-react"
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 export default function About() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast({
-      title: "Message sent",
-      description: "We'll get back to you within 24 hours.",
-    });
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      phone: formData.get("phone") as string,
+      message: formData.get("message") as string,
+    };
+
+    try {
+      const { error } = await supabase.functions.invoke("send-contact-email", {
+        body: data,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Message sent",
+        description: "We'll get back to you within 24 hours.",
+      });
+
+      e.currentTarget.reset();
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -186,31 +219,32 @@ export default function About() {
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                       <Label htmlFor="name">Name</Label>
-                      <Input id="name" placeholder="John Doe" required className="mt-2" />
+                      <Input id="name" name="name" placeholder="John Doe" required className="mt-2" />
                     </div>
 
                     <div>
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="john@example.com" required className="mt-2" />
+                      <Input id="email" name="email" type="email" placeholder="john@example.com" required className="mt-2" />
                     </div>
 
                     <div>
                       <Label htmlFor="phone">Phone (Optional)</Label>
-                      <Input id="phone" type="tel" placeholder="(555) 123-4567" className="mt-2" />
+                      <Input id="phone" name="phone" type="tel" placeholder="(555) 123-4567" className="mt-2" />
                     </div>
 
                     <div>
                       <Label htmlFor="message">Message</Label>
                       <Textarea
                         id="message"
+                        name="message"
                         placeholder="Tell us how we can help..."
                         required
                         className="mt-2 min-h-[120px]"
                       />
                     </div>
 
-                    <Button type="submit" className="w-full">
-                      Send Message
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? "Sending..." : "Send Message"}
                     </Button>
                   </form>
                 </CardContent>
