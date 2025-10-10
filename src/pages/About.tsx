@@ -17,7 +17,8 @@ export default function About() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const data = {
       name: formData.get("name") as string,
       email: formData.get("email") as string,
@@ -37,7 +38,7 @@ export default function About() {
         description: "We'll get back to you within 24 hours.",
       });
 
-      e.currentTarget.reset();
+      form.reset();
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
