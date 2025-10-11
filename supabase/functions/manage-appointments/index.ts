@@ -12,38 +12,27 @@ const corsHeaders = {
 // Generate iCalendar (.ics) file content
 function generateICalendar(appointmentData: any): string {
   const { customerName, customerEmail, eventDate, eventTime, notes } = appointmentData;
-  
-  // Parse date and time - treat as EST timezone (UTC-5)
-  const [year, month, day] = eventDate.split('-');
-  const [hour, minute] = eventTime.split(':');
-  
-  // Create date in EST timezone by parsing as local date then converting
-  const dateTimeString = `${eventDate}T${eventTime}:00`;
-  const startDate = new Date(dateTimeString);
-  
-  // End time is 1 hour after start
-  const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
-  
-  // Format dates as YYYYMMDDTHHMMSS without Z (floating time)
-  const formatICalDate = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hour = String(date.getHours()).padStart(2, '0');
-    const minute = String(date.getMinutes()).padStart(2, '0');
-    const second = String(date.getSeconds()).padStart(2, '0');
-    return `${year}${month}${day}T${hour}${minute}${second}`;
-  };
-  
+
+  // Treat the provided time as America/New_York (EDT here). Adjust -05:00 in winter or compute DST.
+  const startLocal = new Date(`${eventDate}T${eventTime}:00-04:00`);
+  const endLocal = new Date(startLocal.getTime() + 60 * 60 * 1000);
+
+  const toICalUtc = (d: Date) =>
+    d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+
   const uid = `${Date.now()}-${customerEmail.replace('@', '-at-')}@theprosperityfinancial.com`;
-  const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  const dtstart = formatICalDate(startDate);
-  const dtend = formatICalDate(endDate);
-  
-  // Simplified description without special characters
-  const description = `Strategy Session with ${customerName}. Email: ${customerEmail}${notes ? `. Notes: ${notes}` : ''}`;
-  
-  return [
+  const dtstamp = toICalUtc(new Date());
+  const dtstart = toICalUtc(startLocal);
+  const dtend = toICalUtc(endLocal);
+
+  const summary = `Strategy Session - ${customerName}`;
+  const description = [
+    `Strategy Session with ${customerName}.`,
+    `Email: ${customerEmail}`,
+    notes ? `Notes: ${notes}` : ''
+  ].filter(Boolean).join(' ');
+
+  const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Prosperity Financial//Appointment Booking//EN',
@@ -52,13 +41,15 @@ function generateICalendar(appointmentData: any): string {
     'BEGIN:VEVENT',
     `UID:${uid}`,
     `DTSTAMP:${dtstamp}`,
-    `DTSTART:${dtstart}`,
-    `DTEND:${dtend}`,
-    `SUMMARY:Strategy Session - ${customerName}`,
+    `DTSTART:${dtstart}`,  // UTC with Z
+    `DTEND:${dtend}`,      // UTC with Z
+    `SUMMARY:${summary}`,
     `DESCRIPTION:${description}`,
     'LOCATION:Virtual Meeting',
     'STATUS:CONFIRMED',
     'SEQUENCE:0',
+    'TRANSP:OPAQUE',
+    'X-MICROSOFT-CDO-BUSYSTATUS:BUSY',
     `ORGANIZER;CN=Davin Des:mailto:davindes@theprosperityfinancial.com`,
     `ATTENDEE;CN=${customerName};RSVP=TRUE;ROLE=REQ-PARTICIPANT:mailto:${customerEmail}`,
     'BEGIN:VALARM',
@@ -68,8 +59,12 @@ function generateICalendar(appointmentData: any): string {
     'END:VALARM',
     'END:VEVENT',
     'END:VCALENDAR'
-  ].join('\r\n');
+  ];
+
+  // join with CRLF; ensure trailing CRLF added by caller
+  return lines.join('\r\n');
 }
+
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
