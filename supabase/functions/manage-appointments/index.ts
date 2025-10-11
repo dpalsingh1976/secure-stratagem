@@ -13,32 +13,35 @@ const corsHeaders = {
 function generateICalendar(appointmentData: any): string {
   const { customerName, customerEmail, eventDate, eventTime, notes } = appointmentData;
   
-  // Parse date and time to create start/end times
+  // Parse date and time - treat as EST timezone (UTC-5)
   const [year, month, day] = eventDate.split('-');
   const [hour, minute] = eventTime.split(':');
   
-  const startDate = new Date(Date.UTC(
-    parseInt(year),
-    parseInt(month) - 1,
-    parseInt(day),
-    parseInt(hour),
-    parseInt(minute)
-  ));
+  // Create date in EST timezone by parsing as local date then converting
+  const dateTimeString = `${eventDate}T${eventTime}:00`;
+  const startDate = new Date(dateTimeString);
   
   // End time is 1 hour after start
   const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
   
-  // Format dates as YYYYMMDDTHHMMSSZ
+  // Format dates as YYYYMMDDTHHMMSS without Z (floating time)
   const formatICalDate = (date: Date): string => {
-    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hour = String(date.getHours()).padStart(2, '0');
+    const minute = String(date.getMinutes()).padStart(2, '0');
+    const second = String(date.getSeconds()).padStart(2, '0');
+    return `${year}${month}${day}T${hour}${minute}${second}`;
   };
   
-  const uid = `${Date.now()}-${customerEmail}@theprosperityfinancial.com`;
-  const dtstamp = formatICalDate(new Date());
+  const uid = `${Date.now()}-${customerEmail.replace('@', '-at-')}@theprosperityfinancial.com`;
+  const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   const dtstart = formatICalDate(startDate);
   const dtend = formatICalDate(endDate);
   
-  const description = `Strategy Session with ${customerName}\\n\\nEmail: ${customerEmail}${notes ? `\\n\\nNotes: ${notes}` : ''}`;
+  // Simplified description without special characters
+  const description = `Strategy Session with ${customerName}. Email: ${customerEmail}${notes ? `. Notes: ${notes}` : ''}`;
   
   return [
     'BEGIN:VCALENDAR',
@@ -57,7 +60,7 @@ function generateICalendar(appointmentData: any): string {
     'STATUS:CONFIRMED',
     'SEQUENCE:0',
     `ORGANIZER;CN=Davin Des:mailto:davindes@theprosperityfinancial.com`,
-    `ATTENDEE;CN=${customerName};RSVP=TRUE:mailto:${customerEmail}`,
+    `ATTENDEE;CN=${customerName};RSVP=TRUE;ROLE=REQ-PARTICIPANT:mailto:${customerEmail}`,
     'BEGIN:VALARM',
     'TRIGGER:-PT15M',
     'ACTION:DISPLAY',
