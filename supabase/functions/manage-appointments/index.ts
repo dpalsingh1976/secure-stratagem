@@ -10,7 +10,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Escape text safely for iCalendar fields
+// ---------- iCalendar helpers ----------
 function icalEscape(s = "") {
   return s
     .replace(/\\/g, "\\\\")
@@ -19,32 +19,26 @@ function icalEscape(s = "") {
     .replace(/;/g, "\\;");
 }
 
-// Convert Date → iCalendar UTC format
 function toICalUtc(d: Date) {
+  // 20251010T150000Z
   return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 }
 
-// Generate iCalendar (.ics) file content
-function generateICalendar(appointmentData: any): string {
-  const { customerName, customerEmail, eventDate, eventTime, notes } = appointmentData;
+// Treat submitted local time as Eastern. For perfect DST, compute offset dynamically.
+// Here, assume current EDT (-04:00); switch to -05:00 in winter or compute via a TZ lib.
+function parseEastern(eventDate: string, eventTime: string) {
+  return new Date(`${eventDate}T${eventTime}:00-04:00`);
+}
 
-  // Treat time as Eastern (approx -04:00 or -05:00)
-  const startLocal = new Date(`${eventDate}T${eventTime}:00-04:00`);
-  const endLocal = new Date(startLocal.getTime() + 60 * 60 * 1000);
+// ---------- ICS for EMAILED INVITE (METHOD:REQUEST) ----------
+function generateICalForEmailInvite(a: any, organizerEmail: string): string {
+  const { customerName, customerEmail, eventDate, eventTime, notes } = a;
+
+  const start = parseEastern(eventDate, eventTime);
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
 
   const dtstamp = toICalUtc(new Date());
-  const dtstart = toICalUtc(startLocal);
-  const dtend = toICalUtc(endLocal);
-  const created = dtstamp;
-  const modified = dtstamp;
-
-  const uid = `${Date.now()}-${customerEmail.replace("@", "-at-")}@theprosperityfinancial.com`;
-  const summary = `Strategy Session - ${customerName}`;
-  const description = icalEscape(
-    `Strategy Session with ${customerName}. Email: ${customerEmail}${
-      notes ? `. Notes: ${notes}` : ""
-    }`
-  );
+  const uid = `${Date.now()}-${(customerEmail || "guest").replace("@", "-at-")}@theprosperityfinancial.com`;
 
   const lines = [
     "BEGIN:VCALENDAR",
@@ -55,21 +49,25 @@ function generateICalendar(appointmentData: any): string {
     "BEGIN:VEVENT",
     `UID:${uid}`,
     `DTSTAMP:${dtstamp}`,
-    `CREATED:${created}`,
-    `LAST-MODIFIED:${modified}`,
-    `DTSTART:${dtstart}`,
-    `DTEND:${dtend}`,
-    `SUMMARY:${icalEscape(summary)}`,
-    `DESCRIPTION:${description}`,
+    `CREATED:${dtstamp}`,
+    `LAST-MODIFIED:${dtstamp}`,
+    `DTSTART:${toICalUtc(start)}`,
+    `DTEND:${toICalUtc(end)}`,
+    `SUMMARY:${icalEscape(`Strategy Session - ${customerName}`)}`,
+    `DESCRIPTION:${icalEscape(
+      `Strategy Session with ${customerName}. Email: ${customerEmail || "N/A"}${
+        a.notes ? `. Notes: ${a.notes}` : ""
+      }`
+    )}`,
     "LOCATION:Virtual Meeting",
     "STATUS:CONFIRMED",
     "SEQUENCE:0",
     "TRANSP:OPAQUE",
     "X-MICROSOFT-CDO-BUSYSTATUS:BUSY",
-    "ORGANIZER;CN=Davin Des:mailto:davindes@theprosperityfinancial.com",
-    `ATTENDEE;CN=${icalEscape(
-      customerName
-    )};ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:${customerEmail}`,
+    `ORGANIZER;CN=Prosperity Financial:mailto:${organizerEmail}`,
+    customerEmail
+      ? `ATTENDEE;CN=${icalEscape(customerName || "Guest")};ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:${customerEmail}`
+      : null,
     "BEGIN:VALARM",
     "TRIGGER:-PT15M",
     "ACTION:DISPLAY",
@@ -77,16 +75,54 @@ function generateICalendar(appointmentData: any): string {
     "END:VALARM",
     "END:VEVENT",
     "END:VCALENDAR",
-  ];
+  ].filter(Boolean) as string[];
 
-  return lines.join("\r\n") + "\r\n"; // Final CRLF for Outlook
+  return lines.join("\r\n") + "\r\n"; // trailing CRLF helps Outlook
 }
 
-// Convert to Base64 UTF-8 safely
+// ---------- ICS for DOWNLOAD/IMPORT (METHOD:PUBLISH) ----------
+function generateICalForDownload(a: any): string {
+  const { customerName, eventDate, eventTime, notes } = a;
+
+  const start = parseEastern(eventDate, eventTime);
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+
+  const dtstamp = toICalUtc(new Date());
+  const uid = `${Date.now()}@theprosperityfinancial.com`;
+
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Prosperity Financial//Appointment Booking//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${uid}`,
+    `DTSTAMP:${dtstamp}`,
+    `DTSTART:${toICalUtc(start)}`,
+    `DTEND:${toICalUtc(end)}`,
+    `SUMMARY:${icalEscape(`Strategy Session - ${customerName}`)}`,
+    `DESCRIPTION:${icalEscape(
+      `Strategy Session with ${customerName}${notes ? `. Notes: ${notes}` : ""}`
+    )}`,
+    "LOCATION:Virtual Meeting",
+    "STATUS:CONFIRMED",
+    "SEQUENCE:0",
+    "TRANSP:OPAQUE",
+    "X-MICROSOFT-CDO-BUSYSTATUS:BUSY",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ];
+
+  return lines.join("\r\n") + "\r\n";
+}
+
+// ---------- Encoding helper ----------
 function toBase64Utf8(str: string) {
   return b64encode(new TextEncoder().encode(str));
 }
 
+// ---------- Server ----------
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -102,6 +138,7 @@ serve(async (req) => {
     console.log("Appointment action:", action, appointmentData);
 
     switch (action) {
+      // Create appointment + send meeting request by email
       case "create": {
         const { error } = await supabaseClient.from("appointments").insert({
           customer_name: appointmentData.customerName,
@@ -113,23 +150,24 @@ serve(async (req) => {
           special_requests: appointmentData.notes || null,
           status: "pending",
         });
-
         if (error) throw error;
 
-        try {
-          console.log("Attempting to send email notification...");
+        // --- Email a proper meeting request (METHOD:REQUEST) ---
+        // Organizer MUST MATCH the "from" address for Outlook to treat it as a real invite.
+        const organizerEmail = "appointments@theprosperityfinancial.com";
 
-          const icsContent = generateICalendar(appointmentData);
+        try {
+          const icsContent = generateICalForEmailInvite(appointmentData, organizerEmail);
           const icsBase64 = toBase64Utf8(icsContent);
 
           const emailResult = await resend.emails.send({
-            from: "Appointments <appointments@theprosperityfinancial.com>",
-            to: ["davindes@theprosperityfinancial.com"],
+            from: `Prosperity Financial <${organizerEmail}>`, // matches ORGANIZER
+            to: ["davindes@theprosperityfinancial.com"],       // keep as in your original flow
             subject: `New Strategy Session Booked - ${appointmentData.customerName}`,
             html: `
               <h2>New Appointment Booked</h2>
               <p><strong>Client:</strong> ${appointmentData.customerName}</p>
-              <p><strong>Email:</strong> ${appointmentData.customerEmail}</p>
+              <p><strong>Email:</strong> ${appointmentData.customerEmail || "Not provided"}</p>
               <p><strong>Phone:</strong> ${appointmentData.customerPhone || "Not provided"}</p>
               <p><strong>Date:</strong> ${appointmentData.eventDate}</p>
               <p><strong>Time:</strong> ${appointmentData.eventTime}</p>
@@ -138,12 +176,12 @@ serve(async (req) => {
                   ? `<p><strong>Notes:</strong> ${appointmentData.notes}</p>`
                   : ""
               }
-              <p><em>A calendar invitation is attached to this email.</em></p>
+              <p><em>A calendar meeting request is attached.</em></p>
             `,
             attachments: [
               {
-                filename: "appointment.ics",
-                content: icsBase64,
+                filename: "invite.ics",
+                content: icsBase64, // Base64
                 contentType: "text/calendar; method=REQUEST; charset=UTF-8",
               },
             ],
@@ -152,6 +190,7 @@ serve(async (req) => {
           console.log("Email sent successfully:", emailResult);
         } catch (emailError) {
           console.error("Failed to send email:", emailError);
+          // do not throw; booking should still succeed
         }
 
         return new Response(
@@ -160,6 +199,7 @@ serve(async (req) => {
         );
       }
 
+      // Reschedule
       case "reschedule": {
         const { data, error } = await supabaseClient
           .from("appointments")
@@ -180,6 +220,7 @@ serve(async (req) => {
         );
       }
 
+      // Cancel
       case "cancel": {
         const { data, error } = await supabaseClient
           .from("appointments")
@@ -199,6 +240,7 @@ serve(async (req) => {
         );
       }
 
+      // Availability
       case "get-availability": {
         const today = new Date().toISOString().split("T")[0];
         const endDate = new Date();
@@ -234,6 +276,7 @@ serve(async (req) => {
         );
       }
 
+      // Get all active by email
       case "get-by-email": {
         const { data, error } = await supabaseClient
           .from("appointments")
@@ -248,6 +291,20 @@ serve(async (req) => {
           JSON.stringify({ success: true, appointments: data }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
         );
+      }
+
+      // NEW: Return a downloadable/import-friendly ICS (METHOD:PUBLISH)
+      case "get-ics": {
+        const ics = generateICalForDownload(appointmentData);
+        return new Response(ics, {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            // correct type for direct download or browser "open"
+            "Content-Type": "text/calendar; charset=UTF-8",
+            "Content-Disposition": 'attachment; filename="appointment.ics"',
+          },
+        });
       }
 
       default:
