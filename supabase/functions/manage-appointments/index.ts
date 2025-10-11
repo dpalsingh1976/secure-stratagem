@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "npm:resend@2.0.0";
-import { encode as b64encode } from "https://deno.land/std@0.224.0/encoding/base64.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -117,11 +116,6 @@ function generateICalForDownload(a: any): string {
   return lines.join("\r\n") + "\r\n";
 }
 
-// ---------- Encoding helper ----------
-function toBase64Utf8(str: string) {
-  return b64encode(new TextEncoder().encode(str));
-}
-
 // ---------- Server ----------
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -158,7 +152,7 @@ serve(async (req) => {
 
         try {
           const icsContent = generateICalForEmailInvite(appointmentData, organizerEmail);
-          const icsBase64 = toBase64Utf8(icsContent);
+          const icsBase64 = btoa(icsContent);
 
           const emailResult = await resend.emails.send({
             from: `Prosperity Financial <${organizerEmail}>`, // matches ORGANIZER
