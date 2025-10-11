@@ -123,7 +123,7 @@ serve(async (req) => {
             attachments: [
               {
                 filename: 'appointment.ics',
-                content: Buffer.from(icsContent).toString('base64'),
+                content: btoa(icsContent),
               }
             ],
           });
