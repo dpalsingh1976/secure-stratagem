@@ -9,6 +9,65 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Generate iCalendar (.ics) file content
+function generateICalendar(appointmentData: any): string {
+  const { customerName, customerEmail, eventDate, eventTime, notes } = appointmentData;
+  
+  // Parse date and time to create start/end times
+  const [year, month, day] = eventDate.split('-');
+  const [hour, minute] = eventTime.split(':');
+  
+  const startDate = new Date(Date.UTC(
+    parseInt(year),
+    parseInt(month) - 1,
+    parseInt(day),
+    parseInt(hour),
+    parseInt(minute)
+  ));
+  
+  // End time is 1 hour after start
+  const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+  
+  // Format dates as YYYYMMDDTHHMMSSZ
+  const formatICalDate = (date: Date): string => {
+    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  };
+  
+  const uid = `${Date.now()}-${customerEmail}@theprosperityfinancial.com`;
+  const dtstamp = formatICalDate(new Date());
+  const dtstart = formatICalDate(startDate);
+  const dtend = formatICalDate(endDate);
+  
+  const description = `Strategy Session with ${customerName}\\n\\nEmail: ${customerEmail}${notes ? `\\n\\nNotes: ${notes}` : ''}`;
+  
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Prosperity Financial//Appointment Booking//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:REQUEST',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${dtstamp}`,
+    `DTSTART:${dtstart}`,
+    `DTEND:${dtend}`,
+    `SUMMARY:Strategy Session - ${customerName}`,
+    `DESCRIPTION:${description}`,
+    'LOCATION:Virtual Meeting',
+    'STATUS:CONFIRMED',
+    'SEQUENCE:0',
+    `ORGANIZER;CN=Davin Des:mailto:davindes@theprosperityfinancial.com`,
+    `ATTENDEE;CN=${customerName};RSVP=TRUE:mailto:${customerEmail}`,
+    'BEGIN:VALARM',
+    'TRIGGER:-PT15M',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:Reminder: Strategy Session in 15 minutes',
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -40,9 +99,13 @@ serve(async (req) => {
 
         if (error) throw error;
 
-        // Send email notification to advisor
+        // Send email notification to advisor with calendar attachment
         try {
           console.log('Attempting to send email notification...');
+          
+          // Generate iCalendar content
+          const icsContent = generateICalendar(appointmentData);
+          
           const emailResult = await resend.emails.send({
             from: "Appointments <appointments@theprosperityfinancial.com>",
             to: ["davindes@theprosperityfinancial.com"],
@@ -55,7 +118,14 @@ serve(async (req) => {
               <p><strong>Date:</strong> ${appointmentData.eventDate}</p>
               <p><strong>Time:</strong> ${appointmentData.eventTime}</p>
               ${appointmentData.notes ? `<p><strong>Notes:</strong> ${appointmentData.notes}</p>` : ''}
+              <p><em>A calendar invitation is attached to this email.</em></p>
             `,
+            attachments: [
+              {
+                filename: 'appointment.ics',
+                content: Buffer.from(icsContent).toString('base64'),
+              }
+            ],
           });
           console.log('Email sent successfully:', emailResult);
         } catch (emailError) {
