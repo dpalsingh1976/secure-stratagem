@@ -12,7 +12,8 @@ import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import RiskIntake from "./pages/RiskIntake";
 import TaxBucketEstimator from "./pages/TaxBucketEstimator";
-import PolicyAssistant from "./pages/PolicyAssistant";
+import Policies from "./pages/Policies";
+import PolicyDetail from "./pages/PolicyDetail";
 import FNAReport from "./pages/FNAReport";
 import StressTesting from "./pages/StressTesting";
 import IULBanking from "./pages/IULBanking";
@@ -54,11 +55,8 @@ const App = () => (
               </AdminRoute>
             } />
             <Route path="/tax-bucket-estimator" element={<TaxBucketEstimator />} />
-            <Route path="/policy-assistant" element={
-              <AdminRoute requiredRole="user">
-                <PolicyAssistant />
-              </AdminRoute>
-            } />
+            <Route path="/policies" element={<Policies />} />
+            <Route path="/policies/:id" element={<PolicyDetail />} />
             <Route path="/fna-report" element={<FNAReport />} />
             <Route path="/stress-test" element={<StressTesting />} />
             <Route path="/iul" element={<IULBanking />} />

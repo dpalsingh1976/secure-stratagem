@@ -450,13 +450,18 @@ export type Database = {
       }
       documents: {
         Row: {
+          analysis_result: Json | null
+          analysis_status: string | null
           created_at: string
           file_size: number
           filename: string
+          guest_email: string | null
+          guest_name: string | null
           id: string
           metadata: Json | null
           mime_type: string
           original_filename: string
+          parsing_method: string | null
           processed_at: string | null
           storage_path: string
           updated_at: string
@@ -464,13 +469,18 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          analysis_result?: Json | null
+          analysis_status?: string | null
           created_at?: string
           file_size: number
           filename: string
+          guest_email?: string | null
+          guest_name?: string | null
           id?: string
           metadata?: Json | null
           mime_type: string
           original_filename: string
+          parsing_method?: string | null
           processed_at?: string | null
           storage_path: string
           updated_at?: string
@@ -478,13 +488,18 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          analysis_result?: Json | null
+          analysis_status?: string | null
           created_at?: string
           file_size?: number
           filename?: string
+          guest_email?: string | null
+          guest_name?: string | null
           id?: string
           metadata?: Json | null
           mime_type?: string
           original_filename?: string
+          parsing_method?: string | null
           processed_at?: string | null
           storage_path?: string
           updated_at?: string
@@ -774,6 +789,50 @@ export type Database = {
           },
         ]
       }
+      policy_analyses: {
+        Row: {
+          client_questions: Json | null
+          coverages: Json | null
+          created_at: string | null
+          document_id: string
+          exclusions: Json | null
+          gaps: Json | null
+          id: string
+          summary: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_questions?: Json | null
+          coverages?: Json | null
+          created_at?: string | null
+          document_id: string
+          exclusions?: Json | null
+          gaps?: Json | null
+          id?: string
+          summary?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_questions?: Json | null
+          coverages?: Json | null
+          created_at?: string | null
+          document_id?: string
+          exclusions?: Json | null
+          gaps?: Json | null
+          id?: string
+          summary?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policy_analyses_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           client_id: string
@@ -955,7 +1014,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: string
+        Returns: unknown
       }
       search_documents: {
         Args: {
