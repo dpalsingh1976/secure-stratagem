@@ -463,6 +463,7 @@ export type Database = {
           original_filename: string
           parsing_method: string | null
           processed_at: string | null
+          processing_progress: number | null
           storage_path: string
           updated_at: string
           upload_status: string
@@ -482,6 +483,7 @@ export type Database = {
           original_filename: string
           parsing_method?: string | null
           processed_at?: string | null
+          processing_progress?: number | null
           storage_path: string
           updated_at?: string
           upload_status?: string
@@ -501,6 +503,7 @@ export type Database = {
           original_filename?: string
           parsing_method?: string | null
           processed_at?: string | null
+          processing_progress?: number | null
           storage_path?: string
           updated_at?: string
           upload_status?: string

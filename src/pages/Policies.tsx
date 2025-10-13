@@ -4,6 +4,7 @@ import { Upload, FileText, CheckCircle, AlertCircle, Loader2, Trash2 } from "luc
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
@@ -18,6 +19,7 @@ interface PolicyDocument {
   file_size: number;
   guest_name?: string;
   guest_email?: string;
+  processing_progress?: number;
 }
 
 const Policies = () => {
@@ -35,7 +37,7 @@ const Policies = () => {
     try {
       const { data, error } = await supabase
         .from('documents')
-        .select('id, original_filename, analysis_status, created_at, file_size, guest_name, guest_email')
+        .select('id, original_filename, analysis_status, created_at, file_size, guest_name, guest_email, processing_progress')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -206,7 +208,19 @@ const Policies = () => {
     disabled: uploading
   });
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, progress?: number) => {
+    if (status === 'processing' && progress !== undefined && progress > 0) {
+      return (
+        <div className="flex items-center gap-2">
+          <Badge className="bg-blue-500"><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Processing</Badge>
+          <div className="flex items-center gap-2">
+            <Progress value={progress} className="w-24 h-2" />
+            <span className="text-sm text-muted-foreground">{progress}%</span>
+          </div>
+        </div>
+      );
+    }
+    
     switch (status) {
       case 'completed':
         return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" /> Analyzed</Badge>;
@@ -304,7 +318,7 @@ const Policies = () => {
                       </div>
                       
                       <div className="flex items-center gap-3">
-                        {getStatusBadge(doc.analysis_status)}
+                        {getStatusBadge(doc.analysis_status, doc.processing_progress)}
                         
                         {doc.analysis_status === 'completed' && (
                           <Button onClick={() => navigate(`/policies/${doc.id}`)}>

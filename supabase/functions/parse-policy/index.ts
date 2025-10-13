@@ -82,9 +82,9 @@ serve(async (req) => {
       .update({ parsing_method: parsingMethod })
       .eq('id', documentId);
 
-    // Chunk the text (simple chunking - split into ~1000 char chunks with overlap)
-    const chunkSize = 1000;
-    const overlap = 200;
+    // Chunk the text (optimized - larger chunks to reduce total count)
+    const chunkSize = 2500;
+    const overlap = 300;
     const chunks: string[] = [];
     
     for (let i = 0; i < text.length; i += chunkSize - overlap) {
@@ -93,50 +93,93 @@ serve(async (req) => {
 
     console.log(`Created ${chunks.length} chunks`);
 
-    // Generate embeddings and store chunks
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      
-      try {
-        // Generate embedding using OpenAI
-        const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openaiApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'text-embedding-3-small',
-            input: chunk,
-          }),
-        });
+    // Process chunks in batches for better performance
+    const batchSize = 10;
+    const batches = [];
+    for (let i = 0; i < chunks.length; i += batchSize) {
+      batches.push(chunks.slice(i, i + batchSize));
+    }
 
-        if (!embeddingResponse.ok) {
-          console.error('Embedding API error:', await embeddingResponse.text());
-          continue;
-        }
+    let processedCount = 0;
 
-        const embeddingData = await embeddingResponse.json();
-        const embedding = embeddingData.data[0].embedding;
+    // Generate embeddings and store chunks in batches
+    for (const batch of batches) {
+      const batchPromises = batch.map(async (chunk, batchIndex) => {
+        const globalIndex = processedCount + batchIndex;
+        
+        try {
+          // Generate embedding using OpenAI with retry logic
+          let embeddingResponse;
+          let retries = 3;
+          
+          while (retries > 0) {
+            try {
+              embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${openaiApiKey}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  model: 'text-embedding-3-small',
+                  input: chunk,
+                }),
+              });
 
-        // Store chunk with embedding
-        await supabase
-          .from('document_chunks')
-          .insert({
-            document_id: documentId,
-            content: chunk,
-            chunk_index: i,
-            embedding: embedding,
-            metadata: { 
-              parsing_method: parsingMethod,
-              chunk_size: chunk.length 
+              if (embeddingResponse.ok) break;
+              
+              retries--;
+              if (retries > 0) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * (4 - retries)));
+              }
+            } catch (error) {
+              retries--;
+              if (retries === 0) throw error;
+              await new Promise(resolve => setTimeout(resolve, 1000 * (4 - retries)));
             }
-          });
+          }
 
-        console.log(`Stored chunk ${i + 1}/${chunks.length}`);
-      } catch (error) {
-        console.error(`Error processing chunk ${i}:`, error);
-      }
+          if (!embeddingResponse || !embeddingResponse.ok) {
+            console.error('Embedding API error:', await embeddingResponse?.text());
+            return null;
+          }
+
+          const embeddingData = await embeddingResponse.json();
+          const embedding = embeddingData.data[0].embedding;
+
+          // Store chunk with embedding
+          await supabase
+            .from('document_chunks')
+            .insert({
+              document_id: documentId,
+              content: chunk,
+              chunk_index: globalIndex,
+              embedding: embedding,
+              metadata: { 
+                parsing_method: parsingMethod,
+                chunk_size: chunk.length 
+              }
+            });
+
+          console.log(`Stored chunk ${globalIndex + 1}/${chunks.length}`);
+          return true;
+        } catch (error) {
+          console.error(`Error processing chunk ${globalIndex}:`, error);
+          return null;
+        }
+      });
+
+      await Promise.all(batchPromises);
+      processedCount += batch.length;
+
+      // Update progress
+      const progress = Math.floor((processedCount / chunks.length) * 100);
+      await supabase
+        .from('documents')
+        .update({ processing_progress: progress })
+        .eq('id', documentId);
+
+      console.log(`Progress: ${progress}% (${processedCount}/${chunks.length} chunks)`);
     }
 
     // Mark as ready for analysis
@@ -144,6 +187,7 @@ serve(async (req) => {
       .from('documents')
       .update({ 
         processed_at: new Date().toISOString(),
+        processing_progress: 100,
         metadata: {
           ...document.metadata,
           chunks_created: chunks.length,
