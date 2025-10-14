@@ -188,6 +188,7 @@ serve(async (req) => {
       .update({ 
         processed_at: new Date().toISOString(),
         processing_progress: 100,
+        analysis_status: 'pending',
         metadata: {
           ...document.metadata,
           chunks_created: chunks.length,
@@ -196,7 +197,24 @@ serve(async (req) => {
       })
       .eq('id', documentId);
 
-    console.log('Document parsing complete');
+    console.log('Document parsing complete, triggering automatic analysis...');
+
+    // Automatically trigger analysis
+    try {
+      const { error: analysisError } = await supabase.functions.invoke('analyze-policy-rag', {
+        body: { documentId }
+      });
+      
+      if (analysisError) {
+        console.error('Failed to trigger automatic analysis:', analysisError);
+        // Don't fail the parsing - user can still manually trigger analysis
+      } else {
+        console.log('Automatic analysis triggered successfully');
+      }
+    } catch (error) {
+      console.error('Error invoking analyze-policy-rag:', error);
+      // Don't fail the parsing - user can still manually trigger analysis
+    }
 
     return new Response(
       JSON.stringify({
