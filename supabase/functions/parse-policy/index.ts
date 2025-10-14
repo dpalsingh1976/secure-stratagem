@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
+import * as pdfjsLib from 'npm:pdfjs-dist@4.0.379';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -53,25 +54,67 @@ serve(async (req) => {
 
     console.log('File downloaded, parsing...');
 
-    // Convert file to text
+    // Extract text from document
     let text = '';
-    let parsingMethod = 'native';
+    let parsingMethod = 'pdf_native';
 
     try {
-      // Try native text extraction first
-      text = await fileData.text();
-      
-      // If text is too short or looks like binary, it might need OCR
-      if (text.length < 100 || /[^\x20-\x7E\s]/.test(text.substring(0, 1000))) {
-        console.log('Text appears to be binary or scanned, OCR would be needed');
-        parsingMethod = 'ocr_needed';
-        // For now, we'll work with what we have
-        // TODO: Implement OCR fallback with tesseract.js in a separate service
+      // Check if it's a PDF
+      if (document.mime_type === 'application/pdf') {
+        console.log('Extracting text from PDF using PDF.js...');
+        
+        // Get PDF as ArrayBuffer
+        const arrayBuffer = await fileData.arrayBuffer();
+        
+        // Load PDF document
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdf = await loadingTask.promise;
+        
+        console.log(`PDF has ${pdf.numPages} pages, extracting text...`);
+        
+        // Extract text from each page
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          
+          // Combine text items from the page
+          const pageText = textContent.items
+            .map((item: any) => item.str)
+            .join(' ');
+          
+          text += `\n\n--- Page ${pageNum} ---\n\n${pageText}`;
+          
+          // Update progress every 10 pages
+          if (pageNum % 10 === 0) {
+            console.log(`Extracted ${pageNum}/${pdf.numPages} pages...`);
+          }
+        }
+        
+        console.log(`Successfully extracted ${text.length} characters from PDF`);
+        
+        // Check if extraction was successful
+        if (text.length < 100) {
+          console.log('Very little text extracted, PDF might be image-based');
+          parsingMethod = 'pdf_ocr_needed';
+        }
+      } else {
+        // Non-PDF files - use native text extraction
+        text = await fileData.text();
+        parsingMethod = 'text_native';
       }
     } catch (error) {
       console.error('Error parsing document:', error);
-      text = 'Unable to extract text from document';
       parsingMethod = 'failed';
+      
+      // Fallback to raw text extraction
+      try {
+        text = await fileData.text();
+        if (text.length < 100 || /[^\x20-\x7E\s]/.test(text.substring(0, 1000))) {
+          text = 'Unable to extract readable text from document. PDF may be scanned or corrupted.';
+        }
+      } catch {
+        text = 'Unable to extract text from document';
+      }
     }
 
     console.log(`Extracted ${text.length} characters using ${parsingMethod}`);
