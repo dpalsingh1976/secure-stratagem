@@ -2,36 +2,6 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-// Testing mode flag - set to true to bypass authentication
-const TESTING_MODE = false;
-
-// Mock data for testing mode
-const MOCK_USER: User = {
-  id: '12345678-1234-1234-1234-123456789abc',
-  email: 'admin@test.com',
-  aud: 'authenticated',
-  role: 'authenticated',
-  email_confirmed_at: new Date().toISOString(),
-  phone: '',
-  confirmed_at: new Date().toISOString(),
-  last_sign_in_at: new Date().toISOString(),
-  app_metadata: { provider: 'email', providers: ['email'] },
-  user_metadata: {},
-  identities: [],
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  is_anonymous: false
-} as User;
-
-const MOCK_SESSION: Session = {
-  access_token: 'mock-access-token',
-  refresh_token: 'mock-refresh-token',
-  expires_in: 3600,
-  expires_at: Date.now() / 1000 + 3600,
-  token_type: 'bearer',
-  user: MOCK_USER
-} as Session;
-
 export type UserRole = 'admin' | 'advisor' | 'user';
 
 interface AuthContextType {
@@ -84,16 +54,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    if (TESTING_MODE) {
-      // In testing mode, set mock data immediately
-      setUser(MOCK_USER);
-      setSession(MOCK_SESSION);
-      setUserRole('admin'); // Set as admin for full access
-      setLoading(false);
-      return;
-    }
-
-    // Normal Supabase auth flow
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -133,11 +93,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    if (TESTING_MODE) {
-      // In testing mode, always return success
-      return { error: null };
-    }
-    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -146,11 +101,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string) => {
-    if (TESTING_MODE) {
-      // In testing mode, always return success
-      return { error: null };
-    }
-    
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -164,11 +114,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    if (TESTING_MODE) {
-      // In testing mode, always return success
-      return { error: null };
-    }
-    
     const { error } = await supabase.auth.signOut();
     return { error };
   };

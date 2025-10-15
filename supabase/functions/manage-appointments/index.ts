@@ -9,6 +9,48 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Input validation helpers
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_REGEX = /^\d{2}:\d{2}$/;
+
+function validateAppointmentInput(data: any) {
+  const errors: string[] = [];
+  
+  if (!data.customerName || data.customerName.trim().length === 0) {
+    errors.push('Customer name is required');
+  } else if (data.customerName.length > 100) {
+    errors.push('Customer name must be less than 100 characters');
+  }
+  
+  if (!data.customerEmail || !EMAIL_REGEX.test(data.customerEmail)) {
+    errors.push('Valid email address is required');
+  } else if (data.customerEmail.length > 255) {
+    errors.push('Email must be less than 255 characters');
+  }
+  
+  if (data.customerPhone && !/^[0-9\-+() ]*$/.test(data.customerPhone)) {
+    errors.push('Phone number contains invalid characters');
+  } else if (data.customerPhone && data.customerPhone.length > 20) {
+    errors.push('Phone number must be less than 20 characters');
+  }
+  
+  if (!data.eventDate || !DATE_REGEX.test(data.eventDate)) {
+    errors.push('Valid date in YYYY-MM-DD format is required');
+  }
+  
+  if (!data.eventTime || !TIME_REGEX.test(data.eventTime)) {
+    errors.push('Valid time in HH:MM format is required');
+  }
+  
+  if (data.notes && data.notes.length > 1000) {
+    errors.push('Notes must be less than 1000 characters');
+  }
+  
+  return errors;
+}
+
 // ---------- iCalendar helpers ----------
 function icalEscape(s = "") {
   return s
@@ -134,6 +176,15 @@ serve(async (req) => {
     switch (action) {
       // Create appointment + send meeting request by email
       case "create": {
+        // Validate input
+        const validationErrors = validateAppointmentInput(appointmentData);
+        if (validationErrors.length > 0) {
+          return new Response(
+            JSON.stringify({ error: validationErrors.join(', ') }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
         const { error } = await supabaseClient.from("appointments").insert({
           customer_name: appointmentData.customerName,
           customer_email: appointmentData.customerEmail,
@@ -195,6 +246,28 @@ serve(async (req) => {
 
       // Reschedule
       case "reschedule": {
+        // Validate appointmentId
+        if (!appointmentId || !UUID_REGEX.test(appointmentId)) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid appointment ID format' }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
+        // Validate date and time
+        if (!appointmentData.eventDate || !DATE_REGEX.test(appointmentData.eventDate)) {
+          return new Response(
+            JSON.stringify({ error: 'Valid date in YYYY-MM-DD format is required' }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (!appointmentData.eventTime || !TIME_REGEX.test(appointmentData.eventTime)) {
+          return new Response(
+            JSON.stringify({ error: 'Valid time in HH:MM format is required' }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
         const { data, error } = await supabaseClient
           .from("appointments")
           .update({
@@ -216,6 +289,14 @@ serve(async (req) => {
 
       // Cancel
       case "cancel": {
+        // Validate appointmentId
+        if (!appointmentId || !UUID_REGEX.test(appointmentId)) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid appointment ID format' }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
         const { data, error } = await supabaseClient
           .from("appointments")
           .update({
@@ -272,6 +353,14 @@ serve(async (req) => {
 
       // Get all active by email
       case "get-by-email": {
+        // Validate email format
+        if (!appointmentData.email || !EMAIL_REGEX.test(appointmentData.email)) {
+          return new Response(
+            JSON.stringify({ error: 'Valid email address is required' }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
         const { data, error } = await supabaseClient
           .from("appointments")
           .select("*")
