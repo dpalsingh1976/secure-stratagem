@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Calculator, FileText, Upload, Lock, TrendingUp, CheckCircle, Award, ArrowRight, BarChart3, PieChart, Target } from "lucide-react";
+import { Shield, Calculator, FileText, Lock, TrendingUp, CheckCircle, Award, ArrowRight, BarChart3, PieChart, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,34 +18,7 @@ const Index = () => {
   const { user, loading } = useAuth();
   const { toast } = useToast();
   const [showRiskAssessment, setShowRiskAssessment] = useState(false);
-  const [showGuestUpload, setShowGuestUpload] = useState(false);
-  const [guestName, setGuestName] = useState('');
-  const [guestEmail, setGuestEmail] = useState('');
 
-  const handleUploadClick = () => {
-    if (loading) return;
-    if (!user) {
-      setShowGuestUpload(true);
-    } else {
-      navigate('/policies');
-    }
-  };
-
-  const handleGuestSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!guestName.trim() || !guestEmail.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Required fields",
-        description: "Please enter your name and email"
-      });
-      return;
-    }
-    // Store guest info in sessionStorage for the upload page
-    sessionStorage.setItem('guestName', guestName);
-    sessionStorage.setItem('guestEmail', guestEmail);
-    navigate('/policies');
-  };
 
   const calculators = [
     {
@@ -176,52 +149,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Upload Policy Section */}
-      <section className="section-padding bg-gradient-to-br from-secondary/5 to-primary/5">
-        <div className="container-financial">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl lg:text-4xl font-bold mb-4 font-heading">
-                Upload Your Policy & Get <span className="text-secondary">AI Analysis</span>
-              </h2>
-              <p className="text-xl text-muted-foreground">
-                Let AI analyze your insurance policy to uncover gaps and opportunities
-              </p>
-            </div>
-
-            <Card className="card-financial border-2 border-secondary/20 hover:border-secondary/40 transition-all">
-              <CardContent className="p-12">
-                <div className="text-center">
-                  <div className="mx-auto w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mb-6">
-                    <Upload className="w-10 h-10 text-secondary" />
-                  </div>
-                  <h3 className="text-2xl font-semibold mb-4">Smart Policy Assistant</h3>
-                  <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-                    Upload your insurance policy documents (PDF or DOC) and our AI will analyze coverage, identify gaps, and suggest improvements.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button 
-                      size="lg" 
-                      className="bg-secondary hover:bg-secondary/90"
-                      onClick={handleUploadClick}
-                      disabled={loading}
-                    >
-                      <Upload className="w-5 h-5 mr-2" />
-                      Upload Policy Now
-                    </Button>
-                    <Button 
-                      size="lg" 
-                      variant="outline"
-                    >
-                      Learn More
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
 
       {/* Calculators Section */}
       <section id="calculators" className="section-padding bg-white">
@@ -336,48 +263,6 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Guest Upload Dialog */}
-      <Dialog open={showGuestUpload} onOpenChange={setShowGuestUpload}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Upload Policy</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleGuestSubmit} className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Please provide your contact information to upload your policy document.
-            </p>
-            <div className="space-y-2">
-              <Label htmlFor="guestName">Full Name</Label>
-              <Input
-                id="guestName"
-                placeholder="John Doe"
-                value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guestEmail">Email</Label>
-              <Input
-                id="guestEmail"
-                type="email"
-                placeholder="john@example.com"
-                value={guestEmail}
-                onChange={(e) => setGuestEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={() => setShowGuestUpload(false)} className="flex-1">
-                Cancel
-              </Button>
-              <Button type="submit" className="flex-1">
-                Continue
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
