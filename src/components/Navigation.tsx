@@ -1,36 +1,17 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Menu, FileText, Calculator, TrendingUp, DollarSign, BookOpen, LogIn, ChevronDown, User } from 'lucide-react';
+import { Shield, Menu, FileText, Calculator, LogIn, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
   const navItems = [
-    { path: '/#how-it-works', label: 'How It Works', isAnchor: true },
-  ];
-
-  const solutionItems = [
-    { path: '/iul-banking', label: 'Indexed Universal Life (IUL)', icon: TrendingUp },
-    { path: '/admin/risk-intake', label: 'Term Life Insurance', icon: Shield },
-    { path: '/annuity-calculator', label: 'Fixed Index Annuities', icon: DollarSign },
-  ];
-
-  const calculatorItems = [
-    { path: '/admin/risk-intake', label: 'DIME Life Insurance Calculator', icon: Calculator },
-    { path: '/tax-bucket-estimator', label: '7702 Tax-Free Estimator', icon: Calculator },
-    { path: '/stress-test', label: 'IUL vs 401k/IRA Comparison', icon: Calculator },
-    { path: '/annuity-calculator', label: 'Annuity Income Calculator', icon: Calculator },
-    { path: '/longevity-calculator', label: 'Longevity Risk Calculator', icon: Calculator },
-    { path: '/inflation-stress-test', label: 'Inflation & Market Stress Test', icon: Calculator },
+    { path: '/#how-it-works', label: 'How It Works' },
+    { path: '/#solutions', label: 'Solutions' },
+    { path: '/#calculators', label: 'Calculators' },
   ];
 
   const otherItems = [
@@ -64,37 +45,6 @@ const Navigation = () => {
                 {item.label}
               </a>
             ))}
-
-            {/* Solutions Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-1 text-sm font-medium h-8 px-3">
-                  Solutions
-                  <ChevronDown className="w-3 h-3 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="w-64">
-                {solutionItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <DropdownMenuItem key={item.path} asChild>
-                      <Link to={item.path} className="flex items-center gap-2 cursor-pointer">
-                        <Icon className="w-4 h-4 opacity-70" />
-                        <span className="text-sm">{item.label}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Calculators Link */}
-            <a
-              href="/#calculators"
-              className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
-            >
-              Calculators
-            </a>
 
             {/* Other Items */}
             {otherItems.map((item) => (
@@ -151,35 +101,6 @@ const Navigation = () => {
                     {item.label}
                   </a>
                 ))}
-                
-                <div className="border-t pt-4">
-                  <p className="text-xs font-semibold text-muted-foreground px-4 mb-2">SOLUTIONS</p>
-                  {solutionItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                      >
-                        <Icon className="w-4 h-4" />
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                <div className="border-t pt-4">
-                  <a
-                    href="/#calculators"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
-                  >
-                    <Calculator className="w-5 h-5" />
-                    Calculators
-                  </a>
-                </div>
 
                 <div className="border-t pt-4 mt-4">
                   {otherItems.map((item) => {
