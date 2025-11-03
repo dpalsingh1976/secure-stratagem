@@ -21,7 +21,7 @@ import Resources from "./pages/Resources";
 import AnnuityCalculator from "./pages/AnnuityCalculator";
 import LongevityCalculator from "./pages/LongevityCalculator";
 import InflationStressTest from "./pages/InflationStressTest";
-import About from "./pages/About";
+import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
@@ -60,11 +60,12 @@ const App = () => (
             <Route path="/fna-report" element={<FNAReport />} />
             <Route path="/stress-test" element={<StressTesting />} />
             <Route path="/iul" element={<IULBanking />} />
+            <Route path="/iul-banking" element={<IULBanking />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/annuity-calculator" element={<AnnuityCalculator />} />
             <Route path="/longevity-calculator" element={<LongevityCalculator />} />
             <Route path="/inflation-stress-test" element={<InflationStressTest />} />
-            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

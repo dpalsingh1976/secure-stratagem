@@ -44,17 +44,17 @@ const Footer = () => {
             <div>
               <h3 className="text-sm font-semibold mb-4 text-foreground uppercase tracking-wide">Resources</h3>
               <div className="space-y-3">
-                <Link to="/stress-test" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
-                  IUL Calculator
-                </Link>
-                <Link to="/about" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                <a href="/#calculators" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Calculators
+                </a>
+                <Link to="/resources" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
                   Case Studies
                 </Link>
-                <Link to="/about" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/resources" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
                   FAQ
                 </Link>
-                <Link to="/stress-test" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Comparisons
+                <Link to="/contact" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Contact
                 </Link>
               </div>
             </div>

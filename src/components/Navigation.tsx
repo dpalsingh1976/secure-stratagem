@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Menu, FileText, Calculator, Upload, Landmark, BookOpen, LogIn, ChevronDown } from 'lucide-react';
+import { Shield, Menu, FileText, Calculator, TrendingUp, DollarSign, BookOpen, LogIn, ChevronDown, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
@@ -16,7 +16,12 @@ const Navigation = () => {
 
   const navItems = [
     { path: '/#how-it-works', label: 'How It Works', isAnchor: true },
-    { path: '/#solutions', label: 'Solutions', isAnchor: true },
+  ];
+
+  const solutionItems = [
+    { path: '/iul-banking', label: 'Indexed Universal Life (IUL)', icon: TrendingUp },
+    { path: '/admin/risk-intake', label: 'Term Life Insurance', icon: Shield },
+    { path: '/annuity-calculator', label: 'Fixed Index Annuities', icon: DollarSign },
   ];
 
   const calculatorItems = [
@@ -29,8 +34,7 @@ const Navigation = () => {
   ];
 
   const otherItems = [
-    { path: '/iul-banking', label: 'IUL Banking', icon: Landmark },
-    { path: '/about', label: 'About / Contact', icon: BookOpen },
+    { path: '/contact', label: 'Contact', icon: User },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -61,16 +65,16 @@ const Navigation = () => {
               </a>
             ))}
 
-            {/* Calculators Dropdown */}
+            {/* Solutions Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-1 text-sm font-medium h-8 px-3">
-                  Calculators
+                  Solutions
                   <ChevronDown className="w-3 h-3 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="center" className="w-64">
-                {calculatorItems.map((item) => {
+                {solutionItems.map((item) => {
                   const Icon = item.icon;
                   return (
                     <DropdownMenuItem key={item.path} asChild>
@@ -83,6 +87,14 @@ const Navigation = () => {
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Calculators Link */}
+            <a
+              href="/#calculators"
+              className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+            >
+              Calculators
+            </a>
 
             {/* Other Items */}
             {otherItems.map((item) => (
@@ -141,8 +153,8 @@ const Navigation = () => {
                 ))}
                 
                 <div className="border-t pt-4">
-                  <p className="text-xs font-semibold text-muted-foreground px-4 mb-2">CALCULATORS</p>
-                  {calculatorItems.map((item) => {
+                  <p className="text-xs font-semibold text-muted-foreground px-4 mb-2">SOLUTIONS</p>
+                  {solutionItems.map((item) => {
                     const Icon = item.icon;
                     return (
                       <Link
@@ -156,6 +168,17 @@ const Navigation = () => {
                       </Link>
                     );
                   })}
+                </div>
+
+                <div className="border-t pt-4">
+                  <a
+                    href="/#calculators"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    <Calculator className="w-5 h-5" />
+                    Calculators
+                  </a>
                 </div>
 
                 <div className="border-t pt-4 mt-4">

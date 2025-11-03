@@ -10,7 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 
-export default function About() {
+export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -60,7 +60,7 @@ export default function About() {
         <div className="container-financial">
           <div className="max-w-3xl mx-auto text-center">
             <Shield className="w-16 h-16 text-primary mx-auto mb-4" />
-            <h1 className="text-4xl lg:text-5xl font-bold mb-6 font-heading">About Secure Future Planner</h1>
+            <h1 className="text-4xl lg:text-5xl font-bold mb-6 font-heading">Contact Us</h1>
             <p className="text-xl text-muted-foreground">
               Empowering individuals and families to make informed financial decisions through professional-grade tools
               and personalized retirement planning strategies.
