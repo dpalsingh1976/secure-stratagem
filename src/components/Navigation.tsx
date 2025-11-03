@@ -15,9 +15,8 @@ const Navigation = () => {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', label: 'Home', icon: Shield },
-    { path: '/admin/risk-intake', label: 'Risk Assessment', icon: FileText, highlight: true },
-    { path: '/policy-assistant', label: 'Upload Policy', icon: Upload },
+    { path: '/#how-it-works', label: 'How It Works', isAnchor: true },
+    { path: '/#solutions', label: 'Solutions', isAnchor: true },
   ];
 
   const calculatorItems = [
@@ -30,6 +29,7 @@ const Navigation = () => {
   ];
 
   const otherItems = [
+    { path: '/iul-banking', label: 'IUL Banking', icon: Landmark },
     { path: '/about', label: 'About / Contact', icon: BookOpen },
   ];
 
@@ -52,21 +52,13 @@ const Navigation = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-0.5 flex-1 justify-center">
             {navItems.map((item) => (
-              <Link
+              <a
                 key={item.path}
-                to={item.path}
-                className={`px-3 py-1.5 text-sm font-medium transition-all whitespace-nowrap relative ${
-                  item.highlight
-                    ? isActive(item.path)
-                      ? 'text-primary'
-                      : 'text-foreground hover:text-primary'
-                    : isActive(item.path)
-                    ? 'text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                } ${isActive(item.path) ? 'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full' : ''}`}
+                href={item.path}
+                className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
               >
                 {item.label}
-              </Link>
+              </a>
             ))}
 
             {/* Calculators Dropdown */}
@@ -108,12 +100,12 @@ const Navigation = () => {
             ))}
           </div>
 
-          {/* Desktop Sign In */}
+          {/* Desktop Start Assessment Button */}
           <div className="hidden lg:block shrink-0">
-            <Link to="/auth">
-              <Button variant="ghost" size="sm" className="h-8 gap-1.5">
-                <LogIn className="w-4 h-4" />
-                Sign In
+            <Link to="/admin/risk-intake">
+              <Button variant="outline" size="sm" className="h-9 gap-1.5 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                <FileText className="w-4 h-4" />
+                Start Assessment
               </Button>
             </Link>
           </div>
@@ -127,24 +119,26 @@ const Navigation = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <div className="flex flex-col gap-4 mt-8">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
-                        isActive(item.path)
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
+                {/* Start Assessment Button */}
+                <Link to="/admin/risk-intake" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Start Assessment
+                  </Button>
+                </Link>
+
+                <div className="border-t pt-4"></div>
+
+                {navItems.map((item) => (
+                  <a
+                    key={item.path}
+                    href={item.path}
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    {item.label}
+                  </a>
+                ))}
                 
                 <div className="border-t pt-4">
                   <p className="text-xs font-semibold text-muted-foreground px-4 mb-2">CALCULATORS</p>

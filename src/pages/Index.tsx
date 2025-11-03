@@ -1,16 +1,13 @@
 import { useState } from "react";
-import { Shield, Calculator, FileText, Lock, TrendingUp, CheckCircle, Award, ArrowRight, BarChart3, PieChart, Target } from "lucide-react";
+import { Shield, Calculator, TrendingUp, CheckCircle, Target, ClipboardList, BarChart3, DollarSign, ArrowRight, PieChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import heroImage from "@/assets/hero-financial.jpg";
 import RiskIntake from "@/pages/RiskIntake";
 
 const Index = () => {
@@ -18,7 +15,6 @@ const Index = () => {
   const { user, loading } = useAuth();
   const { toast } = useToast();
   const [showRiskAssessment, setShowRiskAssessment] = useState(false);
-
 
   const calculators = [
     {
@@ -70,7 +66,6 @@ const Index = () => {
       primary: "bg-primary/10 text-primary",
       secondary: "bg-secondary/10 text-secondary",
       accent: "bg-accent/10 text-accent",
-      purple: "bg-purple-100 text-purple-600"
     };
     return colors[color as keyof typeof colors] || colors.primary;
   };
@@ -79,52 +74,52 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0">
-          <img 
-            src={heroImage} 
-            alt="Financial Planning" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/90 to-primary/80"></div>
-        </div>
+      {/* Hero Section - Clean White Background */}
+      <section className="relative min-h-[85vh] flex items-center bg-gradient-to-br from-white via-green-50/30 to-white overflow-hidden">
+        {/* Subtle Background Pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]"></div>
 
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        </div>
-
-        {/* Content */}
         <div className="relative z-10 container-financial">
-          <div className="max-w-4xl animate-fade-in-up">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 font-heading leading-tight">
+          <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
+            {/* Green Badge */}
+            <div className="inline-flex items-center gap-2 bg-primary text-white rounded-full px-6 py-2 mb-8 text-sm font-semibold">
+              <Shield className="w-4 h-4" />
+              Professional Financial Risk Assessment
+            </div>
+            
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 font-heading leading-tight">
               Plan a Secure,
-              <span className="block text-accent">Tax-Free Retirement</span>
+              <span className="block text-primary">Tax-Free Retirement</span>
               Today
             </h1>
             
-            <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-2xl leading-relaxed">
+            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
               Discover risks, calculate your needs, and explore advanced retirement strategies with professional-grade tools.
             </p>
 
-            {/* Primary CTA - Highly Visible */}
-            <div className="mb-8 flex justify-center">
+            {/* Two CTAs Side-by-Side */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button 
                 size="lg" 
-                className="bg-accent hover:bg-accent/90 text-white text-xl px-12 py-8 shadow-2xl hover:shadow-accent/50 transform hover:scale-105 transition-all font-bold border-4 border-white/20"
+                className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 shadow-lg"
                 onClick={() => setShowRiskAssessment(true)}
               >
-                <FileText className="w-6 h-6 mr-3" />
+                <ClipboardList className="w-5 h-5 mr-2" />
                 Start Risk Assessment Now
-                <ArrowRight className="w-6 h-6 ml-3" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="border-2 border-primary text-primary hover:bg-primary hover:text-white text-lg px-8 py-6"
+                onClick={() => navigate('/iul-banking')}
+              >
+                Learn About IUL Banking
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </div>
 
             {/* Trust Indicators */}
-            <div className="flex flex-wrap gap-8 text-white/80 text-sm">
+            <div className="flex flex-wrap justify-center gap-6 text-muted-foreground text-sm">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-secondary" />
                 <span>Professional Grade Tools</span>
@@ -140,15 +135,119 @@ const Index = () => {
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-            <div className="w-1 h-2 bg-white/60 rounded-full mt-2 animate-pulse"></div>
+      {/* How It Works Section */}
+      <section id="how-it-works" className="section-padding" style={{ backgroundColor: 'hsl(142 71% 97%)' }}>
+        <div className="container-financial">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4 font-heading text-foreground">
+              How It Works
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Our proven 3-step process helps you discover risks, understand solutions, and implement your personalized strategy
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Step 1 */}
+            <Card className="bg-white border-0 shadow-lg hover:shadow-xl transition-all">
+              <CardHeader>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center justify-center w-12 h-12 bg-primary rounded-full">
+                    <ClipboardList className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-4xl font-bold text-primary/20">01</div>
+                </div>
+                <CardTitle className="text-2xl mb-3">Complete Risk Assessment</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Answer questions about your financial situation to identify protection gaps
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Financial goals & timeline</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Tax situation analysis</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Current coverage review</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Step 2 */}
+            <Card className="bg-white border-0 shadow-lg hover:shadow-xl transition-all">
+              <CardHeader>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center justify-center w-12 h-12 bg-primary rounded-full">
+                    <BarChart3 className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-4xl font-bold text-primary/20">02</div>
+                </div>
+                <CardTitle className="text-2xl mb-3">Review Your Results</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Get detailed analysis with risk scores and personalized recommendations
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">IUL fit score & analysis</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Tax bucket visualization</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Personalized recommendations</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Step 3 */}
+            <Card className="bg-white border-0 shadow-lg hover:shadow-xl transition-all">
+              <CardHeader>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center justify-center w-12 h-12 bg-primary rounded-full">
+                    <Target className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-4xl font-bold text-primary/20">03</div>
+                </div>
+                <CardTitle className="text-2xl mb-3">Explore Your Solution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Use calculators and connect with advisors to implement your strategy
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Detailed product education</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Real-world case studies</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Schedule consultation</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
-
 
       {/* Calculators Section */}
       <section id="calculators" className="section-padding bg-white">
@@ -168,7 +267,7 @@ const Index = () => {
               return (
                 <Card 
                   key={index}
-                  className="card-financial hover:shadow-financial transition-all cursor-pointer group"
+                  className="hover:shadow-lg transition-all cursor-pointer group border"
                   onClick={() => navigate(calc.path)}
                 >
                   <CardHeader>
@@ -179,7 +278,7 @@ const Index = () => {
                     <CardDescription className="text-base">{calc.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                    <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all">
                       Calculate Now
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
@@ -191,61 +290,135 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="section-padding bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Comprehensive Financial Solutions */}
+      <section id="solutions" className="section-padding bg-gradient-to-br from-slate-50 to-white">
         <div className="container-financial">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4 font-heading">
-              Why Choose <span className="text-primary">Secure Future Planner</span>
+              Comprehensive Financial Solutions
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Comprehensive analysis backed by professional expertise and cutting-edge technology
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              We offer a range of strategies tailored to your unique situation and goals
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <Card className="card-financial text-center hover:shadow-financial transition-all">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* IUL */}
+            <Card className="bg-white border hover:shadow-lg transition-all">
               <CardHeader>
-                <div className="mx-auto mb-4 p-4 bg-gradient-primary rounded-full w-fit">
-                  <TrendingUp className="w-8 h-8 text-white" />
+                <div className="mb-4">
+                  <TrendingUp className="w-12 h-12 text-primary" />
                 </div>
-                <CardTitle className="text-xl">Data-Driven Insights</CardTitle>
+                <CardTitle className="text-2xl mb-3">Indexed Universal Life (IUL)</CardTitle>
+                <CardDescription className="text-base">
+                  Tax-free growth, downside protection, lifetime income through Infinite Banking Concept
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  Advanced algorithms analyze your complete financial picture across all risk categories with precision and accuracy
-                </p>
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">0% floor protects from market losses</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Tax-free policy loans</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Death benefit protection</span>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full" onClick={() => navigate('/iul-banking')}>
+                  Learn More
+                </Button>
               </CardContent>
             </Card>
 
-            <Card className="card-financial text-center hover:shadow-financial transition-all">
+            {/* Term Life */}
+            <Card className="bg-white border hover:shadow-lg transition-all">
               <CardHeader>
-                <div className="mx-auto mb-4 p-4 bg-gradient-secondary rounded-full w-fit">
-                  <Shield className="w-8 h-8 text-white" />
+                <div className="mb-4">
+                  <Shield className="w-12 h-12 text-primary" />
                 </div>
-                <CardTitle className="text-xl">Personalized Recommendations</CardTitle>
+                <CardTitle className="text-2xl mb-3">Term Life Insurance</CardTitle>
+                <CardDescription className="text-base">
+                  Cost-effective protection for family during working years and income-earning period
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  Get specific action steps tailored to your unique situation, goals, and risk tolerance
-                </p>
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Affordable premiums</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">High coverage amounts</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Convertible options</span>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full" onClick={() => navigate('/admin/risk-intake')}>
+                  Check Your Fit
+                </Button>
               </CardContent>
             </Card>
 
-            <Card className="card-financial text-center hover:shadow-financial transition-all">
+            {/* Annuities */}
+            <Card className="bg-white border hover:shadow-lg transition-all">
               <CardHeader>
-                <div className="mx-auto mb-4 p-4 bg-gradient-accent rounded-full w-fit">
-                  <Award className="w-8 h-8 text-white" />
+                <div className="mb-4">
+                  <DollarSign className="w-12 h-12 text-primary" />
                 </div>
-                <CardTitle className="text-xl">Professional Support</CardTitle>
+                <CardTitle className="text-2xl mb-3">Fixed Index Annuities</CardTitle>
+                <CardDescription className="text-base">
+                  Guaranteed lifetime income with growth potential for secure retirement cash flow
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  Work with licensed advisors who understand tax-efficient strategies and comprehensive planning
-                </p>
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Guaranteed income for life</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Principal protection</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Tax-deferred growth</span>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full" onClick={() => navigate('/annuity-calculator')}>
+                  Check Your Fit
+                </Button>
               </CardContent>
             </Card>
           </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="section-padding bg-primary">
+        <div className="container-financial text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold mb-6 font-heading text-white">
+            Ready to Secure Your Financial Future?
+          </h2>
+          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Take the first step with our comprehensive risk assessment. Get personalized insights in just 5 minutes.
+          </p>
+          <Button 
+            size="lg"
+            className="bg-accent hover:bg-accent/90 text-white text-lg px-10 py-6 shadow-lg"
+            onClick={() => setShowRiskAssessment(true)}
+          >
+            Start Your Free Assessment
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
         </div>
       </section>
 

@@ -66,6 +66,7 @@ export default {
 					medium: 'hsl(var(--risk-medium))',
 					low: 'hsl(var(--risk-low))'
 				},
+				mint: 'hsl(var(--mint-green))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

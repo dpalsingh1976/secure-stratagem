@@ -16,21 +16,24 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 26% 14%;
 
-    /* Primary Blue - Trust & Stability */
-    --primary: 221 83% 32%;  /* #1e3a8a */
+    /* Primary Dark Green - Guardian Shield Brand */
+    --primary: 162 72% 21%;  /* #0d5c4a - dark green */
     --primary-foreground: 0 0% 100%;
-    --primary-light: 221 83% 45%;
-    --primary-dark: 221 83% 25%;
+    --primary-light: 162 72% 35%;
+    --primary-dark: 162 72% 15%;
 
-    /* Secondary Green - Growth & Prosperity */
-    --secondary: 160 84% 39%;  /* #059669 */
+    /* Secondary Mint Green - Accents */
+    --secondary: 142 76% 36%;  /* #10b981 - lighter green */
     --secondary-foreground: 0 0% 100%;
-    --secondary-light: 160 84% 50%;
+    --secondary-light: 142 76% 50%;
 
-    /* Accent Gold - Premium & Security */
-    --accent: 25 95% 53%;  /* #d97706 */
+    /* Accent Orange - CTAs */
+    --accent: 25 95% 53%;  /* #d97706 - orange for buttons */
     --accent-foreground: 0 0% 100%;
     --accent-light: 25 95% 65%;
+
+    /* Mint Background */
+    --mint-green: 142 71% 97%;  /* Light mint for sections */
 
     /* Risk Level Colors */
     --risk-critical: 0 84% 60%;    /* Red */
@@ -50,12 +53,12 @@
 
     --radius: 0.75rem;
 
-    /* Financial Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--secondary-light)));
-    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-light)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary-dark)), hsl(var(--primary)));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98%));
+    /* Financial Gradients - Green Theme */
+    --gradient-primary: linear-gradient(135deg, hsl(162 72% 21%), hsl(162 72% 35%));
+    --gradient-secondary: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(25 95% 53%), hsl(25 95% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(162 72% 15%), hsl(162 72% 21%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(142 71% 98%));
 
     /* Shadows */
     --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.15);
