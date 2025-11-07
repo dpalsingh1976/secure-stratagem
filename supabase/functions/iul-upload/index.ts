@@ -35,9 +35,8 @@ serve(async (req) => {
 
       if (uploadError) throw uploadError;
 
-      // Extract text (MVP: basic extraction)
-      const buffer = await file.arrayBuffer();
-      const text = new TextDecoder().decode(buffer);
+      // Extract text placeholder (MVP: actual PDF parsing requires specialized library)
+      const placeholderText = `PDF File: ${file.name}\nSize: ${file.size} bytes\nUploaded: ${new Date().toISOString()}\n\nNote: PDF text extraction requires pdf-parse or similar library. This is a placeholder for MVP.`;
       
       // Store file record
       const { data: fileRecord, error: fileError } = await supabase
@@ -58,7 +57,7 @@ serve(async (req) => {
         .insert({
           case_id: caseId,
           file_id: fileRecord.id,
-          plain: text,
+          plain: placeholderText,
         })
         .select()
         .single();
