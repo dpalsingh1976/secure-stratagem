@@ -25,3 +25,13 @@ verify_jwt = false
 
 [functions.manage-appointments]
 verify_jwt = false
+
+# IUL Comparison functions
+[functions.iul-upload]
+verify_jwt = false
+
+[functions.iul-index]
+verify_jwt = false
+
+[functions.iul-compare]
+verify_jwt = false

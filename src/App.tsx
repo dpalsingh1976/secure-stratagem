@@ -17,6 +17,7 @@ import PolicyDetail from "./pages/PolicyDetail";
 import FNAReport from "./pages/FNAReport";
 import StressTesting from "./pages/StressTesting";
 import IULBanking from "./pages/IULBanking";
+import IULComparison from "./pages/IULComparison";
 import Resources from "./pages/Resources";
 import AnnuityCalculator from "./pages/AnnuityCalculator";
 import LongevityCalculator from "./pages/LongevityCalculator";
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/stress-test" element={<StressTesting />} />
             <Route path="/iul" element={<IULBanking />} />
             <Route path="/iul-banking" element={<IULBanking />} />
+            <Route path="/iul-compare" element={<IULComparison />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/annuity-calculator" element={<AnnuityCalculator />} />
             <Route path="/longevity-calculator" element={<LongevityCalculator />} />

@@ -611,6 +611,79 @@ export type Database = {
           },
         ]
       }
+      iul_cases: {
+        Row: {
+          created_at: string | null
+          id: string
+          owner_uid: string | null
+          title: string | null
+          updated_at: string | null
+          vector_store_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          owner_uid?: string | null
+          title?: string | null
+          updated_at?: string | null
+          vector_store_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          owner_uid?: string | null
+          title?: string | null
+          updated_at?: string | null
+          vector_store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iul_cases_vector_store_id_fkey"
+            columns: ["vector_store_id"]
+            isOneToOne: false
+            referencedRelation: "iul_vector_store"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      iul_files: {
+        Row: {
+          case_id: string | null
+          created_at: string | null
+          filename: string
+          id: string
+          pages: Json | null
+          storage_path: string
+          text_id: string | null
+        }
+        Insert: {
+          case_id?: string | null
+          created_at?: string | null
+          filename: string
+          id?: string
+          pages?: Json | null
+          storage_path: string
+          text_id?: string | null
+        }
+        Update: {
+          case_id?: string | null
+          created_at?: string | null
+          filename?: string
+          id?: string
+          pages?: Json | null
+          storage_path?: string
+          text_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iul_files_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "iul_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       iul_illustrations: {
         Row: {
           carrier_name: string | null
@@ -647,6 +720,108 @@ export type Database = {
           processing_status?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      iul_policies: {
+        Row: {
+          case_id: string | null
+          created_at: string | null
+          data: Json
+          id: string
+          source_file_id: string | null
+        }
+        Insert: {
+          case_id?: string | null
+          created_at?: string | null
+          data: Json
+          id?: string
+          source_file_id?: string | null
+        }
+        Update: {
+          case_id?: string | null
+          created_at?: string | null
+          data?: Json
+          id?: string
+          source_file_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iul_policies_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "iul_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "iul_policies_source_file_id_fkey"
+            columns: ["source_file_id"]
+            isOneToOne: false
+            referencedRelation: "iul_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      iul_texts: {
+        Row: {
+          case_id: string | null
+          created_at: string | null
+          file_id: string | null
+          id: string
+          plain: string
+        }
+        Insert: {
+          case_id?: string | null
+          created_at?: string | null
+          file_id?: string | null
+          id?: string
+          plain: string
+        }
+        Update: {
+          case_id?: string | null
+          created_at?: string | null
+          file_id?: string | null
+          id?: string
+          plain?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iul_texts_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "iul_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "iul_texts_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "iul_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      iul_vector_store: {
+        Row: {
+          created_at: string | null
+          id: string
+          note: string | null
+          openai_vector_store_id: string
+          owner_uid: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          note?: string | null
+          openai_vector_store_id: string
+          owner_uid?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          note?: string | null
+          openai_vector_store_id?: string
+          owner_uid?: string | null
         }
         Relationships: []
       }
@@ -944,10 +1119,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
-        Returns: unknown
-      }
       get_report_by_public_link: {
         Args: { _public_link_id: string }
         Returns: {
@@ -959,22 +1130,12 @@ export type Database = {
           report_jsonb: Json
           updated_at: string | null
         }[]
-      }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
+        SetofOptions: {
+          from: "*"
+          to: "reports"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       has_role: {
         Args: {
@@ -982,42 +1143,6 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
-      }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
       }
       search_documents: {
         Args: {
@@ -1032,42 +1157,6 @@ export type Database = {
           metadata: Json
           similarity: number
         }[]
-      }
-      sparsevec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      vector_send: {
-        Args: { "": string }
-        Returns: string
-      }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
       }
     }
     Enums: {
