@@ -14,7 +14,7 @@ const Footer = () => {
                 <div className="p-1.5 bg-gradient-primary rounded-lg">
                   <Shield className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-xl font-bold font-heading text-primary">Guardian Shield</span>
+                <span className="text-xl font-bold font-heading text-primary">Prosperity Financial</span>
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Professional financial risk assessment and retirement planning solutions.
