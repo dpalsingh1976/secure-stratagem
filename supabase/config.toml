@@ -35,3 +35,21 @@ verify_jwt = false
 
 [functions.iul-compare]
 verify_jwt = false
+
+[functions.calc-401k]
+verify_jwt = false
+
+[functions.calc-roth-lirp]
+verify_jwt = false
+
+[functions.calc-ssi]
+verify_jwt = false
+
+[functions.calc-heirs-tax]
+verify_jwt = false
+
+[functions.calc-summary-compare]
+verify_jwt = false
+
+[functions.tax-agent]
+verify_jwt = false
