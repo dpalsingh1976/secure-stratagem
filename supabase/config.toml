@@ -13,6 +13,24 @@ verify_jwt = true
 [functions.parse-policy]
 verify_jwt = true
 
+[functions.iul-upload]
+verify_jwt = true
+
+[functions.iul-index]
+verify_jwt = true
+
+[functions.iul-compare]
+verify_jwt = true
+
+[functions.tax-agent]
+verify_jwt = true
+
+[functions.send-contact-email]
+verify_jwt = false
+
+[functions.manage-appointments]
+verify_jwt = false
+
 # Public functions - allow anonymous access
 [functions.ai-chatbot]
 verify_jwt = false
@@ -23,19 +41,7 @@ verify_jwt = false
 [functions.predictive-insights]
 verify_jwt = false
 
-[functions.manage-appointments]
-verify_jwt = false
-
-# IUL Comparison functions
-[functions.iul-upload]
-verify_jwt = false
-
-[functions.iul-index]
-verify_jwt = false
-
-[functions.iul-compare]
-verify_jwt = false
-
+# Calculation functions - allow anonymous access for public tools
 [functions.calc-401k]
 verify_jwt = false
 
@@ -49,7 +55,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.calc-summary-compare]
-verify_jwt = false
-
-[functions.tax-agent]
 verify_jwt = false
