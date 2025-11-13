@@ -58,7 +58,7 @@ export default function TaxScenarios() {
 
   const loadPresets = async () => {
     const { data, error } = await supabase
-      .from('tax_presets')
+      .from('tax_presets' as any)
       .select('*')
       .eq('is_active', true);
     

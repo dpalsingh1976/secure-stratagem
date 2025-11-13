@@ -25,6 +25,13 @@ const Index = () => {
       path: "/admin/risk-intake",
     },
     {
+      title: "401k vs Roth/LIRP Analyzer",
+      description: "Compare pre-tax vs after-tax strategies with SSI impact analysis",
+      icon: TrendingUp,
+      color: "primary",
+      path: "/tax-scenarios",
+    },
+    {
       title: "7702 Tax-Free Estimator",
       description: "Compare tax-free, tax-deferred, and taxable retirement strategies",
       icon: PieChart,
