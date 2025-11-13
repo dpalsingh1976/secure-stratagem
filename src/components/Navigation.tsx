@@ -1,22 +1,20 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Shield, Menu, FileText, Calculator, LogIn, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Shield, Menu, FileText, Calculator, LogIn, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
   const navItems = [
-    { path: '/#how-it-works', label: 'How It Works' },
-    { path: '/#solutions', label: 'Solutions' },
-    { path: '/#calculators', label: 'Calculators' },
+    { path: "/#how-it-works", label: "How It Works" },
+    { path: "/#solutions", label: "Solutions" },
+    { path: "/#calculators", label: "Calculators" },
   ];
 
-  const otherItems = [
-    { path: '/contact', label: 'Contact', icon: User },
-  ];
+  const otherItems = [{ path: "/contact", label: "Contact", icon: User }];
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -30,7 +28,7 @@ const Navigation = () => {
               <Shield className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-bold font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent whitespace-nowrap">
-               Guardian Shield
+              Prosperity Financial
             </span>
           </Link>
 
@@ -53,8 +51,8 @@ const Navigation = () => {
                 to={item.path}
                 className={`px-3 py-1.5 text-sm font-medium transition-all whitespace-nowrap relative ${
                   isActive(item.path)
-                    ? 'text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {item.label}
@@ -65,7 +63,11 @@ const Navigation = () => {
           {/* Desktop Start Assessment Button */}
           <div className="hidden lg:block shrink-0">
             <Link to="/admin/risk-intake">
-              <Button variant="outline" size="sm" className="h-9 gap-1.5 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              >
                 <FileText className="w-4 h-4" />
                 Start Assessment
               </Button>
@@ -112,8 +114,8 @@ const Navigation = () => {
                         onClick={() => setIsOpen(false)}
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
                           isActive(item.path)
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
                         }`}
                       >
                         <Icon className="w-5 h-5" />
