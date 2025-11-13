@@ -25,6 +25,9 @@ import InflationStressTest from "./pages/InflationStressTest";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
+import TaxScenarios from "./pages/TaxScenarios";
+import TaxCompare from "./pages/TaxCompare";
+import TaxAgent from "./pages/TaxAgent";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +70,9 @@ const App = () => (
             <Route path="/annuity-calculator" element={<AnnuityCalculator />} />
             <Route path="/longevity-calculator" element={<LongevityCalculator />} />
             <Route path="/inflation-stress-test" element={<InflationStressTest />} />
+            <Route path="/tax-scenarios" element={<TaxScenarios />} />
+            <Route path="/tax-compare" element={<TaxCompare />} />
+            <Route path="/tax-agent" element={<TaxAgent />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
