@@ -333,7 +333,7 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
                     <SelectValue placeholder="Same as current state" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Same as current state</SelectItem>
+                    <SelectItem value="same">Same as current state</SelectItem>
                     {US_STATES.map(state => (
                       <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
