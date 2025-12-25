@@ -19,6 +19,7 @@ import { ProtectionHealthForm } from '@/components/financial/ProtectionHealthFor
 
 import { ReportModal } from '@/components/financial/ReportModal';
 import { computeRiskMetrics } from '@/utils/riskComputation';
+import { computeRetirementReadiness } from '@/engine/retirement';
 import type { 
   Client, 
   ProfileGoalsData, 
@@ -26,9 +27,9 @@ import type {
   AssetFormData, 
   LiabilityFormData, 
   ProtectionHealthData, 
-  
   ComputedMetrics
 } from '@/types/financial';
+import type { RetirementReadinessResult } from '@/types/retirement';
 
 const STEPS = [
   { id: 'profile', label: 'Profile & Goals', icon: Users, description: 'Client information and retirement goals' },
@@ -45,6 +46,7 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
   const [isLoading, setIsLoading] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [computedMetrics, setComputedMetrics] = useState<ComputedMetrics | null>(null);
+  const [retirementResult, setRetirementResult] = useState<RetirementReadinessResult | null>(null);
 
   // Form data states
   const [profileData, setProfileData] = useState<ProfileGoalsData>({
@@ -57,7 +59,11 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     dependents: 0,
     retirement_age: 65,
     desired_monthly_income: 0,
-    insurance_priorities: []
+    insurance_priorities: [],
+    retirement_lifestyle: 'comfortable',
+    spending_target_method: 'fixed',
+    spending_percent_of_income: 80,
+    planned_retirement_state: ''
   });
 
   const [incomeData, setIncomeData] = useState<IncomeExpensesData>({
@@ -73,7 +79,11 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     variable_expenses: 0,
     debt_service: 0,
     employer_match_pct: 0,
-    hsa_eligible: false
+    hsa_eligible: false,
+    annual_retirement_contribution: 0,
+    contribution_growth_rate: 2,
+    social_security_confidence: 'medium',
+    expected_part_time_income: 0
   });
 
   const [assets, setAssets] = useState<AssetFormData[]>([]);
@@ -85,7 +95,11 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     permanent_life_db: 0,
     ltc_daily_benefit: 0,
     ltc_benefit_period: 0,
-    emergency_fund_months: 0
+    emergency_fund_months: 0,
+    prefers_guaranteed_income: false,
+    liquidity_need_next_5yr: 'medium',
+    can_commit_10yr_contributions: false,
+    open_to_tax_diversification: false
   });
 
 
@@ -179,6 +193,30 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
         }
       });
 
+      // Compute retirement readiness
+      const retirement = computeRetirementReadiness(
+        profileData,
+        incomeData,
+        assets,
+        liabilities,
+        protectionData,
+        metrics,
+        {
+          retirement_lifestyle: profileData.retirement_lifestyle || 'comfortable',
+          spending_target_method: profileData.spending_target_method || 'fixed',
+          spending_percent_of_income: profileData.spending_percent_of_income || 80,
+          planned_retirement_state: profileData.planned_retirement_state || profileData.state,
+          annual_retirement_contribution: incomeData.annual_retirement_contribution || 0,
+          contribution_growth_rate: incomeData.contribution_growth_rate || 2,
+          social_security_confidence: incomeData.social_security_confidence || 'medium',
+          expected_part_time_income: incomeData.expected_part_time_income || 0,
+          prefers_guaranteed_income: protectionData.prefers_guaranteed_income || false,
+          liquidity_need_next_5yr: protectionData.liquidity_need_next_5yr || 'medium',
+          can_commit_10yr_contributions: protectionData.can_commit_10yr_contributions || false,
+          open_to_tax_diversification: protectionData.open_to_tax_diversification || false
+        }
+      );
+
       // Only save to database if not a temporary ID
       if (!clientId.startsWith('temp-')) {
         const { error: metricsError } = await supabase
@@ -189,13 +227,14 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
       }
 
       setComputedMetrics(metrics);
+      setRetirementResult(retirement);
 
       // Show report modal
       setShowReport(true);
 
       toast({
         title: "Report generated",
-        description: "Your comprehensive report is ready to view."
+        description: "Your comprehensive Retirement Readiness Report is ready."
       });
     } catch (error) {
       console.error('Error generating report:', error);
@@ -385,6 +424,7 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
             onClose={() => setShowReport(false)}
             clientId={clientId}
             metrics={computedMetrics}
+            retirementResult={retirementResult}
             profileData={profileData}
             incomeData={incomeData}
             assets={assets}

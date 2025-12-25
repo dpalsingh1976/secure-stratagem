@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Shield, Heart, User, Activity } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { InfoIcon } from 'lucide-react';
@@ -327,6 +328,115 @@ export function ProtectionHealthForm({ data, onChange, onValidationChange }: Pro
                   </div>
                 </div>
               )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Retirement Suitability Questions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <User className="h-5 w-5 text-primary" />
+              <span>Retirement Planning Preferences</span>
+            </CardTitle>
+            <CardDescription>
+              Help us understand your preferences for retirement planning solutions
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handleInputChange('prefers_guaranteed_income', !data.prefers_guaranteed_income)}>
+                  <Checkbox
+                    checked={data.prefers_guaranteed_income || false}
+                    onCheckedChange={(checked) => handleInputChange('prefers_guaranteed_income', checked)}
+                  />
+                  <div>
+                    <Label className="cursor-pointer font-medium">I prefer guaranteed lifetime income</Label>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Would you value having income you can't outlive, even if it means potentially lower total returns?
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handleInputChange('can_commit_10yr_contributions', !data.can_commit_10yr_contributions)}>
+                  <Checkbox
+                    checked={data.can_commit_10yr_contributions || false}
+                    onCheckedChange={(checked) => handleInputChange('can_commit_10yr_contributions', checked)}
+                  />
+                  <div>
+                    <Label className="cursor-pointer font-medium">I can commit to 10+ years of contributions</Label>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Are you able to make consistent contributions for at least 10 years?
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handleInputChange('open_to_tax_diversification', !data.open_to_tax_diversification)}>
+                  <Checkbox
+                    checked={data.open_to_tax_diversification || false}
+                    onCheckedChange={(checked) => handleInputChange('open_to_tax_diversification', checked)}
+                  />
+                  <div>
+                    <Label className="cursor-pointer font-medium">I'm interested in tax diversification</Label>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Would you like to explore tax-free retirement income strategies?
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Label>Liquidity Needs (Next 3-5 Years)</Label>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <InfoIcon className="h-4 w-4 text-gray-400" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>How likely are you to need access to large sums of money soon?</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Select 
+                    value={data.liquidity_need_next_5yr || 'medium'} 
+                    onValueChange={(value: 'low' | 'medium' | 'high') => handleInputChange('liquidity_need_next_5yr', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select liquidity need" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low - No major expenses expected</SelectItem>
+                      <SelectItem value="medium">Medium - Some planned expenses</SelectItem>
+                      <SelectItem value="high">High - Major purchase or expense coming</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Suitability Summary */}
+                <div className={`p-4 rounded-lg ${
+                  data.can_commit_10yr_contributions && data.open_to_tax_diversification && data.liquidity_need_next_5yr !== 'high'
+                    ? 'bg-green-50 border-2 border-green-200'
+                    : data.prefers_guaranteed_income
+                    ? 'bg-blue-50 border-2 border-blue-200'
+                    : 'bg-gray-50 border-2 border-gray-200'
+                }`}>
+                  <h4 className="font-semibold mb-2">
+                    {data.can_commit_10yr_contributions && data.open_to_tax_diversification && data.liquidity_need_next_5yr !== 'high'
+                      ? '✓ Good fit for tax-advantaged strategies'
+                      : data.prefers_guaranteed_income
+                      ? '✓ May benefit from guaranteed income solutions'
+                      : 'We\'ll find the right fit for you'}
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Your answers help us recommend appropriate retirement planning strategies.
+                  </p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

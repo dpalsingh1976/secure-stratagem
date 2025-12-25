@@ -189,6 +189,11 @@ export interface ProfileGoalsData {
   retirement_age: number;
   desired_monthly_income: number;
   insurance_priorities: string[];
+  // Retirement planning additions
+  retirement_lifestyle: 'basic' | 'comfortable' | 'premium';
+  spending_target_method: 'fixed' | 'percent';
+  spending_percent_of_income: number;
+  planned_retirement_state: string;
 }
 
 export interface IncomeExpensesData {
@@ -205,6 +210,11 @@ export interface IncomeExpensesData {
   debt_service: number;
   employer_match_pct: number;
   hsa_eligible: boolean;
+  // Retirement planning additions
+  annual_retirement_contribution: number;
+  contribution_growth_rate: number;
+  social_security_confidence: 'low' | 'medium' | 'high';
+  expected_part_time_income: number;
 }
 
 export interface AssetFormData {
@@ -240,6 +250,11 @@ export interface ProtectionHealthData {
   ltc_daily_benefit: number;
   ltc_benefit_period: number;
   emergency_fund_months: number;
+  // Retirement suitability additions
+  prefers_guaranteed_income: boolean;
+  liquidity_need_next_5yr: 'low' | 'medium' | 'high';
+  can_commit_10yr_contributions: boolean;
+  open_to_tax_diversification: boolean;
 }
 
 export interface RiskPreferencesData {

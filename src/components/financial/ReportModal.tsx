@@ -21,11 +21,14 @@ import type {
   ProtectionHealthData
 } from '@/types/financial';
 
+import type { RetirementReadinessResult } from '@/types/retirement';
+
 interface ReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   clientId: string;
   metrics: ComputedMetrics;
+  retirementResult?: RetirementReadinessResult | null;
   profileData: ProfileGoalsData;
   incomeData: IncomeExpensesData;
   assets: AssetFormData[];
@@ -49,13 +52,14 @@ export function ReportModal({
   onClose,
   clientId,
   metrics,
+  retirementResult,
   profileData,
   incomeData,
   assets,
   liabilities,
   protectionData
 }: ReportModalProps) {
-  const [activeTab, setActiveTab] = useState('summary');
+  const [activeTab, setActiveTab] = useState('retirement');
   const [isExporting, setIsExporting] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -448,15 +452,184 @@ export function ReportModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="grid w-full grid-cols-5 flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-6 flex-shrink-0">
+            <TabsTrigger value="retirement">Retirement</TabsTrigger>
             <TabsTrigger value="summary">Summary</TabsTrigger>
             <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
             <TabsTrigger value="tax-buckets">Tax Buckets</TabsTrigger>
-            <TabsTrigger value="coverage">Coverage & Income</TabsTrigger>
+            <TabsTrigger value="coverage">Coverage</TabsTrigger>
             <TabsTrigger value="appendix">Appendix</TabsTrigger>
           </TabsList>
 
           <div className="overflow-y-auto flex-1 mt-4 pr-2">
+            {/* Retirement Readiness Tab */}
+            <TabsContent value="retirement" className="space-y-6">
+              {retirementResult ? (
+                <>
+                  {/* Score Ring and Grade */}
+                  <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-6">
+                          <div className="relative w-32 h-32">
+                            <svg className="w-32 h-32 transform -rotate-90">
+                              <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="12" fill="none" className="text-gray-200" />
+                              <circle 
+                                cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="12" fill="none" 
+                                strokeDasharray={`${(retirementResult.overall_score / 100) * 352} 352`}
+                                className={retirementResult.overall_score >= 70 ? 'text-green-500' : retirementResult.overall_score >= 50 ? 'text-yellow-500' : 'text-red-500'}
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center flex-col">
+                              <span className="text-3xl font-bold">{retirementResult.overall_score}</span>
+                              <span className="text-sm text-gray-500">/ 100</span>
+                            </div>
+                          </div>
+                          <div>
+                            <h2 className="text-2xl font-bold">Retirement Readiness Score</h2>
+                            <Badge className={`text-lg px-3 py-1 ${
+                              retirementResult.overall_grade === 'A' ? 'bg-green-600' :
+                              retirementResult.overall_grade === 'B' ? 'bg-blue-600' :
+                              retirementResult.overall_grade === 'C' ? 'bg-yellow-600' :
+                              'bg-red-600'
+                            }`}>
+                              Grade: {retirementResult.overall_grade}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Income Gap */}
+                  <Card className={retirementResult.projection.monthly_gap > 0 ? 'border-2 border-red-300' : 'border-2 border-green-300'}>
+                    <CardHeader>
+                      <CardTitle>Projected Monthly Retirement Income</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div className="p-4 bg-blue-50 rounded-lg">
+                          <p className="text-sm text-blue-700">Projected Income</p>
+                          <p className="text-2xl font-bold text-blue-900">{formatCurrency(retirementResult.projection.monthly_income_projected)}</p>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-700">Target Income</p>
+                          <p className="text-2xl font-bold text-gray-900">{formatCurrency(retirementResult.projection.monthly_income_target)}</p>
+                        </div>
+                        <div className={`p-4 rounded-lg ${retirementResult.projection.monthly_gap > 0 ? 'bg-red-50' : 'bg-green-50'}`}>
+                          <p className={`text-sm ${retirementResult.projection.monthly_gap > 0 ? 'text-red-700' : 'text-green-700'}`}>
+                            {retirementResult.projection.monthly_gap > 0 ? 'Monthly Gap' : 'Surplus'}
+                          </p>
+                          <p className={`text-2xl font-bold ${retirementResult.projection.monthly_gap > 0 ? 'text-red-900' : 'text-green-900'}`}>
+                            {formatCurrency(Math.abs(retirementResult.projection.monthly_gap))}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Sub-Scores */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Risk Category Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {Object.entries({
+                        'Income Adequacy': retirementResult.sub_scores.income_adequacy,
+                        'Tax Risk': retirementResult.sub_scores.tax_risk,
+                        'Sequence Risk': retirementResult.sub_scores.sequence_risk,
+                        'Longevity Risk': retirementResult.sub_scores.longevity_risk,
+                        'Liquidity': retirementResult.sub_scores.liquidity,
+                        'Protection': retirementResult.sub_scores.protection
+                      }).map(([label, score]) => (
+                        <div key={label} className="flex items-center gap-4">
+                          <span className="w-36 font-medium">{label}</span>
+                          <Progress value={score} className="flex-1" />
+                          <span className={`w-12 text-right font-bold ${score >= 70 ? 'text-green-600' : score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                            {score}
+                          </span>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+
+                  {/* Product Recommendations */}
+                  {retirementResult.recommendations.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Product Fit Analysis</CardTitle>
+                        <CardDescription>Based on your profile and goals</CardDescription>
+                      </CardHeader>
+                      <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {retirementResult.recommendations.map((rec) => (
+                          <Card key={rec.product} className={`border-2 ${
+                            rec.fit === 'strong' ? 'border-green-300 bg-green-50' :
+                            rec.fit === 'moderate' ? 'border-blue-300 bg-blue-50' :
+                            rec.fit === 'weak' ? 'border-yellow-300 bg-yellow-50' :
+                            'border-gray-300 bg-gray-50'
+                          }`}>
+                            <CardHeader className="pb-2">
+                              <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg">{rec.product}</CardTitle>
+                                <Badge className={
+                                  rec.fit === 'strong' ? 'bg-green-600' :
+                                  rec.fit === 'moderate' ? 'bg-blue-600' :
+                                  rec.fit === 'weak' ? 'bg-yellow-600' :
+                                  'bg-gray-600'
+                                }>{rec.fit}</Badge>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="text-sm space-y-2">
+                              <div>
+                                <p className="font-medium text-green-700">Why it fits:</p>
+                                <ul className="list-disc list-inside text-xs">
+                                  {rec.whyBullets.slice(0, 2).map((b, i) => <li key={i}>{b}</li>)}
+                                </ul>
+                              </div>
+                              {rec.notIfBullets.length > 0 && (
+                                <div>
+                                  <p className="font-medium text-red-700">Consider if:</p>
+                                  <ul className="list-disc list-inside text-xs">
+                                    {rec.notIfBullets.slice(0, 2).map((b, i) => <li key={i}>{b}</li>)}
+                                  </ul>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Key Insights */}
+                  <Card className="bg-amber-50 border-amber-200">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Info className="h-5 w-5" /> Key Insights
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        {retirementResult.key_insights.map((insight, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-amber-600">•</span>
+                            <span>{insight}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
+                <Card>
+                  <CardContent className="pt-6 text-center text-gray-500">
+                    Retirement readiness data not available
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
             <TabsContent value="summary" className="space-y-6">
               {/* DIME Calculation Summary - Prominent Display */}
               <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
