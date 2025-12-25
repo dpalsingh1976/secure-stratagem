@@ -208,29 +208,137 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
 
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <Label htmlFor="monthlyIncome">Desired Monthly Income (Today's Dollars)</Label>
+                  <Label htmlFor="retirementLifestyle">Retirement Lifestyle</Label>
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon className="h-4 w-4 text-gray-400" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>After-tax monthly income needed in retirement, in today's purchasing power</p>
+                      <p>Your expected standard of living in retirement</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <Input
-                  id="monthlyIncome"
-                  type="number"
-                  min="0"
-                  value={data.desired_monthly_income}
-                  onChange={(e) => handleInputChange('desired_monthly_income', parseFloat(e.target.value) || 0)}
-                  placeholder="Enter monthly income need"
-                />
-                {data.desired_monthly_income > 0 && (
-                  <p className="text-sm text-gray-600">
-                    Annual need: {formatCurrency(data.desired_monthly_income * 12)}
-                  </p>
-                )}
+                <Select 
+                  value={data.retirement_lifestyle || 'comfortable'} 
+                  onValueChange={(value: 'basic' | 'comfortable' | 'premium') => handleInputChange('retirement_lifestyle', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select lifestyle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basic">Basic - Essential needs covered</SelectItem>
+                    <SelectItem value="comfortable">Comfortable - Current lifestyle maintained</SelectItem>
+                    <SelectItem value="premium">Premium - Enhanced lifestyle with travel</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Label>Income Target Method</Label>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>How to calculate your retirement income goal</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Select 
+                  value={data.spending_target_method || 'fixed'} 
+                  onValueChange={(value: 'fixed' | 'percent') => handleInputChange('spending_target_method', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fixed">Fixed Monthly Amount</SelectItem>
+                    <SelectItem value="percent">Percentage of Current Income</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {data.spending_target_method === 'percent' ? (
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Label>Income Replacement %</Label>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <InfoIcon className="h-4 w-4 text-gray-400" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>What percentage of current income you need in retirement</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <Slider
+                      value={[data.spending_percent_of_income || 80]}
+                      onValueChange={(value) => handleInputChange('spending_percent_of_income', value[0])}
+                      min={50}
+                      max={100}
+                      step={5}
+                      className="flex-1"
+                    />
+                    <span className="font-semibold text-lg w-16 text-right">{data.spending_percent_of_income || 80}%</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="monthlyIncome">Desired Monthly Income (Today's Dollars)</Label>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <InfoIcon className="h-4 w-4 text-gray-400" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>After-tax monthly income needed in retirement, in today's purchasing power</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Input
+                    id="monthlyIncome"
+                    type="number"
+                    min="0"
+                    value={data.desired_monthly_income}
+                    onChange={(e) => handleInputChange('desired_monthly_income', parseFloat(e.target.value) || 0)}
+                    placeholder="Enter monthly income need"
+                  />
+                  {data.desired_monthly_income > 0 && (
+                    <p className="text-sm text-gray-600">
+                      Annual need: {formatCurrency(data.desired_monthly_income * 12)}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="retirementState">Planned Retirement State</Label>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>State where you plan to live in retirement (affects tax planning)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Select 
+                  value={data.planned_retirement_state || data.state} 
+                  onValueChange={(value) => handleInputChange('planned_retirement_state', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Same as current state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Same as current state</SelectItem>
+                    {US_STATES.map(state => (
+                      <SelectItem key={state} value={state}>{state}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
