@@ -1090,6 +1090,101 @@ export type Database = {
           },
         ]
       }
+      tax_calculations: {
+        Row: {
+          calc_type: string
+          created_at: string
+          id: string
+          inputs: Json
+          outputs: Json
+          scenario_id: string | null
+        }
+        Insert: {
+          calc_type: string
+          created_at?: string
+          id?: string
+          inputs?: Json
+          outputs?: Json
+          scenario_id?: string | null
+        }
+        Update: {
+          calc_type?: string
+          created_at?: string
+          id?: string
+          inputs?: Json
+          outputs?: Json
+          scenario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_calculations_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "tax_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_presets: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          inputs: Json
+          is_active: boolean | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          inputs?: Json
+          is_active?: boolean | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          inputs?: Json
+          is_active?: boolean | null
+          name?: string
+        }
+        Relationships: []
+      }
+      tax_scenarios: {
+        Row: {
+          created_at: string
+          id: string
+          inputs: Json
+          outputs: Json
+          scenario_type: string
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inputs?: Json
+          outputs?: Json
+          scenario_type: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inputs?: Json
+          outputs?: Json
+          scenario_type?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
