@@ -60,6 +60,7 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     retirement_age: 65,
     desired_monthly_income: 0,
     insurance_priorities: [],
+    primary_retirement_goal: 'balanced_growth_protection',
     retirement_lifestyle: 'comfortable',
     spending_target_method: 'fixed',
     spending_percent_of_income: 80,
