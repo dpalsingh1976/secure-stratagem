@@ -4,7 +4,8 @@ import type {
   IncomeExpensesData, 
   LiabilityFormData,
   ComputedMetrics,
-  ProtectionHealthData
+  ProtectionHealthData,
+  PlanningReadinessData
 } from '@/types/financial';
 import type { 
   RetirementPreferencesData, 
@@ -13,6 +14,7 @@ import type {
   ProductFit
 } from '@/types/retirement';
 import { INSURANCE_ASSUMPTIONS } from './assumptions';
+import { computeIULSuitability, getDefaultPlanningReadiness } from './iulSuitability';
 
 /**
  * Evaluate Term Life Insurance fit
@@ -181,97 +183,51 @@ export function evaluateAnnuityFit(
 
 /**
  * Evaluate IUL (Indexed Universal Life) fit
+ * Now uses the professional IUL suitability engine
  */
 export function evaluateIULFit(
   metrics: ComputedMetrics,
   preferences: RetirementPreferencesData,
   incomeData: IncomeExpensesData,
-  protectionData: ProtectionHealthData
+  protectionData: ProtectionHealthData,
+  profileData?: ProfileGoalsData,
+  planningReadiness?: PlanningReadinessData
 ): ProductRecommendation {
-  const whyBullets: string[] = [];
-  const notIfBullets: string[] = [];
-  const nextSteps: string[] = [];
+  // Use the professional IUL suitability engine
+  const readiness = planningReadiness || getDefaultPlanningReadiness();
   
-  let fitScore = 0;
+  // Calculate years to retirement
+  const currentAge = profileData?.dob ? getCurrentAge(profileData.dob) : 40;
+  const retirementAge = profileData?.retirement_age || 65;
+  const yearsToRetirement = Math.max(0, retirementAge - currentAge);
   
-  const annualIncome = (incomeData.w2_income + incomeData.business_income) * 12;
-  
-  // Check tax-free allocation
-  if (metrics.tax_bucket_never_pct < 20) {
-    fitScore += 25;
-    whyBullets.push(`Only ${Math.round(metrics.tax_bucket_never_pct)}% in tax-free bucket - IUL can improve tax diversification`);
-  }
-  
-  // Check income level (IUL works best for higher earners)
-  if (annualIncome > 150000) {
-    fitScore += 20;
-    whyBullets.push('Income level supports proper IUL funding');
-  } else if (annualIncome > 100000) {
-    fitScore += 10;
-    whyBullets.push('Income may support IUL if properly structured');
-  }
-  
-  // Check commitment ability
-  if (preferences.can_commit_10yr_contributions) {
-    fitScore += 25;
-    whyBullets.push('Ability to commit to 10+ years of contributions is key for IUL success');
-  }
-  
-  // Check emergency fund
-  if (protectionData.emergency_fund_months >= 6) {
-    fitScore += 15;
-    whyBullets.push('Adequate emergency fund allows for IUL premium commitment');
-  }
-  
-  // Check tax diversification interest
-  if (preferences.open_to_tax_diversification) {
-    fitScore += 15;
-    whyBullets.push('IUL provides tax-free retirement income and death benefit');
-  }
-  
-  // Not recommended conditions
-  if (!preferences.can_commit_10yr_contributions) {
-    notIfBullets.push('IUL requires consistent funding for 10+ years to work properly');
-    fitScore -= 30;
-  }
-  
-  if (protectionData.emergency_fund_months < 3) {
-    notIfBullets.push('Build emergency fund before committing to IUL premiums');
-    fitScore -= 20;
-  }
-  
-  if (annualIncome < 75000) {
-    notIfBullets.push('Lower income may make other savings vehicles more suitable');
-    fitScore -= 20;
-  }
-  
-  if (preferences.liquidity_need_next_5yr === 'high') {
-    notIfBullets.push('High near-term liquidity needs conflict with IUL structure');
-    fitScore -= 15;
-  }
-  
-  // Determine fit
-  let fit: ProductFit;
-  if (fitScore >= 65) fit = 'strong';
-  else if (fitScore >= 40) fit = 'moderate';
-  else if (fitScore >= 20) fit = 'weak';
-  else fit = 'not_recommended';
-  
-  // Next steps
-  if (fit !== 'not_recommended') {
-    nextSteps.push('Request IUL illustration showing funding scenarios');
-    nextSteps.push('Compare multiple carriers (Pacific Life, Nationwide, etc.)');
-    nextSteps.push('Understand cap rates, participation rates, and fees');
-    nextSteps.push('Review loan provisions for tax-free retirement income');
-  }
+  const suitabilityResult = computeIULSuitability({
+    planningReadiness: readiness,
+    protectionData,
+    incomeData,
+    metrics,
+    hasEmployerMatch: (incomeData.employer_match_pct || 0) > 0,
+    yearsToRetirement,
+    dependents: profileData?.dependents || 0
+  });
   
   return {
     product: 'IUL',
-    fit,
-    whyBullets: whyBullets.length > 0 ? whyBullets : ['Tax-free growth and retirement income potential'],
-    notIfBullets: notIfBullets.length > 0 ? notIfBullets : ['Requires long-term commitment and proper funding'],
-    nextSteps: nextSteps.length > 0 ? nextSteps : ['Request personalized IUL illustration'],
-    disclaimer: 'IUL policies require careful analysis. Policy loans and withdrawals will reduce cash value and death benefit. Consult a licensed agent.'
+    fit: suitabilityResult.fit,
+    score: suitabilityResult.score,
+    whyBullets: suitabilityResult.reasons.length > 0 
+      ? suitabilityResult.reasons 
+      : ['Tax-free growth and retirement income potential'],
+    notIfBullets: suitabilityResult.notIf.length > 0 
+      ? suitabilityResult.notIf 
+      : ['Requires long-term commitment and proper funding'],
+    nextSteps: suitabilityResult.nextSteps.length > 0 
+      ? suitabilityResult.nextSteps 
+      : ['Request personalized IUL illustration'],
+    disclaimer: suitabilityResult.disclaimer,
+    preconditions: suitabilityResult.preconditions,
+    disqualified: suitabilityResult.disqualified,
+    disqualification_reason: suitabilityResult.disqualification_reason
   };
 }
 
@@ -285,12 +241,13 @@ export function generateProductRecommendations(
   metrics: ComputedMetrics,
   protectionData: ProtectionHealthData,
   projection: RetirementProjection,
-  preferences: RetirementPreferencesData
+  preferences: RetirementPreferencesData,
+  planningReadiness?: PlanningReadinessData
 ): ProductRecommendation[] {
   return [
     evaluateTermFit(profileData, incomeData, liabilities, metrics, protectionData),
     evaluateAnnuityFit(projection, preferences, incomeData),
-    evaluateIULFit(metrics, preferences, incomeData, protectionData)
+    evaluateIULFit(metrics, preferences, incomeData, protectionData, profileData, planningReadiness)
   ];
 }
 

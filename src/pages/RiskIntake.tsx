@@ -27,9 +27,11 @@ import type {
   AssetFormData, 
   LiabilityFormData, 
   ProtectionHealthData, 
-  ComputedMetrics
+  ComputedMetrics,
+  PlanningReadinessData
 } from '@/types/financial';
 import type { RetirementReadinessResult } from '@/types/retirement';
+import { getDefaultPlanningReadiness } from '@/engine/retirement/iulSuitability';
 
 const STEPS = [
   { id: 'profile', label: 'Profile & Goals', icon: Users, description: 'Client information and retirement goals' },
@@ -102,6 +104,10 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     can_commit_10yr_contributions: false,
     open_to_tax_diversification: false
   });
+  
+  const [planningReadiness, setPlanningReadiness] = useState<PlanningReadinessData>(
+    getDefaultPlanningReadiness()
+  );
 
 
 
@@ -289,8 +295,11 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
         return (
           <ProtectionHealthForm 
             data={protectionData} 
+            planningReadiness={planningReadiness}
             onChange={setProtectionData}
-            onValidationChange={() => {}} 
+            onPlanningReadinessChange={setPlanningReadiness}
+            onValidationChange={() => {}}
+            hasEmployerMatch={incomeData.employer_match_pct > 0}
           />
         );
       default:
