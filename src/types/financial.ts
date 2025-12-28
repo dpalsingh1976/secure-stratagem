@@ -266,6 +266,43 @@ export interface ProtectionHealthData {
   open_to_tax_diversification: boolean;
 }
 
+// IUL Suitability - Planning Readiness Data
+export type IncomeStability = 'stable' | 'somewhat_stable' | 'unstable';
+export type FundingCommitmentYears = '3-5' | '5-10' | '10-20' | '20+';
+export type FundingDiscipline = 'high' | 'medium' | 'low';
+export type TaxBracketEstimate = '10-12' | '22' | '24' | '32' | '35+' | 'not_sure';
+export type ConcernLevel = 'low' | 'medium' | 'high';
+export type MaxingQualifiedPlans = 'no' | 'some' | 'yes' | 'not_applicable';
+
+export interface PlanningReadinessData {
+  // A) Cashflow & Commitment
+  income_stability: IncomeStability;
+  funding_commitment_years: FundingCommitmentYears;
+  funding_discipline: FundingDiscipline;
+  
+  // B) Emergency & Liquidity (emergency_fund_months is in ProtectionHealthData)
+  near_term_liquidity_need: ConcernLevel;
+  
+  // C) Retirement Basics
+  contributing_to_401k_match: boolean;
+  maxing_qualified_plans: MaxingQualifiedPlans;
+  
+  // D) Tax & Diversification
+  current_tax_bracket: TaxBracketEstimate;
+  tax_concern_level: ConcernLevel;
+  wants_tax_free_bucket: boolean;
+  
+  // E) Volatility / Sequence Risk
+  sequence_risk_concern: ConcernLevel;
+  
+  // F) Legacy / Permanent Need
+  legacy_priority: ConcernLevel;
+  permanent_coverage_need: boolean;
+  
+  // G) Suitability Guardrails
+  debt_pressure_level: ConcernLevel;
+}
+
 export interface RiskPreferencesData {
   risk_tolerance: number;
   loss_aversion: number;

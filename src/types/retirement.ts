@@ -74,10 +74,24 @@ export interface RetirementScenarioResult {
 export interface ProductRecommendation {
   product: 'Term' | 'Annuity' | 'IUL';
   fit: ProductFit;
+  score?: number; // 0-100 for IUL suitability
   whyBullets: string[];
   notIfBullets: string[];
   nextSteps: string[];
   disclaimer: string;
+  // Enhanced IUL fields
+  preconditions?: IULPreconditionCheck[];
+  disqualified?: boolean;
+  disqualification_reason?: string;
+}
+
+// IUL Precondition Check (matches iulSuitability.ts)
+export interface IULPreconditionCheck {
+  id: string;
+  label: string;
+  status: 'pass' | 'warning' | 'fail';
+  value: string;
+  importance: 'critical' | 'important' | 'helpful';
 }
 
 export interface RetirementSubScores {

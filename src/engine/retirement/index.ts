@@ -27,6 +27,7 @@ export * from './stressTests';
 export * from './scores';
 export * from './recommendations';
 export * from './allocationEngine';
+export * from './iulSuitability';
 
 /**
  * Generate key insights based on analysis
