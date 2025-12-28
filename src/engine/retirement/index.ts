@@ -26,6 +26,7 @@ export * from './projection';
 export * from './stressTests';
 export * from './scores';
 export * from './recommendations';
+export * from './allocationEngine';
 
 /**
  * Generate key insights based on analysis

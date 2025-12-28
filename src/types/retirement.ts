@@ -6,6 +6,18 @@ export type ConfidenceLevel = 'low' | 'medium' | 'high';
 export type LiquidityNeed = 'low' | 'medium' | 'high';
 export type ProductFit = 'strong' | 'moderate' | 'weak' | 'not_recommended';
 
+export type PrimaryRetirementGoal = 
+  | 'maximize_tax_free'
+  | 'secure_guaranteed_income'
+  | 'protect_family'
+  | 'balanced_growth_protection'
+  | 'minimize_taxes';
+
+export type SavingsVehicle = 
+  | '401k_match' | '401k_max' | 'roth_ira' | 'roth_401k' 
+  | 'hsa' | 'backdoor_roth' | 'mega_backdoor' 
+  | 'annuity' | 'iul' | 'taxable';
+
 export interface RetirementPreferencesData {
   // Profile & Goals additions
   retirement_lifestyle: RetirementLifestyle;
@@ -86,6 +98,34 @@ export interface RetirementReadinessResult {
   recommendations: ProductRecommendation[];
   key_insights: string[];
   action_items: string[];
+}
+
+// Savings Waterfall Types for Allocation Engine
+export interface SavingsWaterfallStep {
+  priority: number;
+  vehicle: SavingsVehicle;
+  label: string;
+  monthly_amount: number;
+  annual_limit: number;
+  current_contribution: number;
+  suggested_contribution: number;
+  rationale: string;
+  fit_score: number;
+  is_applicable: boolean;
+  not_applicable_reason?: string;
+}
+
+export interface AllocationRecommendation {
+  savings_waterfall: SavingsWaterfallStep[];
+  monthly_allocation_summary: {
+    total_savings_capacity: number;
+    allocated: number;
+    remaining: number;
+  };
+  tax_efficiency_score: number;
+  risk_balance_score: number;
+  rationale: string[];
+  disclaimers: string[];
 }
 
 // Default values

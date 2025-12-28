@@ -177,6 +177,14 @@ export interface Report {
   updated_at: string;
 }
 
+// Primary Retirement Goal type
+export type PrimaryRetirementGoal = 
+  | 'maximize_tax_free'
+  | 'secure_guaranteed_income'
+  | 'protect_family'
+  | 'balanced_growth_protection'
+  | 'minimize_taxes';
+
 // Form step data interfaces
 export interface ProfileGoalsData {
   name_first: string;
@@ -189,6 +197,7 @@ export interface ProfileGoalsData {
   retirement_age: number;
   desired_monthly_income: number;
   insurance_priorities: string[];
+  primary_retirement_goal: PrimaryRetirementGoal;
   // Retirement planning additions
   retirement_lifestyle: 'basic' | 'comfortable' | 'premium';
   spending_target_method: 'fixed' | 'percent';
