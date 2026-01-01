@@ -1,5 +1,16 @@
 import { useState } from "react";
-import { Shield, Calculator, TrendingUp, CheckCircle, Target, ClipboardList, BarChart3, DollarSign, ArrowRight, PieChart } from "lucide-react";
+import {
+  Shield,
+  Calculator,
+  TrendingUp,
+  CheckCircle,
+  Target,
+  ClipboardList,
+  BarChart3,
+  DollarSign,
+  ArrowRight,
+  PieChart,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -80,7 +91,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
+
       {/* Hero Section - Clean White Background */}
       <section className="relative min-h-[85vh] flex items-center bg-gradient-to-br from-white via-green-50/30 to-white overflow-hidden">
         {/* Subtle Background Pattern */}
@@ -93,35 +104,27 @@ const Index = () => {
               <Shield className="w-4 h-4" />
               Professional Financial Risk Assessment
             </div>
-            
+
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 font-heading leading-tight">
               Plan a Secure,
               <span className="block text-primary">Tax-Free Retirement</span>
               Today
             </h1>
-            
+
             <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-              Discover risks, calculate your needs, and explore advanced retirement strategies with professional-grade tools.
+              Discover risks, calculate your needs, and explore advanced retirement strategies with professional-grade
+              tools.
             </p>
 
             {/* Two CTAs Side-by-Side */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 shadow-lg"
                 onClick={() => setShowRiskAssessment(true)}
               >
                 <ClipboardList className="w-5 h-5 mr-2" />
                 Start Risk Assessment Now
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="border-2 border-primary text-primary hover:bg-primary hover:text-white text-lg px-8 py-6"
-                onClick={() => navigate('/iul-banking')}
-              >
-                Learn About IUL Banking
-                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </div>
 
@@ -145,14 +148,13 @@ const Index = () => {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="section-padding" style={{ backgroundColor: 'hsl(142 71% 97%)' }}>
+      <section id="how-it-works" className="section-padding" style={{ backgroundColor: "hsl(142 71% 97%)" }}>
         <div className="container-financial">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4 font-heading text-foreground">
-              How It Works
-            </h2>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4 font-heading text-foreground">How It Works</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our proven 3-step process helps you discover risks, understand solutions, and implement your personalized strategy
+              Our proven 3-step process helps you discover risks, understand solutions, and implement your personalized
+              strategy
             </p>
           </div>
 
@@ -260,9 +262,7 @@ const Index = () => {
       <section id="calculators" className="section-padding bg-white">
         <div className="container-financial">
           <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4 font-heading">
-              Retirement Calculators
-            </h2>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4 font-heading">Retirement Calculators</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Professional tools to calculate, compare, and optimize your retirement strategy
             </p>
@@ -272,20 +272,25 @@ const Index = () => {
             {calculators.map((calc, index) => {
               const Icon = calc.icon;
               return (
-                <Card 
+                <Card
                   key={index}
                   className="hover:shadow-lg transition-all cursor-pointer group border"
                   onClick={() => navigate(calc.path)}
                 >
                   <CardHeader>
-                    <div className={`p-4 rounded-lg ${getColorClasses(calc.color)} w-fit mb-4 group-hover:scale-110 transition-transform`}>
+                    <div
+                      className={`p-4 rounded-lg ${getColorClasses(calc.color)} w-fit mb-4 group-hover:scale-110 transition-transform`}
+                    >
                       <Icon className="w-8 h-8" />
                     </div>
                     <CardTitle className="text-xl mb-2">{calc.title}</CardTitle>
                     <CardDescription className="text-base">{calc.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all">
+                    <Button
+                      variant="outline"
+                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all"
+                    >
                       Calculate Now
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
@@ -301,9 +306,7 @@ const Index = () => {
       <section id="solutions" className="section-padding bg-gradient-to-br from-slate-50 to-white">
         <div className="container-financial">
           <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4 font-heading">
-              Comprehensive Financial Solutions
-            </h2>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4 font-heading">Comprehensive Financial Solutions</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               We offer a range of strategies tailored to your unique situation and goals
             </p>
@@ -336,7 +339,7 @@ const Index = () => {
                     <span className="text-sm">Death benefit protection</span>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full" onClick={() => navigate('/iul-banking')}>
+                <Button variant="outline" className="w-full" onClick={() => navigate("/iul-banking")}>
                   Learn More
                 </Button>
               </CardContent>
@@ -368,7 +371,7 @@ const Index = () => {
                     <span className="text-sm">Convertible options</span>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full" onClick={() => navigate('/admin/risk-intake')}>
+                <Button variant="outline" className="w-full" onClick={() => navigate("/admin/risk-intake")}>
                   Check Your Fit
                 </Button>
               </CardContent>
@@ -400,7 +403,7 @@ const Index = () => {
                     <span className="text-sm">Tax-deferred growth</span>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full" onClick={() => navigate('/annuity-calculator')}>
+                <Button variant="outline" className="w-full" onClick={() => navigate("/annuity-calculator")}>
                   Check Your Fit
                 </Button>
               </CardContent>
@@ -418,7 +421,7 @@ const Index = () => {
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
             Take the first step with our comprehensive risk assessment. Get personalized insights in just 5 minutes.
           </p>
-          <Button 
+          <Button
             size="lg"
             className="bg-accent hover:bg-accent/90 text-white text-lg px-10 py-6 shadow-lg"
             onClick={() => setShowRiskAssessment(true)}
@@ -442,7 +445,6 @@ const Index = () => {
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 };
