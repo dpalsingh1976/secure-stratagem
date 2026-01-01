@@ -331,11 +331,11 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
+<div className="flex items-center space-x-4">
               {!isModal && (
-                <Button variant="outline" size="sm" onClick={handleBack}>
+                <Button variant="outline" size="sm" onClick={() => navigate('/')}>
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
+                  Home
                 </Button>
               )}
               <h1 className="text-3xl font-bold text-gray-900">
