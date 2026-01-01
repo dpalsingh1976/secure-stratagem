@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AssessmentForm from "@/components/AssessmentForm";
 import ChatBot from "@/components/ChatBot";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,8 @@ interface AssessmentData {
 }
 
 const Assessment = () => {
+  const navigate = useNavigate();
+  
   const handleAssessmentSubmit = (data: AssessmentData) => {
     // Here we would normally call an API to calculate risk scores
     // For now, we'll redirect to results with the data
@@ -31,7 +33,7 @@ const Assessment = () => {
     
     // Store data in sessionStorage and redirect to results
     sessionStorage.setItem('assessmentData', JSON.stringify(data));
-    window.location.href = '/results';
+    navigate('/results');
   };
 
   return (
@@ -41,10 +43,10 @@ const Assessment = () => {
         <div className="container-financial py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button
+<Button
                 variant="ghost"
                 size="sm"
-                onClick={() => window.history.back()}
+                onClick={() => navigate('/')}
                 className="flex items-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
