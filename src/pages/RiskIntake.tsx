@@ -5,7 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, Users, DollarSign, Shield, Target, BarChart3, X } from 'lucide-react';
+import { ArrowLeft, FileText, Users, DollarSign, Shield, Target, BarChart3, X, TrendingUp } from 'lucide-react';
 
 interface RiskIntakeProps {
   isModal?: boolean;
@@ -16,6 +16,7 @@ import { IncomeExpensesForm } from '@/components/financial/IncomeExpensesForm';
 import { AssetsForm } from '@/components/financial/AssetsForm';
 import { LiabilitiesForm } from '@/components/financial/LiabilitiesForm';
 import { ProtectionHealthForm } from '@/components/financial/ProtectionHealthForm';
+import { RetirementPlanningForm } from '@/components/financial/RetirementPlanningForm';
 
 import { ReportModal } from '@/components/financial/ReportModal';
 import { computeRiskMetrics } from '@/utils/riskComputation';
@@ -38,7 +39,8 @@ const STEPS = [
   { id: 'income', label: 'Income & Expenses', icon: DollarSign, description: 'Monthly income sources and expenses' },
   { id: 'assets', label: 'Assets', icon: BarChart3, description: 'All investments and holdings' },
   { id: 'liabilities', label: 'Liabilities', icon: FileText, description: 'Debts and obligations' },
-  { id: 'protection', label: 'Protection & Health', icon: Shield, description: 'Insurance coverage and health planning' }
+  { id: 'retirement', label: 'Retirement Planning', icon: TrendingUp, description: 'Goals, savings & product suitability' },
+  { id: 'protection', label: 'Protection & Health', icon: Shield, description: 'Insurance coverage' }
 ];
 
 export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps = {}) {
@@ -292,6 +294,20 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
           />
         );
       case 4:
+        return (
+          <RetirementPlanningForm 
+            profileData={profileData}
+            incomeData={incomeData}
+            protectionData={protectionData}
+            planningReadiness={planningReadiness}
+            onProfileChange={setProfileData}
+            onIncomeChange={setIncomeData}
+            onProtectionChange={setProtectionData}
+            onPlanningReadinessChange={setPlanningReadiness}
+            hasEmployerMatch={incomeData.employer_match_pct > 0}
+          />
+        );
+      case 5:
         return (
           <ProtectionHealthForm 
             data={protectionData} 
