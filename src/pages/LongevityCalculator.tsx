@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 
 export default function LongevityCalculator() {
+  const navigate = useNavigate();
   const [currentAge, setCurrentAge] = useState(55);
   const [currentSavings, setCurrentSavings] = useState(500000);
   const [yearlyExpenses, setYearlyExpenses] = useState(60000);
@@ -63,7 +65,7 @@ export default function LongevityCalculator() {
       <div className="container-financial py-16">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
-            <Button variant="outline" size="sm" onClick={() => window.location.href = '/'}>
+<Button variant="outline" size="sm" onClick={() => navigate('/')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>

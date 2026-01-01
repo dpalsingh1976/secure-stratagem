@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,7 @@ const COMMON_QUESTIONS = [
 ];
 
 export default function PolicyAssistant() {
+  const navigate = useNavigate();
   const { user, hasRole } = useAuth();
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -316,7 +318,7 @@ export default function PolicyAssistant() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-6">
-            <Button variant="outline" size="sm" onClick={() => window.location.href = '/'}>
+<Button variant="outline" size="sm" onClick={() => navigate('/')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
