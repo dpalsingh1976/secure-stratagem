@@ -15,19 +15,14 @@ import TaxBucketEstimator from "./pages/TaxBucketEstimator";
 import Policies from "./pages/Policies";
 import PolicyDetail from "./pages/PolicyDetail";
 import FNAReport from "./pages/FNAReport";
-import StressTesting from "./pages/StressTesting";
 import IULBanking from "./pages/IULBanking";
 import IULComparison from "./pages/IULComparison";
 import Resources from "./pages/Resources";
-import AnnuityCalculator from "./pages/AnnuityCalculator";
-import LongevityCalculator from "./pages/LongevityCalculator";
 import InflationStressTest from "./pages/InflationStressTest";
+import RetirementCalculator from "./pages/RetirementCalculator";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
-import TaxScenarios from "./pages/TaxScenarios";
-import TaxCompare from "./pages/TaxCompare";
-import TaxAgent from "./pages/TaxAgent";
 
 const queryClient = new QueryClient();
 
@@ -62,17 +57,12 @@ const App = () => (
             <Route path="/policies" element={<Policies />} />
             <Route path="/policies/:id" element={<PolicyDetail />} />
             <Route path="/fna-report" element={<FNAReport />} />
-            <Route path="/stress-test" element={<StressTesting />} />
             <Route path="/iul" element={<IULBanking />} />
             <Route path="/iul-banking" element={<IULBanking />} />
             <Route path="/iul-compare" element={<IULComparison />} />
             <Route path="/resources" element={<Resources />} />
-            <Route path="/annuity-calculator" element={<AnnuityCalculator />} />
-            <Route path="/longevity-calculator" element={<LongevityCalculator />} />
             <Route path="/inflation-stress-test" element={<InflationStressTest />} />
-            <Route path="/tax-scenarios" element={<TaxScenarios />} />
-            <Route path="/tax-compare" element={<TaxCompare />} />
-            <Route path="/tax-agent" element={<TaxAgent />} />
+            <Route path="/retirement-calculator" element={<RetirementCalculator />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
