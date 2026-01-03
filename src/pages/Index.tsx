@@ -375,8 +375,8 @@ const Index = () => {
                     <span className="text-sm">Tax-deferred growth</span>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full" onClick={() => navigate("/annuity-calculator")}>
-                  Check Your Fit
+                <Button variant="outline" className="w-full" onClick={() => navigate("/annuities")}>
+                  Learn More
                 </Button>
               </CardContent>
             </Card>
