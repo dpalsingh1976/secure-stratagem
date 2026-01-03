@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { Download, Share2, AlertTriangle, CheckCircle, Info, TrendingUp, TrendingDown, Shield, DollarSign, Calendar } from 'lucide-react';
+import { Download, AlertTriangle, CheckCircle, Info, TrendingUp, TrendingDown, Shield, DollarSign, Calendar } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency, formatPercentage } from '@/utils/riskComputation';
@@ -65,6 +65,334 @@ export function ReportModal({
   const [isExporting, setIsExporting] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+
+  // Get client email from profile data
+  const clientEmail = profileData.email || '';
+  const clientName = `${profileData.name_first} ${profileData.name_last}`;
+
+  // Helper to get risk level label
+  const getRiskLevelLabel = (score: number) => {
+    if (score >= 80) return 'Critical';
+    if (score >= 60) return 'High';
+    if (score >= 40) return 'Moderate';
+    if (score >= 20) return 'Low';
+    return 'Minimal';
+  };
+
+  // Generate PDF as base64 for email attachment
+  const generatePDFBase64 = async (): Promise<string> => {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 20;
+    let yPos = margin;
+
+    const checkPageBreak = (height: number) => {
+      if (yPos + height > pageHeight - margin) {
+        pdf.addPage();
+        yPos = margin;
+        return true;
+      }
+      return false;
+    };
+
+    const drawSectionHeader = (title: string) => {
+      checkPageBreak(20);
+      yPos += 8;
+      pdf.setFillColor(41, 128, 185);
+      pdf.rect(margin - 5, yPos - 5, pageWidth - 2 * margin + 10, 10, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(title, margin, yPos + 2);
+      pdf.setTextColor(0, 0, 0);
+      yPos += 12;
+    };
+
+    // Cover Page
+    pdf.setFillColor(41, 128, 185);
+    pdf.rect(0, 0, pageWidth, 40, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(22);
+    pdf.text('Financial Risk Assessment Report', margin, 20);
+    pdf.setFontSize(12);
+    pdf.text(clientName, margin, 30);
+    pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - margin, 30, { align: 'right' });
+    
+    yPos = 50;
+    pdf.setTextColor(0, 0, 0);
+
+    // =====================
+    // SUMMARY SECTION
+    // =====================
+    drawSectionHeader('Executive Summary');
+    
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`Overall Risk Score: ${metrics.scores_jsonb.overall}/100 (${getRiskLevelLabel(metrics.scores_jsonb.overall)})`, margin, yPos);
+    yPos += 8;
+    
+    if (retirementResult) {
+      pdf.text(`Retirement Readiness: ${retirementResult.overall_score}/100 (Grade: ${retirementResult.overall_grade})`, margin, yPos);
+      yPos += 8;
+    }
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    const summaryData = [
+      ['Net Worth', formatCurrency(metrics.net_worth)],
+      ['Protection Gap', formatCurrency(DIME.protection_gap)],
+      ['Liquidity Runway', `${metrics.liquidity_runway_months} months`],
+      ['Tax-Free Allocation', `${metrics.tax_bucket_never_pct}%`]
+    ];
+    
+    summaryData.forEach(([label, value]) => {
+      checkPageBreak(7);
+      pdf.text(`${label}:`, margin, yPos);
+      pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
+      yPos += 7;
+    });
+
+    // =====================
+    // RETIREMENT SECTION
+    // =====================
+    if (retirementResult) {
+      drawSectionHeader('Retirement Readiness Assessment');
+
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`Overall Score: ${retirementResult.overall_score}/100`, margin, yPos);
+      pdf.text(`Grade: ${retirementResult.overall_grade}`, pageWidth - margin, yPos, { align: 'right' });
+      yPos += 10;
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Sub-Score', margin, yPos);
+      pdf.text('Score', pageWidth - margin - 30, yPos);
+      pdf.text('Status', pageWidth - margin, yPos, { align: 'right' });
+      yPos += 2;
+      pdf.line(margin, yPos, pageWidth - margin, yPos);
+      yPos += 5;
+
+      pdf.setFont('helvetica', 'normal');
+      const subScores = [
+        { label: 'Income Adequacy', score: retirementResult.sub_scores.income_adequacy },
+        { label: 'Tax Risk', score: retirementResult.sub_scores.tax_risk },
+        { label: 'Sequence Risk', score: retirementResult.sub_scores.sequence_risk },
+        { label: 'Longevity Risk', score: retirementResult.sub_scores.longevity_risk },
+        { label: 'Liquidity', score: retirementResult.sub_scores.liquidity },
+        { label: 'Protection', score: retirementResult.sub_scores.protection }
+      ];
+
+      subScores.forEach(({ label, score }) => {
+        checkPageBreak(7);
+        const status = score >= 70 ? 'Good' : score >= 50 ? 'Fair' : 'Needs Attention';
+        pdf.text(label, margin, yPos);
+        pdf.text(`${score}`, pageWidth - margin - 30, yPos);
+        pdf.text(status, pageWidth - margin, yPos, { align: 'right' });
+        yPos += 6;
+      });
+
+      // Income Projection
+      checkPageBreak(30);
+      yPos += 8;
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Retirement Income Projection', margin, yPos);
+      yPos += 8;
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      const projectionData = [
+        ['Projected Monthly Income', formatCurrency(retirementResult.projection.monthly_income_projected)],
+        ['Target Monthly Income', formatCurrency(retirementResult.projection.monthly_income_target)],
+        ['Monthly Gap/Surplus', `${retirementResult.projection.monthly_gap > 0 ? '-' : '+'}${formatCurrency(Math.abs(retirementResult.projection.monthly_gap))}`]
+      ];
+
+      projectionData.forEach(([label, value]) => {
+        checkPageBreak(7);
+        pdf.text(label, margin, yPos);
+        pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
+        yPos += 6;
+      });
+    }
+
+    // =====================
+    // RECOMMENDATIONS SECTION
+    // =====================
+    const recommendations = generateRecommendations();
+    drawSectionHeader('Recommendations');
+
+    recommendations.forEach((rec, index) => {
+      checkPageBreak(25);
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${index + 1}. ${rec.title}`, margin, yPos);
+      yPos += 7;
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      const descLines = pdf.splitTextToSize(rec.description, pageWidth - 2 * margin - 5);
+      descLines.forEach((line: string) => {
+        checkPageBreak(5);
+        pdf.text(line, margin + 5, yPos);
+        yPos += 5;
+      });
+      yPos += 5;
+    });
+
+    // =====================
+    // TAX BUCKETS SECTION
+    // =====================
+    drawSectionHeader('Tax Diversification Strategy');
+
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    const taxData = [
+      ['Tax Now (Taxable)', `${metrics.tax_bucket_now_pct}%`, 'Savings, brokerage accounts'],
+      ['Tax Later (Tax-Deferred)', `${metrics.tax_bucket_later_pct}%`, '401(k), Traditional IRA'],
+      ['Tax Never (Tax-Free)', `${metrics.tax_bucket_never_pct}%`, 'Roth IRA, IUL, HSA']
+    ];
+
+    taxData.forEach(([label, value, description]) => {
+      checkPageBreak(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(label, margin, yPos);
+      pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
+      yPos += 5;
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
+      pdf.text(description, margin + 5, yPos);
+      pdf.setFontSize(10);
+      yPos += 6;
+    });
+
+    // =====================
+    // COVERAGE SECTION
+    // =====================
+    drawSectionHeader('DIME Life Insurance Needs Analysis');
+
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    
+    const dimeData = [
+      ['Component', 'Amount'],
+      ['Debt (Non-Mortgage) + Final Expenses', formatCurrency(DIME.nonMortgageDebt + DIME.FINAL_EXPENSES)],
+      ['Income Replacement (10 years)', formatCurrency(DIME.incomeReplacement)],
+      ['Mortgage Balance', formatCurrency(DIME.mortgageBalance)],
+      ['Education Expenses', formatCurrency(DIME.education)],
+      ['', ''],
+      ['Total DIME Need', formatCurrency(DIME.dime_need)],
+      ['Current Coverage', formatCurrency(DIME.currentCoverage)],
+      ['Protection Gap', formatCurrency(DIME.protection_gap)]
+    ];
+
+    dimeData.forEach((row, index) => {
+      checkPageBreak(8);
+      if (index === 0 || index === 6) {
+        pdf.setFont('helvetica', 'bold');
+      } else {
+        pdf.setFont('helvetica', 'normal');
+      }
+      pdf.text(row[0], margin, yPos);
+      pdf.text(row[1], pageWidth - margin, yPos, { align: 'right' });
+      yPos += 7;
+      if (index === 4 || index === 8) {
+        pdf.line(margin, yPos, pageWidth - margin, yPos);
+        yPos += 5;
+      }
+    });
+
+    // Disclaimer
+    checkPageBreak(30);
+    yPos += 10;
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 100, 100);
+    const disclaimer = 'DISCLAIMER: This report is for educational purposes only and does not constitute financial, tax, or legal advice. Consult with qualified professionals before making financial decisions. Past performance does not guarantee future results. Insurance products involve costs, fees, and risks.';
+    const disclaimerLines = pdf.splitTextToSize(disclaimer, pageWidth - 2 * margin);
+    disclaimerLines.forEach((line: string) => {
+      checkPageBreak(4);
+      pdf.text(line, margin, yPos);
+      yPos += 4;
+    });
+
+    // Footer on all pages
+    const pageCount = pdf.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      pdf.setFontSize(8);
+      pdf.setTextColor(128, 128, 128);
+      pdf.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+      pdf.text('The Prosperity Financial', margin, pageHeight - 10);
+      pdf.text('theprosperityfinancial.com', pageWidth - margin, pageHeight - 10, { align: 'right' });
+    }
+
+    // Return as base64 (without data URL prefix)
+    const pdfOutput = pdf.output('datauristring');
+    return pdfOutput.split(',')[1]; // Remove the data:application/pdf;base64, prefix
+  };
+
+  // Send email with PDF attachment
+  const sendReportEmail = async () => {
+    if (!clientEmail || emailSent || isSendingEmail) return;
+    
+    setIsSendingEmail(true);
+    
+    try {
+      const pdfBase64 = await generatePDFBase64();
+      const recommendations = generateRecommendations();
+      
+      const summary = {
+        overallRiskScore: metrics.scores_jsonb.overall,
+        riskLevel: getRiskLevelLabel(metrics.scores_jsonb.overall),
+        retirementScore: retirementResult?.overall_score,
+        retirementGrade: retirementResult?.overall_grade,
+        protectionGap: DIME.protection_gap,
+        netWorth: metrics.net_worth,
+        liquidityMonths: metrics.liquidity_runway_months,
+        keyRecommendations: recommendations.slice(0, 3).map(r => r.title)
+      };
+
+      const { error } = await supabase.functions.invoke('send-report-email', {
+        body: {
+          clientEmail,
+          clientName,
+          summary,
+          pdfBase64
+        }
+      });
+
+      if (error) throw error;
+
+      setEmailSent(true);
+      toast({
+        title: "Report Sent",
+        description: `Email sent to ${clientEmail} with your comprehensive report.`
+      });
+    } catch (error) {
+      console.error('Error sending report email:', error);
+      toast({
+        title: "Email Failed",
+        description: "Could not send the report email. You can still download the PDF.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  // Auto-send email when modal opens (only once per session)
+  useEffect(() => {
+    if (isOpen && clientEmail && !emailSent && !isSendingEmail) {
+      // Small delay to ensure everything is loaded
+      const timer = setTimeout(() => {
+        sendReportEmail();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, clientEmail]);
 
   useEffect(() => {
     if (isOpen) {
@@ -658,11 +986,7 @@ export function ReportModal({
             <div className="flex space-x-2">
               <Button variant="outline" onClick={exportToPDF} disabled={isExporting}>
                 <Download className="h-4 w-4 mr-2" />
-                {isExporting ? 'Exporting...' : 'Export PDF'}
-              </Button>
-              <Button variant="outline">
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
+                {isExporting ? 'Exporting...' : 'Download PDF'}
               </Button>
             </div>
           </div>
