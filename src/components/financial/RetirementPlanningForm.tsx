@@ -167,17 +167,25 @@ export function RetirementPlanningForm({
       iulFit = 'explore';
     }
 
-    // === ANNUITY FIT SIGNALS (score-based, max 5) ===
+    // === ANNUITY FIT SIGNALS (using new engine logic) ===
     let annuityScore = 0;
     const annuityPositives: string[] = [];
     const annuityNegatives: string[] = [];
+    const annuityFixFirst: string[] = [];
     
     // Annuity-specific gates
     const annuityEmergencyIssue = emergencyFundMonths < 3;
     const annuityLiquidityIssue = planningReadiness.near_term_liquidity_need === 'high';
     
-    if (annuityEmergencyIssue) annuityNegatives.push('Build 3+ months emergency fund');
-    if (annuityLiquidityIssue) annuityNegatives.push('Address near-term liquidity needs');
+    // Build fix-first items
+    if (annuityEmergencyIssue) {
+      annuityNegatives.push('Build 3+ months emergency fund');
+      annuityFixFirst.push(`Build emergency fund from ${emergencyFundMonths} to 3-6 months before considering annuity`);
+    }
+    if (annuityLiquidityIssue) {
+      annuityNegatives.push('Address near-term liquidity needs');
+      annuityFixFirst.push('Address expected major expenses first—annuity surrender charges apply for 5-10 years');
+    }
     
     const annuityBlocked = annuityEmergencyIssue && annuityLiquidityIssue;
     
@@ -219,7 +227,7 @@ export function RetirementPlanningForm({
         : 'Answer more questions to refine your assessment';
 
     const annuityReason = annuityBlocked
-      ? `Fix first: ${annuityNegatives.slice(0, 2).join(', ')}`
+      ? `Fix first: ${annuityFixFirst.slice(0, 1).join('')}`
       : annuityPositives.length > 0
         ? `Good fit signals: ${annuityPositives.slice(0, 2).join(', ')}`
         : 'May benefit from guaranteed income analysis';
@@ -235,6 +243,7 @@ export function RetirementPlanningForm({
         fit: annuityFit,
         positives: annuityPositives.slice(0, 3),
         negatives: annuityNegatives.slice(0, 2),
+        fixFirst: annuityFixFirst.slice(0, 2),
         reason: annuityReason
       }
     };

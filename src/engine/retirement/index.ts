@@ -28,6 +28,7 @@ export * from './scores';
 export * from './recommendations';
 export * from './allocationEngine';
 export * from './iulSuitability';
+export * from './annuitySuitability';
 
 /**
  * Generate key insights based on analysis
