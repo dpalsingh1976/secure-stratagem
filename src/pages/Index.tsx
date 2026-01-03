@@ -29,53 +29,25 @@ const Index = () => {
 
   const calculators = [
     {
-      title: "DIME Life Insurance Calculator",
-      description: "Calculate your exact life insurance needs using the DIME method",
-      icon: Target,
-      color: "primary",
-      path: "/admin/risk-intake",
-    },
-    {
-      title: "401k vs Roth/LIRP Analyzer",
-      description: "Compare pre-tax vs after-tax strategies with SSI impact analysis",
-      icon: TrendingUp,
-      color: "primary",
-      path: "/tax-scenarios",
-    },
-    {
       title: "7702 Tax-Free Estimator",
       description: "Compare tax-free, tax-deferred, and taxable retirement strategies",
       icon: PieChart,
-      color: "secondary",
-      path: "/tax-bucket-estimator",
-    },
-    {
-      title: "IUL vs 401k/IRA Comparison",
-      description: "Stress test IUL against traditional retirement accounts",
-      icon: BarChart3,
-      color: "accent",
-      path: "/stress-test",
-    },
-    {
-      title: "Annuity Income Calculator",
-      description: "Estimate guaranteed lifetime income from annuities",
-      icon: PieChart,
       color: "primary",
-      path: "/annuity-calculator",
-    },
-    {
-      title: "Longevity Risk Calculator",
-      description: "Calculate how long your retirement savings will last",
-      icon: Calculator,
-      color: "secondary",
-      path: "/longevity-calculator",
+      path: "/tax-bucket-estimator",
     },
     {
       title: "Inflation Stress Test",
       description: "Analyze market volatility and inflation impact on savings",
       icon: BarChart3,
-      color: "accent",
+      color: "secondary",
       path: "/inflation-stress-test",
+    },
+    {
+      title: "Retirement Calculator",
+      description: "Calculate how much to save annually to reach your retirement goal",
+      icon: Calculator,
+      color: "accent",
+      path: "/retirement-calculator",
     },
   ];
 
