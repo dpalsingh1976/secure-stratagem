@@ -16,7 +16,7 @@ import Policies from "./pages/Policies";
 import PolicyDetail from "./pages/PolicyDetail";
 import FNAReport from "./pages/FNAReport";
 import IULBanking from "./pages/IULBanking";
-import IULComparison from "./pages/IULComparison";
+
 import Resources from "./pages/Resources";
 import InflationStressTest from "./pages/InflationStressTest";
 import RetirementCalculator from "./pages/RetirementCalculator";
@@ -61,7 +61,7 @@ const App = () => (
             <Route path="/fna-report" element={<FNAReport />} />
             <Route path="/iul" element={<IULBanking />} />
             <Route path="/iul-banking" element={<IULBanking />} />
-            <Route path="/iul-compare" element={<IULComparison />} />
+            
             <Route path="/resources" element={<Resources />} />
             <Route path="/inflation-stress-test" element={<InflationStressTest />} />
             <Route path="/retirement-calculator" element={<RetirementCalculator />} />

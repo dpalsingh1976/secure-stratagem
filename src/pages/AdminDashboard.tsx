@@ -155,10 +155,10 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Database className="h-5 w-5" />
-                  IUL vs. Market Comparison
+                  Market Analysis
                 </CardTitle>
                 <CardDescription>
-                  Compare IUL performance against market-only investments with detailed analysis.
+                  Analyze market performance and portfolio projections with detailed analysis.
                 </CardDescription>
               </CardHeader>
               <CardContent>
