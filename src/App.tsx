@@ -16,6 +16,7 @@ import Policies from "./pages/Policies";
 import PolicyDetail from "./pages/PolicyDetail";
 import FNAReport from "./pages/FNAReport";
 import IULBanking from "./pages/IULBanking";
+import Annuities from "./pages/Annuities";
 
 import Resources from "./pages/Resources";
 import InflationStressTest from "./pages/InflationStressTest";
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/fna-report" element={<FNAReport />} />
             <Route path="/iul" element={<IULBanking />} />
             <Route path="/iul-banking" element={<IULBanking />} />
+            <Route path="/annuities" element={<Annuities />} />
             
             <Route path="/resources" element={<Resources />} />
             <Route path="/inflation-stress-test" element={<InflationStressTest />} />
