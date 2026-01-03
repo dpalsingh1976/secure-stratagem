@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { 
@@ -27,8 +27,7 @@ import type {
   ProfileGoalsData, 
   IncomeExpensesData, 
   ProtectionHealthData, 
-  PlanningReadinessData,
-  PrimaryRetirementGoal 
+  PlanningReadinessData 
 } from '@/types/financial';
 
 interface RetirementPlanningFormProps {
@@ -192,12 +191,6 @@ export function RetirementPlanningForm({
     if (planningReadiness.sequence_risk_concern === 'high') {
       annuityScore++;
       annuityPositives.push('Concerned about market timing');
-    }
-    
-    // +1 Goal: guaranteed income
-    if (profileData.primary_retirement_goal === 'secure_guaranteed_income') {
-      annuityScore++;
-      annuityPositives.push('Goal: guaranteed income');
     }
     
     // +1 Strong emergency fund
@@ -531,48 +524,6 @@ export function RetirementPlanningForm({
             {/* Step 2: Goals & Preferences */}
             {readinessStep === 2 && (
               <div className="space-y-6">
-                {/* Primary Retirement Goal */}
-                <div className="space-y-3">
-                  <Label className="text-base font-medium">What's your main retirement goal?</Label>
-                  <p className="text-sm text-muted-foreground">This helps us prioritize recommendations</p>
-                  <RadioGroup 
-                    value={profileData.primary_retirement_goal || 'balanced_growth_protection'} 
-                    onValueChange={(v: PrimaryRetirementGoal) => handleProfileChange('primary_retirement_goal', v)}
-                    className="grid grid-cols-1 gap-2"
-                  >
-                    <div className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                      profileData.primary_retirement_goal === 'maximize_tax_free' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
-                    }`}>
-                      <RadioGroupItem value="maximize_tax_free" id="goal_tax_free" />
-                      <Label htmlFor="goal_tax_free" className="cursor-pointer flex-1">Maximize tax-free retirement income</Label>
-                    </div>
-                    <div className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                      profileData.primary_retirement_goal === 'secure_guaranteed_income' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
-                    }`}>
-                      <RadioGroupItem value="secure_guaranteed_income" id="goal_guaranteed" />
-                      <Label htmlFor="goal_guaranteed" className="cursor-pointer flex-1">Secure guaranteed lifetime income</Label>
-                    </div>
-                    <div className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                      profileData.primary_retirement_goal === 'protect_family' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
-                    }`}>
-                      <RadioGroupItem value="protect_family" id="goal_protect" />
-                      <Label htmlFor="goal_protect" className="cursor-pointer flex-1">Protect family with life insurance</Label>
-                    </div>
-                    <div className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                      profileData.primary_retirement_goal === 'balanced_growth_protection' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
-                    }`}>
-                      <RadioGroupItem value="balanced_growth_protection" id="goal_balanced" />
-                      <Label htmlFor="goal_balanced" className="cursor-pointer flex-1">Balance growth with protection</Label>
-                    </div>
-                    <div className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                      profileData.primary_retirement_goal === 'minimize_taxes' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
-                    }`}>
-                      <RadioGroupItem value="minimize_taxes" id="goal_minimize" />
-                      <Label htmlFor="goal_minimize" className="cursor-pointer flex-1">Minimize taxes in retirement</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Tax-free bucket checkbox */}
                   <div 
