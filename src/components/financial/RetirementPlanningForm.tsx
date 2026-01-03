@@ -290,77 +290,7 @@ export function RetirementPlanningForm({
   return (
     <TooltipProvider>
       <div className="space-y-8">
-        {/* Section 1: Primary Retirement Goal */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Compass className="h-5 w-5 text-primary" />
-              <span>Primary Retirement Goal</span>
-            </CardTitle>
-            <CardDescription>
-              Select your most important retirement objective - this drives savings allocation
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup 
-              value={profileData.primary_retirement_goal || 'balanced_growth_protection'} 
-              onValueChange={(v: PrimaryRetirementGoal) => handleProfileChange('primary_retirement_goal', v)}
-              className="space-y-3"
-            >
-              <div className={`flex items-start space-x-3 p-4 rounded-lg border-2 transition-colors cursor-pointer ${
-                profileData.primary_retirement_goal === 'maximize_tax_free' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
-              }`}>
-                <RadioGroupItem value="maximize_tax_free" id="goal_tax_free" className="mt-1" />
-                <div>
-                  <Label htmlFor="goal_tax_free" className="font-semibold cursor-pointer">Maximize Tax-Free Retirement Income</Label>
-                  <p className="text-sm text-muted-foreground mt-1">Prioritize Roth accounts, HSA, and other tax-free vehicles</p>
-                </div>
-              </div>
-              
-              <div className={`flex items-start space-x-3 p-4 rounded-lg border-2 transition-colors cursor-pointer ${
-                profileData.primary_retirement_goal === 'secure_guaranteed_income' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
-              }`}>
-                <RadioGroupItem value="secure_guaranteed_income" id="goal_guaranteed" className="mt-1" />
-                <div>
-                  <Label htmlFor="goal_guaranteed" className="font-semibold cursor-pointer">Secure Guaranteed Lifetime Income</Label>
-                  <p className="text-sm text-muted-foreground mt-1">Focus on predictable income with Social Security optimization and annuities</p>
-                </div>
-              </div>
-              
-              <div className={`flex items-start space-x-3 p-4 rounded-lg border-2 transition-colors cursor-pointer ${
-                profileData.primary_retirement_goal === 'protect_family' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
-              }`}>
-                <RadioGroupItem value="protect_family" id="goal_protect" className="mt-1" />
-                <div>
-                  <Label htmlFor="goal_protect" className="font-semibold cursor-pointer">Protect Family with Life Insurance</Label>
-                  <p className="text-sm text-muted-foreground mt-1">Ensure family financial security with adequate coverage</p>
-                </div>
-              </div>
-              
-              <div className={`flex items-start space-x-3 p-4 rounded-lg border-2 transition-colors cursor-pointer ${
-                profileData.primary_retirement_goal === 'balanced_growth_protection' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
-              }`}>
-                <RadioGroupItem value="balanced_growth_protection" id="goal_balanced" className="mt-1" />
-                <div>
-                  <Label htmlFor="goal_balanced" className="font-semibold cursor-pointer">Balance Growth with Protection</Label>
-                  <p className="text-sm text-muted-foreground mt-1">Optimize between growth-oriented investments and protective strategies</p>
-                </div>
-              </div>
-              
-              <div className={`flex items-start space-x-3 p-4 rounded-lg border-2 transition-colors cursor-pointer ${
-                profileData.primary_retirement_goal === 'minimize_taxes' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
-              }`}>
-                <RadioGroupItem value="minimize_taxes" id="goal_minimize" className="mt-1" />
-                <div>
-                  <Label htmlFor="goal_minimize" className="font-semibold cursor-pointer">Minimize Taxes in Retirement</Label>
-                  <p className="text-sm text-muted-foreground mt-1">Strategic tax diversification to reduce lifetime tax burden</p>
-                </div>
-              </div>
-            </RadioGroup>
-          </CardContent>
-        </Card>
-
-        {/* Section 2: Retirement Savings & Contributions */}
+        {/* Section 1: Retirement Savings & Contributions */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -601,6 +531,48 @@ export function RetirementPlanningForm({
             {/* Step 2: Goals & Preferences */}
             {readinessStep === 2 && (
               <div className="space-y-6">
+                {/* Primary Retirement Goal */}
+                <div className="space-y-3">
+                  <Label className="text-base font-medium">What's your main retirement goal?</Label>
+                  <p className="text-sm text-muted-foreground">This helps us prioritize recommendations</p>
+                  <RadioGroup 
+                    value={profileData.primary_retirement_goal || 'balanced_growth_protection'} 
+                    onValueChange={(v: PrimaryRetirementGoal) => handleProfileChange('primary_retirement_goal', v)}
+                    className="grid grid-cols-1 gap-2"
+                  >
+                    <div className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                      profileData.primary_retirement_goal === 'maximize_tax_free' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
+                    }`}>
+                      <RadioGroupItem value="maximize_tax_free" id="goal_tax_free" />
+                      <Label htmlFor="goal_tax_free" className="cursor-pointer flex-1">Maximize tax-free retirement income</Label>
+                    </div>
+                    <div className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                      profileData.primary_retirement_goal === 'secure_guaranteed_income' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
+                    }`}>
+                      <RadioGroupItem value="secure_guaranteed_income" id="goal_guaranteed" />
+                      <Label htmlFor="goal_guaranteed" className="cursor-pointer flex-1">Secure guaranteed lifetime income</Label>
+                    </div>
+                    <div className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                      profileData.primary_retirement_goal === 'protect_family' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
+                    }`}>
+                      <RadioGroupItem value="protect_family" id="goal_protect" />
+                      <Label htmlFor="goal_protect" className="cursor-pointer flex-1">Protect family with life insurance</Label>
+                    </div>
+                    <div className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                      profileData.primary_retirement_goal === 'balanced_growth_protection' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
+                    }`}>
+                      <RadioGroupItem value="balanced_growth_protection" id="goal_balanced" />
+                      <Label htmlFor="goal_balanced" className="cursor-pointer flex-1">Balance growth with protection</Label>
+                    </div>
+                    <div className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                      profileData.primary_retirement_goal === 'minimize_taxes' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
+                    }`}>
+                      <RadioGroupItem value="minimize_taxes" id="goal_minimize" />
+                      <Label htmlFor="goal_minimize" className="cursor-pointer flex-1">Minimize taxes in retirement</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Tax-free bucket checkbox */}
                   <div 
@@ -737,109 +709,6 @@ export function RetirementPlanningForm({
           </CardContent>
         </Card>
 
-        {/* Product Suitability Preview */}
-        <Card className="border-2 border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-primary" />
-              <span>Product Suitability Preview</span>
-            </CardTitle>
-            <CardDescription>
-              Based on your inputs, here's how these strategies may fit you
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* IUL Preview */}
-              <div className={`p-4 rounded-lg border-2 ${getBackgroundColor(suitabilityPreview.iul.fit)}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold">Indexed Universal Life (IUL)</h4>
-                  <Badge className={getFitBadgeColor(suitabilityPreview.iul.fit)}>
-                    {getFitIcon(suitabilityPreview.iul.fit)}
-                    <span className="ml-1">{getFitLabel(suitabilityPreview.iul.fit)}</span>
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-3">{suitabilityPreview.iul.reason}</p>
-                
-                {/* CTA based on fit */}
-                {(suitabilityPreview.iul.fit === 'strong' || suitabilityPreview.iul.fit === 'moderate') && (
-                  <Button variant="link" className="p-0 h-auto text-primary gap-1" asChild>
-                    <a href="/book">
-                      See how this works for you
-                      <ArrowRight className="h-3 w-3" />
-                    </a>
-                  </Button>
-                )}
-                {suitabilityPreview.iul.fit === 'explore' && (
-                  <Button 
-                    variant="link" 
-                    className="p-0 h-auto text-blue-600 gap-1"
-                    onClick={() => setReadinessStep(2)}
-                  >
-                    Answer more questions to refine
-                    <ArrowRight className="h-3 w-3" />
-                  </Button>
-                )}
-                {suitabilityPreview.iul.fit === 'not_recommended' && suitabilityPreview.iul.negatives.length > 0 && (
-                  <div className="mt-2 text-sm">
-                    <p className="font-medium text-red-700 mb-1">What to address:</p>
-                    <ul className="list-disc list-inside text-red-600 space-y-0.5">
-                      {suitabilityPreview.iul.negatives.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              {/* Annuity Preview */}
-              <div className={`p-4 rounded-lg border-2 ${getBackgroundColor(suitabilityPreview.annuity.fit)}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold">Annuity</h4>
-                  <Badge className={getFitBadgeColor(suitabilityPreview.annuity.fit)}>
-                    {getFitIcon(suitabilityPreview.annuity.fit)}
-                    <span className="ml-1">{getFitLabel(suitabilityPreview.annuity.fit)}</span>
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-3">{suitabilityPreview.annuity.reason}</p>
-                
-                {/* CTA based on fit */}
-                {(suitabilityPreview.annuity.fit === 'strong' || suitabilityPreview.annuity.fit === 'moderate') && (
-                  <Button variant="link" className="p-0 h-auto text-primary gap-1" asChild>
-                    <a href="/book">
-                      See how this works for you
-                      <ArrowRight className="h-3 w-3" />
-                    </a>
-                  </Button>
-                )}
-                {suitabilityPreview.annuity.fit === 'explore' && (
-                  <Button 
-                    variant="link" 
-                    className="p-0 h-auto text-blue-600 gap-1"
-                    onClick={() => setReadinessStep(2)}
-                  >
-                    Answer more questions to refine
-                    <ArrowRight className="h-3 w-3" />
-                  </Button>
-                )}
-                {suitabilityPreview.annuity.fit === 'not_recommended' && suitabilityPreview.annuity.negatives.length > 0 && (
-                  <div className="mt-2 text-sm">
-                    <p className="font-medium text-red-700 mb-1">What to address:</p>
-                    <ul className="list-disc list-inside text-red-600 space-y-0.5">
-                      {suitabilityPreview.annuity.negatives.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <p className="text-xs text-muted-foreground mt-4 text-center">
-              Full analysis with detailed recommendations will be available in your Retirement Readiness Report.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     </TooltipProvider>
   );

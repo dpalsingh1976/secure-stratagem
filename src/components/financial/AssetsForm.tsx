@@ -232,18 +232,6 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange }: Ass
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor={`basis-${index}`}>Cost Basis</Label>
-                      <Input
-                        id={`basis-${index}`}
-                        type="number"
-                        min="0"
-                        value={asset.cost_basis}
-                        onChange={(e) => updateAsset(index, { ...asset, cost_basis: parseFloat(e.target.value) || 0 })}
-                        placeholder="0"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
                       <Label htmlFor={`wrapper-${index}`}>Tax Treatment</Label>
                       <Select
                         value={asset.tax_wrapper}
@@ -261,69 +249,9 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange }: Ass
                         </SelectContent>
                       </Select>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor={`fees-${index}`}>Annual Fees (Basis Points)</Label>
-                      <Input
-                        id={`fees-${index}`}
-                        type="number"
-                        min="0"
-                        max="1000"
-                        value={asset.fee_bps}
-                        onChange={(e) => updateAsset(index, { ...asset, fee_bps: parseInt(e.target.value) || 0 })}
-                        placeholder="0"
-                      />
-                      <div className="text-xs text-gray-600">
-                        {asset.fee_bps > 0 && `${(asset.fee_bps / 100).toFixed(2)}% annual fee`}
-                      </div>
-                    </div>
                   </div>
 
                   <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <Label>Expected Return Range</Label>
-                        <span className="text-sm text-gray-600">
-                          {asset.expected_return_low}% - {asset.expected_return_base}% - {asset.expected_return_high}%
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <Label className="text-xs">Low</Label>
-                          <Input
-                            type="number"
-                            min="-10"
-                            max="20"
-                            step="0.5"
-                            value={asset.expected_return_low}
-                            onChange={(e) => updateAsset(index, { ...asset, expected_return_low: parseFloat(e.target.value) || 0 })}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Base</Label>
-                          <Input
-                            type="number"
-                            min="-10"
-                            max="20"
-                            step="0.5"
-                            value={asset.expected_return_base}
-                            onChange={(e) => updateAsset(index, { ...asset, expected_return_base: parseFloat(e.target.value) || 0 })}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs">High</Label>
-                          <Input
-                            type="number"
-                            min="-10"
-                            max="20"
-                            step="0.5"
-                            value={asset.expected_return_high}
-                            onChange={(e) => updateAsset(index, { ...asset, expected_return_high: parseFloat(e.target.value) || 0 })}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label>Liquidity Score</Label>

@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Trash2, CreditCard, Home, GraduationCap, Car } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -114,18 +113,7 @@ export function LiabilitiesForm({ data, onChange, clientId, onValidationChange }
     }).format(value);
   };
 
-  const calculateMonthlyPayment = (balance: number, rate: number, termMonths: number): number => {
-    if (balance <= 0 || rate <= 0 || termMonths <= 0) return 0;
-    
-    const monthlyRate = rate / 100 / 12;
-    const payment = balance * (monthlyRate * Math.pow(1 + monthlyRate, termMonths)) / 
-                   (Math.pow(1 + monthlyRate, termMonths) - 1);
-    
-    return Math.round(payment * 100) / 100;
-  };
-
   const totalDebt = data.reduce((sum, liability) => sum + liability.balance, 0);
-  const totalMonthlyPayments = data.reduce((sum, liability) => sum + liability.payment_monthly, 0);
 
   return (
     <div className="space-y-6">
@@ -133,7 +121,7 @@ export function LiabilitiesForm({ data, onChange, clientId, onValidationChange }
         <div>
           <h3 className="text-lg font-semibold">Liabilities & Debts</h3>
           <p className="text-sm text-gray-600">
-            Total Debt: {formatCurrency(totalDebt)} • Monthly Payments: {formatCurrency(totalMonthlyPayments)}
+            Total Debt: {formatCurrency(totalDebt)}
           </p>
         </div>
         <Button onClick={addLiability} className="flex items-center space-x-2">
@@ -167,19 +155,10 @@ export function LiabilitiesForm({ data, onChange, clientId, onValidationChange }
                         <div className="font-semibold">{config.label}</div>
                         <div className="text-sm text-gray-600">{config.category}</div>
                       </div>
-                      <Badge variant="outline">
-                        {liability.rate.toFixed(2)}% APR
-                      </Badge>
-                      {liability.deductible && (
-                        <Badge variant="secondary">Tax Deductible</Badge>
-                      )}
                     </div>
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
                         <div className="font-semibold">{formatCurrency(liability.balance)}</div>
-                        <div className="text-sm text-gray-600">
-                          {formatCurrency(liability.payment_monthly)}/month
-                        </div>
                       </div>
                       <Button
                         variant="ghost"
@@ -238,90 +217,6 @@ export function LiabilitiesForm({ data, onChange, clientId, onValidationChange }
                           onChange={(e) => updateLiability(index, { ...liability, balance: parseFloat(e.target.value) || 0 })}
                           placeholder="0"
                         />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor={`rate-${index}`}>Interest Rate (%)</Label>
-                        <Input
-                          id={`rate-${index}`}
-                          type="number"
-                          min="0"
-                          max="50"
-                          step="0.01"
-                          value={liability.rate}
-                          onChange={(e) => updateLiability(index, { ...liability, rate: parseFloat(e.target.value) || 0 })}
-                          placeholder="0"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor={`term-${index}`}>Term (Months)</Label>
-                        <Input
-                          id={`term-${index}`}
-                          type="number"
-                          min="0"
-                          max="360"
-                          value={liability.term_months || ''}
-                          onChange={(e) => {
-                            const termMonths = parseInt(e.target.value) || 0;
-                            const calculatedPayment = termMonths > 0 
-                              ? calculateMonthlyPayment(liability.balance, liability.rate, termMonths)
-                              : liability.payment_monthly;
-                            
-                            updateLiability(index, { 
-                              ...liability, 
-                              term_months: termMonths,
-                              payment_monthly: calculatedPayment
-                            });
-                          }}
-                          placeholder="Optional"
-                        />
-                        {liability.term_months && liability.term_months > 0 && (
-                          <div className="text-xs text-gray-600">
-                            {(liability.term_months / 12).toFixed(1)} years
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor={`payment-${index}`}>Monthly Payment</Label>
-                        <Input
-                          id={`payment-${index}`}
-                          type="number"
-                          min="0"
-                          value={liability.payment_monthly}
-                          onChange={(e) => updateLiability(index, { ...liability, payment_monthly: parseFloat(e.target.value) || 0 })}
-                          placeholder="0"
-                        />
-                        {liability.balance > 0 && liability.term_months && liability.rate > 0 && (
-                          <div className="text-xs text-blue-600">
-                            Calculated: {formatCurrency(calculateMonthlyPayment(liability.balance, liability.rate, liability.term_months))}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`variable-${index}`}
-                            checked={liability.variable}
-                            onCheckedChange={(checked) => updateLiability(index, { ...liability, variable: !!checked })}
-                          />
-                          <Label htmlFor={`variable-${index}`} className="text-sm">
-                            Variable Rate
-                          </Label>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`deductible-${index}`}
-                            checked={liability.deductible}
-                            onCheckedChange={(checked) => updateLiability(index, { ...liability, deductible: !!checked })}
-                          />
-                          <Label htmlFor={`deductible-${index}`} className="text-sm">
-                            Tax Deductible Interest
-                          </Label>
-                        </div>
                       </div>
                     </div>
 
