@@ -130,14 +130,17 @@ export const IULExplainerAnimation: React.FC = () => {
     setIsLoadingAudio(true);
 
     try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://fiqmtirctaqxhqnwfuqq.supabase.co';
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+        `${supabaseUrl}/functions/v1/elevenlabs-tts`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
           },
           body: JSON.stringify({ text: scene.description }),
         }
