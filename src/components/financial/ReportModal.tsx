@@ -61,7 +61,7 @@ export function ReportModal({
   liabilities,
   protectionData
 }: ReportModalProps) {
-  const [activeTab, setActiveTab] = useState('retirement');
+  const [activeTab, setActiveTab] = useState('summary');
   const [isExporting, setIsExporting] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -670,8 +670,8 @@ export function ReportModal({
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
           <TabsList className="grid w-full grid-cols-6 flex-shrink-0">
-            <TabsTrigger value="retirement">Retirement</TabsTrigger>
             <TabsTrigger value="summary">Summary</TabsTrigger>
+            <TabsTrigger value="retirement">Retirement</TabsTrigger>
             <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
             <TabsTrigger value="tax-buckets">Tax Buckets</TabsTrigger>
             <TabsTrigger value="coverage">Coverage</TabsTrigger>
@@ -683,60 +683,30 @@ export function ReportModal({
             <TabsContent value="retirement" className="space-y-6">
               {retirementResult ? (
                 <>
-                  {/* Score Ring and Grade - Animated */}
-                  <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 overflow-hidden">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-8">
-                          <RetirementScoreRing 
-                            score={retirementResult.overall_score} 
-                            grade={retirementResult.overall_grade}
-                            size={140}
-                            strokeWidth={14}
-                            animated={true}
-                          />
-                          <div className="space-y-2">
-                            <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                              Retirement Readiness Score
-                            </h2>
-                            <p className="text-muted-foreground max-w-md">
-                              Your comprehensive retirement preparedness assessment based on income, protection, taxes, and risk factors.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Income Gap */}
-                  <Card className={retirementResult.projection.monthly_gap > 0 ? 'border-2 border-red-300' : 'border-2 border-green-300'}>
-                    <CardHeader>
-                      <CardTitle>Projected Monthly Retirement Income</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-3 gap-4 text-center">
-                        <div className="p-4 bg-blue-50 rounded-lg">
-                          <p className="text-sm text-blue-700">Projected Income</p>
-                          <p className="text-2xl font-bold text-blue-900">{formatCurrency(retirementResult.projection.monthly_income_projected)}</p>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                          <p className="text-sm text-gray-700">Target Income</p>
-                          <p className="text-2xl font-bold text-gray-900">{formatCurrency(retirementResult.projection.monthly_income_target)}</p>
-                        </div>
-                        <div className={`p-4 rounded-lg ${retirementResult.projection.monthly_gap > 0 ? 'bg-red-50' : 'bg-green-50'}`}>
-                          <p className={`text-sm ${retirementResult.projection.monthly_gap > 0 ? 'text-red-700' : 'text-green-700'}`}>
-                            {retirementResult.projection.monthly_gap > 0 ? 'Monthly Gap' : 'Surplus'}
-                          </p>
-                          <p className={`text-2xl font-bold ${retirementResult.projection.monthly_gap > 0 ? 'text-red-900' : 'text-green-900'}`}>
-                            {formatCurrency(Math.abs(retirementResult.projection.monthly_gap))}
+                  {/* Score Ring and Grade - Compact */}
+                  <Card className="border border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 overflow-hidden">
+                    <CardContent className="pt-4 pb-4">
+                      <div className="flex items-center gap-4">
+                        <RetirementScoreRing 
+                          score={retirementResult.overall_score} 
+                          grade={retirementResult.overall_grade}
+                          size={80}
+                          strokeWidth={8}
+                          animated={true}
+                        />
+                        <div className="space-y-1">
+                          <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                            Retirement Readiness Score
+                          </h2>
+                          <p className="text-sm text-muted-foreground max-w-sm">
+                            Based on income, protection, taxes, and risk factors.
                           </p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-
-                  {/* Product Recommendations */}
+                  {/* Product Recommendations - Moved before Income Gap */}
                   {retirementResult.recommendations.length > 0 && (
                     <Card>
                       <CardHeader>
@@ -820,7 +790,34 @@ export function ReportModal({
                         ))}
                       </CardContent>
                     </Card>
-                   )}
+                  )}
+
+                  {/* Income Gap - Moved after Product Fit Analysis */}
+                  <Card className={retirementResult.projection.monthly_gap > 0 ? 'border-2 border-red-300' : 'border-2 border-green-300'}>
+                    <CardHeader>
+                      <CardTitle>Projected Monthly Retirement Income</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div className="p-4 bg-blue-50 rounded-lg">
+                          <p className="text-sm text-blue-700">Projected Income</p>
+                          <p className="text-2xl font-bold text-blue-900">{formatCurrency(retirementResult.projection.monthly_income_projected)}</p>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-700">Target Income</p>
+                          <p className="text-2xl font-bold text-gray-900">{formatCurrency(retirementResult.projection.monthly_income_target)}</p>
+                        </div>
+                        <div className={`p-4 rounded-lg ${retirementResult.projection.monthly_gap > 0 ? 'bg-red-50' : 'bg-green-50'}`}>
+                          <p className={`text-sm ${retirementResult.projection.monthly_gap > 0 ? 'text-red-700' : 'text-green-700'}`}>
+                            {retirementResult.projection.monthly_gap > 0 ? 'Monthly Gap' : 'Surplus'}
+                          </p>
+                          <p className={`text-2xl font-bold ${retirementResult.projection.monthly_gap > 0 ? 'text-red-900' : 'text-green-900'}`}>
+                            {formatCurrency(Math.abs(retirementResult.projection.monthly_gap))}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
 
 
                   {/* Key Insights */}
