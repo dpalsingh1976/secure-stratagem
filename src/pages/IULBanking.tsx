@@ -139,6 +139,38 @@ const IULBanking = () => {
       {/* How IUL Works - Visual */}
       <section className="container-financial py-16">
         <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold mb-8 text-foreground">How IUL Works</h2>
+
+          {/* Premium Allocation Diagram */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Premium Allocation</CardTitle>
+              <CardDescription>How your premium dollars are distributed</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4 py-6">
+                <div className="text-center p-4 bg-primary/10 rounded-lg w-full md:w-auto">
+                  <p className="text-2xl font-bold text-primary">$1,000</p>
+                  <p className="text-sm text-muted-foreground">Monthly Premium</p>
+                </div>
+                <ArrowRight className="w-6 h-6 text-muted-foreground hidden md:block" />
+                <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
+                  <div className="text-center p-4 bg-destructive/10 rounded-lg">
+                    <p className="text-lg font-bold text-destructive">~$150-300</p>
+                    <p className="text-xs text-muted-foreground">Cost of Insurance (COI)</p>
+                  </div>
+                  <div className="text-center p-4 bg-accent/20 rounded-lg">
+                    <p className="text-lg font-bold text-accent-foreground">~$700-850</p>
+                    <p className="text-xs text-muted-foreground">Cash Value Account</p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground text-center italic">
+                * Actual allocation varies by age, health, and policy design. COI increases with age.
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Cap, Floor, Participation Rate */}
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <Card>
