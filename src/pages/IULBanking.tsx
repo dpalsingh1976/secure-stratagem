@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Landmark, TrendingUp, Shield, PiggyBank, Users, AlertTriangle, CheckCircle, XCircle, HelpCircle, ArrowRight, BookOpen, Calculator, Calendar } from 'lucide-react';
+import { Landmark, TrendingUp, Shield, PiggyBank, Users, AlertTriangle, CheckCircle, XCircle, HelpCircle, ArrowRight, BookOpen, Calculator, Calendar, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import IULExplainerAnimation from '@/components/iul/IULExplainerAnimation';
 
 const IULBanking = () => {
   const navigate = useNavigate();
@@ -41,7 +42,23 @@ const IULBanking = () => {
         </div>
       </section>
 
-      {/* What is IUL? Section */}
+      {/* Animated IUL Explainer */}
+      <section className="container-financial py-12 md:py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Play className="w-6 h-6 text-primary" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+              See How IUL Works
+            </h2>
+          </div>
+          <p className="text-muted-foreground mb-8 max-w-2xl">
+            Watch this interactive animation to understand the key components of an IUL policy—from premium payment to death benefit protection.
+          </p>
+          <IULExplainerAnimation />
+        </div>
+      </section>
       <section className="bg-card border-y border-border">
         <div className="container-financial py-16">
           <div className="max-w-4xl mx-auto">
