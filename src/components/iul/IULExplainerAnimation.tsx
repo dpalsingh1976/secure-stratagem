@@ -25,7 +25,7 @@ const totalDuration = scenes.reduce((acc, s) => acc + s.duration, 0);
 
 export const IULExplainerAnimation: React.FC = () => {
   const [currentScene, setCurrentScene] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [sceneProgress, setSceneProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);

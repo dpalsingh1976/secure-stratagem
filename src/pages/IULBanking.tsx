@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { IULExplainerAnimation } from "@/components/iul/IULExplainerAnimation";
 
 const IULBanking = () => {
   const navigate = useNavigate();
@@ -52,6 +53,22 @@ const IULBanking = () => {
               Compare IUL Scenarios
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Animated IUL Explainer */}
+      <section className="container-financial py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <TrendingUp className="w-8 h-8 text-primary" />
+            <h2 className="text-3xl font-bold text-foreground">
+              See How IUL Works
+            </h2>
+          </div>
+          <p className="text-lg text-muted-foreground mb-8">
+            Watch this interactive animation to understand the key components of an IUL policy.
+          </p>
+          <IULExplainerAnimation />
         </div>
       </section>
 
