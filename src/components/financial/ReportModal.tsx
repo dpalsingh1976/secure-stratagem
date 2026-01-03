@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { Download, Share2, AlertTriangle, CheckCircle, Info, TrendingUp, TrendingDown, Shield, DollarSign, Calendar, Calculator, Sparkles } from 'lucide-react';
+import { Download, Share2, AlertTriangle, CheckCircle, Info, TrendingUp, TrendingDown, Shield, DollarSign, Calendar } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency, formatPercentage } from '@/utils/riskComputation';
 import jsPDF from 'jspdf';
 import BookingCalendar from '@/components/BookingCalendar';
 import { RetirementScoreRing } from './RetirementScoreRing';
-import { computeSavingsAllocation } from '@/engine/retirement/allocationEngine';
+
 import type { 
   ComputedMetrics,
   ProfileGoalsData,
@@ -23,8 +23,7 @@ import type {
   ProtectionHealthData
 } from '@/types/financial';
 
-import type { RetirementReadinessResult, AllocationRecommendation, RetirementPreferencesData } from '@/types/retirement';
-import { DEFAULT_RETIREMENT_PREFERENCES } from '@/types/retirement';
+import type { RetirementReadinessResult } from '@/types/retirement';
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -66,8 +65,6 @@ export function ReportModal({
   const [isExporting, setIsExporting] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
-  const [allocationResult, setAllocationResult] = useState<AllocationRecommendation | null>(null);
-  const [isGeneratingAllocation, setIsGeneratingAllocation] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -738,30 +735,6 @@ export function ReportModal({
                     </CardContent>
                   </Card>
 
-                  {/* Sub-Scores */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Risk Category Breakdown</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {Object.entries({
-                        'Income Adequacy': retirementResult.sub_scores.income_adequacy,
-                        'Tax Risk': retirementResult.sub_scores.tax_risk,
-                        'Sequence Risk': retirementResult.sub_scores.sequence_risk,
-                        'Longevity Risk': retirementResult.sub_scores.longevity_risk,
-                        'Liquidity': retirementResult.sub_scores.liquidity,
-                        'Protection': retirementResult.sub_scores.protection
-                      }).map(([label, score]) => (
-                        <div key={label} className="flex items-center gap-4">
-                          <span className="w-36 font-medium">{label}</span>
-                          <Progress value={score} className="flex-1" />
-                          <span className={`w-12 text-right font-bold ${score >= 70 ? 'text-green-600' : score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
-                            {score}
-                          </span>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
 
                   {/* Product Recommendations */}
                   {retirementResult.recommendations.length > 0 && (
@@ -811,134 +784,6 @@ export function ReportModal({
                     </Card>
                    )}
 
-                  {/* Savings Allocation Button & Results */}
-                  {retirementResult && (
-                    <Card className="border-2 border-dashed border-primary/40">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Calculator className="h-5 w-5" />
-                          Personalized Savings Allocation
-                        </CardTitle>
-                        <CardDescription>
-                          Generate an optimal savings waterfall based on your goals and product fit analysis
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        {!allocationResult ? (
-                          <div className="text-center py-4">
-                            <Button 
-                              onClick={() => {
-                                setIsGeneratingAllocation(true);
-                                setTimeout(() => {
-                                  const preferences: RetirementPreferencesData = {
-                                    ...DEFAULT_RETIREMENT_PREFERENCES,
-                                    prefers_guaranteed_income: protectionData.prefers_guaranteed_income,
-                                    liquidity_need_next_5yr: protectionData.liquidity_need_next_5yr,
-                                    can_commit_10yr_contributions: protectionData.can_commit_10yr_contributions,
-                                    open_to_tax_diversification: protectionData.open_to_tax_diversification
-                                  };
-                                  const result = computeSavingsAllocation(
-                                    profileData,
-                                    incomeData,
-                                    protectionData,
-                                    metrics,
-                                    preferences,
-                                    retirementResult.projection,
-                                    retirementResult.recommendations,
-                                    profileData.primary_retirement_goal || 'balanced_growth_protection'
-                                  );
-                                  setAllocationResult(result);
-                                  setIsGeneratingAllocation(false);
-                                }, 500);
-                              }}
-                              disabled={isGeneratingAllocation}
-                              className="bg-gradient-to-r from-primary to-primary/80"
-                              size="lg"
-                            >
-                              {isGeneratingAllocation ? (
-                                <>Generating...</>
-                              ) : (
-                                <>
-                                  <Sparkles className="mr-2 h-5 w-5" />
-                                  Generate Savings Allocation
-                                </>
-                              )}
-                            </Button>
-                            <p className="text-sm text-muted-foreground mt-3">
-                              Based on CFP standards and top advisory recommendations (Vanguard, Fidelity)
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="space-y-6">
-                            {/* Waterfall Steps */}
-                            <div className="space-y-3">
-                              {allocationResult.savings_waterfall.map((step) => (
-                                <div 
-                                  key={step.vehicle} 
-                                  className={`flex items-center gap-4 p-4 rounded-lg transition-all ${
-                                    step.is_applicable 
-                                      ? 'bg-gradient-to-r from-green-50 to-green-100 border border-green-200' 
-                                      : 'bg-gray-50 border border-gray-200 opacity-60'
-                                  }`}
-                                >
-                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
-                                    step.is_applicable ? 'bg-primary' : 'bg-gray-400'
-                                  }`}>
-                                    {step.priority}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between gap-2">
-                                      <span className="font-semibold truncate">{step.label}</span>
-                                      <span className={`font-bold whitespace-nowrap ${step.is_applicable ? 'text-green-600' : 'text-gray-400'}`}>
-                                        {formatCurrency(step.suggested_contribution)}/mo
-                                      </span>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground line-clamp-1">{step.rationale}</p>
-                                    {!step.is_applicable && step.not_applicable_reason && (
-                                      <p className="text-xs text-red-600 mt-1">{step.not_applicable_reason}</p>
-                                    )}
-                                  </div>
-                                  <Badge variant={step.fit_score >= 70 ? 'default' : 'secondary'} className="shrink-0">
-                                    {step.fit_score}%
-                                  </Badge>
-                                </div>
-                              ))}
-                            </div>
-
-                            {/* Summary Cards */}
-                            <div className="grid grid-cols-3 gap-4">
-                              <Card className="text-center p-4 bg-primary/5">
-                                <p className="text-sm text-muted-foreground">Tax Efficiency</p>
-                                <p className="text-2xl font-bold text-primary">{allocationResult.tax_efficiency_score}%</p>
-                              </Card>
-                              <Card className="text-center p-4 bg-blue-50">
-                                <p className="text-sm text-muted-foreground">Risk Balance</p>
-                                <p className="text-2xl font-bold text-blue-600">{allocationResult.risk_balance_score}%</p>
-                              </Card>
-                              <Card className="text-center p-4 bg-green-50">
-                                <p className="text-sm text-muted-foreground">Monthly Allocated</p>
-                                <p className="text-2xl font-bold text-green-600">
-                                  {formatCurrency(allocationResult.monthly_allocation_summary.allocated)}
-                                </p>
-                              </Card>
-                            </div>
-
-                            {/* Disclaimer */}
-                            <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                              <p className="text-sm text-amber-800">
-                                <strong>Important:</strong> This allocation is educational and based on general financial planning principles. 
-                                Consult a licensed financial advisor before making investment decisions.
-                              </p>
-                            </div>
-
-                            <Button variant="outline" onClick={() => setAllocationResult(null)} className="w-full">
-                              Recalculate
-                            </Button>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
 
                   {/* Key Insights */}
                   <Card className="bg-amber-50 border-amber-200">
