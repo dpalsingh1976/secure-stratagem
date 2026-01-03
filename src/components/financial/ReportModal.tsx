@@ -749,7 +749,7 @@ export function ReportModal({
                             rec.fit === 'strong' ? 'border-green-300 bg-green-50' :
                             rec.fit === 'moderate' ? 'border-blue-300 bg-blue-50' :
                             rec.fit === 'weak' ? 'border-yellow-300 bg-yellow-50' :
-                            'border-gray-300 bg-gray-50'
+                            'border-red-300 bg-red-50'
                           }`}>
                             <CardHeader className="pb-2">
                               <div className="flex items-center justify-between">
@@ -758,24 +758,62 @@ export function ReportModal({
                                   rec.fit === 'strong' ? 'bg-green-600' :
                                   rec.fit === 'moderate' ? 'bg-blue-600' :
                                   rec.fit === 'weak' ? 'bg-yellow-600' :
-                                  'bg-gray-600'
-                                }>{rec.fit}</Badge>
+                                  'bg-red-600'
+                                }>{rec.fit === 'not_recommended' ? 'Not Yet' : rec.fit}</Badge>
                               </div>
+                              {rec.score !== undefined && (
+                                <div className="text-xs text-muted-foreground">Score: {rec.score}/100</div>
+                              )}
                             </CardHeader>
-                            <CardContent className="text-sm space-y-2">
-                              <div>
-                                <p className="font-medium text-green-700">Why it fits:</p>
-                                <ul className="list-disc list-inside text-xs">
-                                  {rec.whyBullets.slice(0, 2).map((b, i) => <li key={i}>{b}</li>)}
-                                </ul>
-                              </div>
-                              {rec.notIfBullets.length > 0 && (
-                                <div>
-                                  <p className="font-medium text-red-700">Consider if:</p>
-                                  <ul className="list-disc list-inside text-xs">
-                                    {rec.notIfBullets.slice(0, 2).map((b, i) => <li key={i}>{b}</li>)}
-                                  </ul>
-                                </div>
+                            <CardContent className="text-sm space-y-3">
+                              {/* Not Recommended State - Show Why & Fix First */}
+                              {rec.fit === 'not_recommended' ? (
+                                <>
+                                  {rec.disqualification_reason && (
+                                    <div className="p-2 bg-red-100 rounded-lg border border-red-200">
+                                      <p className="font-medium text-red-800 text-xs flex items-center gap-1">
+                                        <AlertTriangle className="h-3 w-3" /> Why It Doesn't Fit
+                                      </p>
+                                      <p className="text-xs text-red-700 mt-1">{rec.disqualification_reason}</p>
+                                    </div>
+                                  )}
+                                  {rec.fixFirstBullets && rec.fixFirstBullets.length > 0 && (
+                                    <div className="p-2 bg-amber-100 rounded-lg border border-amber-200">
+                                      <p className="font-medium text-amber-800 text-xs flex items-center gap-1">
+                                        <CheckCircle className="h-3 w-3" /> What to Fix First
+                                      </p>
+                                      <ul className="list-disc list-inside text-xs text-amber-700 mt-1 space-y-0.5">
+                                        {rec.fixFirstBullets.map((b, i) => <li key={i}>{b}</li>)}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {rec.nextSteps.length > 0 && (
+                                    <div>
+                                      <p className="font-medium text-gray-700 text-xs">Next Steps:</p>
+                                      <ul className="list-disc list-inside text-xs text-gray-600">
+                                        {rec.nextSteps.slice(0, 2).map((b, i) => <li key={i}>{b}</li>)}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  {/* Regular State - Show Why It Fits */}
+                                  <div>
+                                    <p className="font-medium text-green-700">Why it fits:</p>
+                                    <ul className="list-disc list-inside text-xs">
+                                      {rec.whyBullets.slice(0, 2).map((b, i) => <li key={i}>{b}</li>)}
+                                    </ul>
+                                  </div>
+                                  {rec.notIfBullets.length > 0 && (
+                                    <div>
+                                      <p className="font-medium text-amber-700">Consider if:</p>
+                                      <ul className="list-disc list-inside text-xs">
+                                        {rec.notIfBullets.slice(0, 2).map((b, i) => <li key={i}>{b}</li>)}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </CardContent>
                           </Card>

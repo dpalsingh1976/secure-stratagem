@@ -74,12 +74,13 @@ export interface RetirementScenarioResult {
 export interface ProductRecommendation {
   product: 'Term' | 'Annuity' | 'IUL';
   fit: ProductFit;
-  score?: number; // 0-100 for IUL suitability
+  score?: number; // 0-100 for suitability
   whyBullets: string[];
   notIfBullets: string[];
+  fixFirstBullets?: string[]; // Actionable remediation steps when not recommended
   nextSteps: string[];
   disclaimer: string;
-  // Enhanced IUL fields
+  // Enhanced suitability fields (IUL & Annuity)
   preconditions?: IULPreconditionCheck[];
   disqualified?: boolean;
   disqualification_reason?: string;

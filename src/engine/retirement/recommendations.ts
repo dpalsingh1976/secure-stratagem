@@ -15,6 +15,7 @@ import type {
 } from '@/types/retirement';
 import { INSURANCE_ASSUMPTIONS } from './assumptions';
 import { computeIULSuitability, getDefaultPlanningReadiness } from './iulSuitability';
+import { computeAnnuitySuitability } from './annuitySuitability';
 
 /**
  * Evaluate Term Life Insurance fit
@@ -100,84 +101,48 @@ export function evaluateTermFit(
 
 /**
  * Evaluate Annuity fit
+ * Now uses the professional Annuity suitability engine
  */
 export function evaluateAnnuityFit(
   projection: RetirementProjection,
   preferences: RetirementPreferencesData,
-  incomeData: IncomeExpensesData
+  incomeData: IncomeExpensesData,
+  protectionData?: ProtectionHealthData,
+  planningReadiness?: PlanningReadinessData
 ): ProductRecommendation {
-  const whyBullets: string[] = [];
-  const notIfBullets: string[] = [];
-  const nextSteps: string[] = [];
+  // Use the professional Annuity suitability engine
+  const readiness = planningReadiness || getDefaultPlanningReadiness();
+  const protection = protectionData || {
+    emergency_fund_months: 3,
+    prefers_guaranteed_income: preferences.prefers_guaranteed_income || false
+  } as ProtectionHealthData;
   
-  let fitScore = 0;
-  
-  // Check income gap
-  if (projection.gap_percentage > 20) {
-    fitScore += 35;
-    whyBullets.push(`${Math.round(projection.gap_percentage)}% income gap could be addressed with guaranteed income`);
-  }
-  
-  // Check preference for guaranteed income
-  if (preferences.prefers_guaranteed_income) {
-    fitScore += 25;
-    whyBullets.push('You indicated preference for guaranteed lifetime income');
-  }
-  
-  // Check if SS + pension covers essential expenses
-  const guaranteedIncome = 
-    projection.income_sources.social_security + 
-    projection.income_sources.pension;
-  const essentialExpenses = projection.monthly_income_target * 0.6; // 60% considered essential
-  
-  if (guaranteedIncome < essentialExpenses) {
-    fitScore += 20;
-    whyBullets.push('Current guaranteed income may not cover essential expenses');
-  }
-  
-  // Check years to retirement (need accumulation time)
-  if (projection.years_to_retirement > 5) {
-    fitScore += 10;
-    whyBullets.push('Time horizon allows for annuity growth phase');
-  }
-  
-  // Not recommended conditions
-  if (preferences.liquidity_need_next_5yr === 'high') {
-    notIfBullets.push('High near-term liquidity needs conflict with annuity surrender periods');
-    fitScore -= 30;
-  }
-  
-  if (projection.years_to_retirement < 3) {
-    notIfBullets.push('Limited time for deferred annuity benefits to materialize');
-    fitScore -= 15;
-  }
-  
-  if (projection.gap_percentage <= 0) {
-    notIfBullets.push('No income gap suggests annuity may not be necessary');
-    fitScore -= 20;
-  }
-  
-  // Determine fit
-  let fit: ProductFit;
-  if (fitScore >= 60) fit = 'strong';
-  else if (fitScore >= 35) fit = 'moderate';
-  else if (fitScore >= 15) fit = 'weak';
-  else fit = 'not_recommended';
-  
-  // Next steps
-  if (fit !== 'not_recommended') {
-    nextSteps.push('Compare Fixed Index Annuity (FIA) vs SPIA options');
-    nextSteps.push('Review surrender periods and liquidity features');
-    nextSteps.push('Calculate income benefit projections at various start ages');
-  }
+  const suitabilityResult = computeAnnuitySuitability({
+    planningReadiness: readiness,
+    protectionData: protection,
+    incomeData,
+    projection,
+    yearsToRetirement: projection.years_to_retirement
+  });
   
   return {
     product: 'Annuity',
-    fit,
-    whyBullets: whyBullets.length > 0 ? whyBullets : ['Provides guaranteed lifetime income floor'],
-    notIfBullets: notIfBullets.length > 0 ? notIfBullets : ['May lock up funds for extended periods'],
-    nextSteps: nextSteps.length > 0 ? nextSteps : ['Request personalized annuity illustration'],
-    disclaimer: 'Annuities are long-term contracts. Withdrawals before age 59½ may incur penalties. Consult a licensed agent.'
+    fit: suitabilityResult.fit,
+    score: suitabilityResult.score,
+    whyBullets: suitabilityResult.reasons.length > 0 
+      ? suitabilityResult.reasons 
+      : ['Provides guaranteed lifetime income floor'],
+    notIfBullets: suitabilityResult.notIf.length > 0 
+      ? suitabilityResult.notIf 
+      : ['May lock up funds for extended periods'],
+    fixFirstBullets: suitabilityResult.fixFirst,
+    nextSteps: suitabilityResult.nextSteps.length > 0 
+      ? suitabilityResult.nextSteps 
+      : ['Request personalized annuity illustration'],
+    disclaimer: suitabilityResult.disclaimer,
+    preconditions: suitabilityResult.preconditions,
+    disqualified: suitabilityResult.disqualified,
+    disqualification_reason: suitabilityResult.disqualification_reason
   };
 }
 
@@ -246,7 +211,7 @@ export function generateProductRecommendations(
 ): ProductRecommendation[] {
   return [
     evaluateTermFit(profileData, incomeData, liabilities, metrics, protectionData),
-    evaluateAnnuityFit(projection, preferences, incomeData),
+    evaluateAnnuityFit(projection, preferences, incomeData, protectionData, planningReadiness),
     evaluateIULFit(metrics, preferences, incomeData, protectionData, profileData, planningReadiness)
   ];
 }
