@@ -136,6 +136,134 @@ const IULBanking = () => {
         </div>
       </section>
 
+      {/* How IUL Works - Visual */}
+      <section className="container-financial py-16">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold mb-8 text-foreground">How IUL Works</h2>
+
+          {/* Premium Allocation Diagram */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Premium Allocation</CardTitle>
+              <CardDescription>How your premium dollars are distributed</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4 py-6">
+                <div className="text-center p-4 bg-primary/10 rounded-lg w-full md:w-auto">
+                  <p className="text-2xl font-bold text-primary">$1,000</p>
+                  <p className="text-sm text-muted-foreground">Monthly Premium</p>
+                </div>
+                <ArrowRight className="w-6 h-6 text-muted-foreground hidden md:block" />
+                <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
+                  <div className="text-center p-4 bg-destructive/10 rounded-lg">
+                    <p className="text-lg font-bold text-destructive">~$150-300</p>
+                    <p className="text-xs text-muted-foreground">Cost of Insurance (COI)</p>
+                  </div>
+                  <div className="text-center p-4 bg-accent/20 rounded-lg">
+                    <p className="text-lg font-bold text-accent-foreground">~$700-850</p>
+                    <p className="text-xs text-muted-foreground">Cash Value Account</p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground text-center italic">
+                * Actual allocation varies by age, health, and policy design. COI increases with age.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Cap, Floor, Participation Rate */}
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  Floor Protection
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-green-600 mb-2">0%</p>
+                <p className="text-sm text-muted-foreground">
+                  When the index is negative, your cash value is protected. You won't lose money due to market
+                  downturns.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                  Cap Rate
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-amber-600 mb-2">8-12%</p>
+                <p className="text-sm text-muted-foreground">
+                  Maximum credited rate in a given period. If the index gains 20%, you may only receive up to the cap.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  Participation Rate
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-blue-600 mb-2">50-100%</p>
+                <p className="text-sm text-muted-foreground">
+                  Percentage of index gains you receive. At 75%, a 10% index gain credits 7.5% to your policy.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Crediting Methods */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Common Crediting Methods</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                  <span className="text-primary font-bold text-sm">1</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Point-to-Point (Annual)</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Compares index value at the start and end of a 12-month period. Most common method.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                  <span className="text-primary font-bold text-sm">2</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Monthly Average</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Averages monthly index values, smoothing out volatility but typically resulting in lower credits.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                  <span className="text-primary font-bold text-sm">3</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Uncapped with Spread</h4>
+                  <p className="text-sm text-muted-foreground">
+                    No cap on gains, but a spread (e.g., 2-3%) is subtracted from any positive return.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Infinite Banking Concept */}
       <section className="bg-primary/5 border-y border-border">
         <div className="container-financial py-16">
