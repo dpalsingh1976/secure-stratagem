@@ -1,24 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import {
-  Landmark,
-  TrendingUp,
-  Shield,
-  PiggyBank,
-  Users,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  HelpCircle,
-  ArrowRight,
-  BookOpen,
-  Calculator,
-  Calendar,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Landmark, TrendingUp, Shield, PiggyBank, Users, AlertTriangle, CheckCircle, XCircle, HelpCircle, ArrowRight, BookOpen, Calculator, Calendar, Play } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import IULExplainerAnimation from '@/components/iul/IULExplainerAnimation';
 
 const IULBanking = () => {
   const navigate = useNavigate();
@@ -26,7 +13,7 @@ const IULBanking = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/30">
       <Navigation />
-
+      
       {/* Hero Section */}
       <section className="container-financial py-16 md:py-24">
         <div className="text-center max-w-4xl mx-auto">
@@ -39,15 +26,15 @@ const IULBanking = () => {
             Indexed Universal Life (IUL) Explained
           </h1>
           <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-            Understand how IUL works, who it's designed for, and whether it might fit your retirement strategy. Get
-            honest, balanced information to make informed decisions.
+            Understand how IUL works, who it's designed for, and whether it might fit your retirement strategy. 
+            Get honest, balanced information to make informed decisions.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate("/admin/risk-intake")} className="gap-2">
+            <Button size="lg" onClick={() => navigate('/admin/risk-intake')} className="gap-2">
               <Calculator className="w-5 h-5" />
               Take the Suitability Assessment
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate("/iul-compare")} className="gap-2">
+            <Button size="lg" variant="outline" onClick={() => navigate('/iul-compare')} className="gap-2">
               <TrendingUp className="w-5 h-5" />
               Compare IUL Scenarios
             </Button>
@@ -55,7 +42,23 @@ const IULBanking = () => {
         </div>
       </section>
 
-      {/* What is IUL? Section */}
+      {/* Animated IUL Explainer */}
+      <section className="container-financial py-12 md:py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Play className="w-6 h-6 text-primary" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+              See How IUL Works
+            </h2>
+          </div>
+          <p className="text-muted-foreground mb-8 max-w-2xl">
+            Watch this interactive animation to understand the key components of an IUL policy—from premium payment to death benefit protection.
+          </p>
+          <IULExplainerAnimation />
+        </div>
+      </section>
       <section className="bg-card border-y border-border">
         <div className="container-financial py-16">
           <div className="max-w-4xl mx-auto">
@@ -63,14 +66,14 @@ const IULBanking = () => {
               <BookOpen className="w-8 h-8 text-primary" />
               <h2 className="text-3xl font-bold text-foreground">What is IUL?</h2>
             </div>
-
+            
             <div className="prose prose-lg max-w-none text-muted-foreground space-y-6">
               <p>
-                <strong className="text-foreground">Indexed Universal Life (IUL)</strong> is a type of permanent life
-                insurance that combines a death benefit with a cash value component. Unlike term insurance, IUL builds
-                cash value over time that you can access during your lifetime.
+                <strong className="text-foreground">Indexed Universal Life (IUL)</strong> is a type of permanent life insurance 
+                that combines a death benefit with a cash value component. Unlike term insurance, IUL builds cash value 
+                over time that you can access during your lifetime.
               </p>
-
+              
               <div className="grid md:grid-cols-3 gap-6 not-prose mt-8">
                 <Card className="border-primary/20">
                   <CardHeader className="pb-3">
@@ -83,7 +86,7 @@ const IULBanking = () => {
                     </p>
                   </CardContent>
                 </Card>
-
+                
                 <Card className="border-primary/20">
                   <CardHeader className="pb-3">
                     <PiggyBank className="w-8 h-8 text-primary mb-2" />
@@ -95,7 +98,7 @@ const IULBanking = () => {
                     </p>
                   </CardContent>
                 </Card>
-
+                
                 <Card className="border-primary/20">
                   <CardHeader className="pb-3">
                     <TrendingUp className="w-8 h-8 text-primary mb-2" />
@@ -113,21 +116,16 @@ const IULBanking = () => {
                 <h4 className="font-semibold text-foreground mb-3">How IUL Differs from Other Life Insurance</h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
-                    <span className="text-primary font-bold">vs. Term:</span>
+                    <span className="text-primary font-bold">vs. Term:</span> 
                     <span>IUL is permanent with cash value; term expires with no cash value</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary font-bold">vs. Whole Life:</span>
-                    <span>
-                      IUL has flexible premiums and index-linked returns; whole life has fixed premiums and guaranteed
-                      rates
-                    </span>
+                    <span className="text-primary font-bold">vs. Whole Life:</span> 
+                    <span>IUL has flexible premiums and index-linked returns; whole life has fixed premiums and guaranteed rates</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary font-bold">vs. Variable UL:</span>
-                    <span>
-                      IUL has a floor protecting against losses; VUL has direct market exposure with potential losses
-                    </span>
+                    <span className="text-primary font-bold">vs. Variable UL:</span> 
+                    <span>IUL has a floor protecting against losses; VUL has direct market exposure with potential losses</span>
                   </li>
                 </ul>
               </div>
@@ -140,7 +138,7 @@ const IULBanking = () => {
       <section className="container-financial py-16">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-8 text-foreground">How IUL Works</h2>
-
+          
           {/* Premium Allocation Diagram */}
           <Card className="mb-8">
             <CardHeader>
@@ -183,12 +181,11 @@ const IULBanking = () => {
               <CardContent>
                 <p className="text-3xl font-bold text-green-600 mb-2">0%</p>
                 <p className="text-sm text-muted-foreground">
-                  When the index is negative, your cash value is protected. You won't lose money due to market
-                  downturns.
+                  When the index is negative, your cash value is protected. You won't lose money due to market downturns.
                 </p>
               </CardContent>
             </Card>
-
+            
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -203,7 +200,7 @@ const IULBanking = () => {
                 </p>
               </CardContent>
             </Card>
-
+            
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -272,10 +269,11 @@ const IULBanking = () => {
               <Landmark className="w-8 h-8 text-primary" />
               <h2 className="text-3xl font-bold text-foreground">The Infinite Banking Concept</h2>
             </div>
-
+            
             <p className="text-lg text-muted-foreground mb-8">
-              Infinite Banking uses the cash value in your IUL policy as a personal banking system, allowing you to
-              borrow against your policy for major purchases while your cash value continues to earn interest.
+              Infinite Banking uses the cash value in your IUL policy as a personal banking system, 
+              allowing you to borrow against your policy for major purchases while your cash value 
+              continues to earn interest.
             </p>
 
             <div className="grid md:grid-cols-2 gap-8">
@@ -285,15 +283,13 @@ const IULBanking = () => {
                   <li className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
                     <span className="text-muted-foreground">
-                      <strong className="text-foreground">Borrow against cash value</strong> at competitive rates
-                      (typically 5-8%)
+                      <strong className="text-foreground">Borrow against cash value</strong> at competitive rates (typically 5-8%)
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
                     <span className="text-muted-foreground">
-                      <strong className="text-foreground">Your full cash value continues earning</strong> even while you
-                      have a loan outstanding
+                      <strong className="text-foreground">Your full cash value continues earning</strong> even while you have a loan outstanding
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
@@ -310,15 +306,13 @@ const IULBanking = () => {
                   </li>
                 </ul>
               </div>
-
+              
               <div>
                 <h3 className="text-xl font-semibold mb-4 text-foreground">Common Use Cases</h3>
                 <div className="space-y-3">
                   <div className="p-3 bg-card rounded-lg border border-border">
                     <p className="font-medium text-foreground">Vehicle Purchases</p>
-                    <p className="text-sm text-muted-foreground">
-                      Finance cars through your policy instead of dealerships
-                    </p>
+                    <p className="text-sm text-muted-foreground">Finance cars through your policy instead of dealerships</p>
                   </div>
                   <div className="p-3 bg-card rounded-lg border border-border">
                     <p className="font-medium text-foreground">Real Estate Down Payments</p>
@@ -340,9 +334,9 @@ const IULBanking = () => {
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-sm text-muted-foreground">
-                  <strong className="text-foreground">Important:</strong> Outstanding loans reduce your death benefit.
-                  If loans exceed cash value, the policy may lapse with potential tax consequences. Proper funding and
-                  management are essential.
+                  <strong className="text-foreground">Important:</strong> Outstanding loans reduce your death benefit. 
+                  If loans exceed cash value, the policy may lapse with potential tax consequences. 
+                  Proper funding and management are essential.
                 </p>
               </div>
             </div>
@@ -354,7 +348,7 @@ const IULBanking = () => {
       <section className="container-financial py-16">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-8 text-foreground">Who Is IUL Right For?</h2>
-
+          
           <div className="grid md:grid-cols-2 gap-8 mb-8">
             {/* Good Fit */}
             <Card className="border-green-500/20">
@@ -367,9 +361,7 @@ const IULBanking = () => {
               <CardContent className="space-y-3">
                 <div className="flex items-start gap-2">
                   <CheckCircle className="w-4 h-4 text-green-500 shrink-0 mt-1" />
-                  <span className="text-muted-foreground">
-                    Have stable income and can commit to 10+ years of premiums
-                  </span>
+                  <span className="text-muted-foreground">Have stable income and can commit to 10+ years of premiums</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckCircle className="w-4 h-4 text-green-500 shrink-0 mt-1" />
@@ -432,7 +424,7 @@ const IULBanking = () => {
           </div>
 
           <div className="text-center">
-            <Button size="lg" onClick={() => navigate("/admin/risk-intake")} className="gap-2">
+            <Button size="lg" onClick={() => navigate('/admin/risk-intake')} className="gap-2">
               <HelpCircle className="w-5 h-5" />
               Take Our Suitability Assessment
             </Button>
@@ -448,7 +440,7 @@ const IULBanking = () => {
         <div className="container-financial py-16">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-8 text-foreground">Common Misconceptions</h2>
-
+            
             <Accordion type="single" collapsible className="space-y-4">
               <AccordionItem value="item-1" className="border rounded-lg px-4">
                 <AccordionTrigger className="text-left">
@@ -459,13 +451,12 @@ const IULBanking = () => {
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-4">
                   <p className="mb-2">
-                    <strong className="text-green-600">Reality:</strong> IUL is a regulated insurance product offered by
-                    licensed, state-regulated insurance companies. It's been available for decades and is subject to
-                    strict oversight.
+                    <strong className="text-green-600">Reality:</strong> IUL is a regulated insurance product offered by licensed, 
+                    state-regulated insurance companies. It's been available for decades and is subject to strict oversight.
                   </p>
                   <p>
-                    The concerns typically arise from poorly designed policies, underfunding, or misrepresentation by
-                    salespeople — not the product itself. When properly structured and funded, IUL can be an effective
+                    The concerns typically arise from poorly designed policies, underfunding, or misrepresentation by 
+                    salespeople — not the product itself. When properly structured and funded, IUL can be an effective 
                     part of a retirement strategy.
                   </p>
                 </AccordionContent>
@@ -480,12 +471,11 @@ const IULBanking = () => {
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-4">
                   <p className="mb-2">
-                    <strong className="text-green-600">Reality:</strong> IUL has a floor (typically 0%) that protects
-                    your cash value from market losses. If the index drops 20%, your cash value doesn't decrease due to
-                    that loss.
+                    <strong className="text-green-600">Reality:</strong> IUL has a floor (typically 0%) that protects your 
+                    cash value from market losses. If the index drops 20%, your cash value doesn't decrease due to that loss.
                   </p>
                   <p>
-                    However, policy charges (Cost of Insurance, administrative fees) are still deducted regardless of
+                    However, policy charges (Cost of Insurance, administrative fees) are still deducted regardless of 
                     market performance, which can reduce cash value in low-return years.
                   </p>
                 </AccordionContent>
@@ -500,13 +490,12 @@ const IULBanking = () => {
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-4">
                   <p className="mb-2">
-                    <strong className="text-green-600">Reality:</strong> Only the floor is guaranteed. The cap,
-                    participation rate, and spreads can be adjusted by the insurance company (within contractual
-                    limits).
+                    <strong className="text-green-600">Reality:</strong> Only the floor is guaranteed. The cap, participation 
+                    rate, and spreads can be adjusted by the insurance company (within contractual limits).
                   </p>
                   <p>
-                    Illustrations showing projected returns are hypothetical. Actual performance depends on index
-                    performance, crediting method, and policy charges. Always look at both illustrated AND guaranteed
+                    Illustrations showing projected returns are hypothetical. Actual performance depends on index 
+                    performance, crediting method, and policy charges. Always look at both illustrated AND guaranteed 
                     columns in any illustration.
                   </p>
                 </AccordionContent>
@@ -521,12 +510,12 @@ const IULBanking = () => {
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-4">
                   <p className="mb-2">
-                    <strong className="text-green-600">Reality:</strong> IUL is a complement, not a replacement. You
-                    should first maximize employer matching contributions in your 401k before considering IUL.
+                    <strong className="text-green-600">Reality:</strong> IUL is a complement, not a replacement. You should 
+                    first maximize employer matching contributions in your 401k before considering IUL.
                   </p>
                   <p>
-                    The value of IUL is tax diversification — having "tax-never" money alongside "tax-later" (401k) and
-                    "tax-now" (brokerage) buckets for optimal retirement income planning.
+                    The value of IUL is tax diversification — having "tax-never" money alongside "tax-later" (401k) 
+                    and "tax-now" (brokerage) buckets for optimal retirement income planning.
                   </p>
                 </AccordionContent>
               </AccordionItem>
@@ -540,12 +529,12 @@ const IULBanking = () => {
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-4">
                   <p className="mb-2">
-                    <strong className="text-green-600">Reality:</strong> There's significant variation in policy design,
+                    <strong className="text-green-600">Reality:</strong> There's significant variation in policy design, 
                     caps, crediting methods, and internal costs between carriers.
                   </p>
                   <p>
-                    Some policies emphasize higher caps, others focus on lower COI charges. The "best" policy depends on
-                    your specific goals, age, and how you plan to use the policy. Comparison is essential.
+                    Some policies emphasize higher caps, others focus on lower COI charges. The "best" policy depends 
+                    on your specific goals, age, and how you plan to use the policy. Comparison is essential.
                   </p>
                 </AccordionContent>
               </AccordionItem>
@@ -558,7 +547,7 @@ const IULBanking = () => {
       <section className="container-financial py-16">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-8 text-foreground">Understanding Policy Mechanics</h2>
-
+          
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -566,12 +555,12 @@ const IULBanking = () => {
               </CardHeader>
               <CardContent className="text-muted-foreground">
                 <p className="mb-3">
-                  Monthly charges that pay for your death benefit. COI increases as you age, which is why sufficient
-                  funding early is critical.
+                  Monthly charges that pay for your death benefit. COI increases as you age, which is why 
+                  sufficient funding early is critical.
                 </p>
                 <p className="text-sm bg-muted/50 p-3 rounded-lg">
-                  <strong>Key Point:</strong> If cash value can't cover COI, you'll need to pay out-of-pocket or risk
-                  policy lapse.
+                  <strong>Key Point:</strong> If cash value can't cover COI, you'll need to pay out-of-pocket 
+                  or risk policy lapse.
                 </p>
               </CardContent>
             </Card>
@@ -582,12 +571,12 @@ const IULBanking = () => {
               </CardHeader>
               <CardContent className="text-muted-foreground">
                 <p className="mb-3">
-                  Fees charged if you cancel the policy early, typically during the first 10-15 years. These decrease
-                  over time and eventually reach zero.
+                  Fees charged if you cancel the policy early, typically during the first 10-15 years. 
+                  These decrease over time and eventually reach zero.
                 </p>
                 <p className="text-sm bg-muted/50 p-3 rounded-lg">
-                  <strong>Key Point:</strong> This is why IUL requires a long-term commitment. Early exit can result in
-                  significant losses.
+                  <strong>Key Point:</strong> This is why IUL requires a long-term commitment. Early exit 
+                  can result in significant losses.
                 </p>
               </CardContent>
             </Card>
@@ -598,12 +587,12 @@ const IULBanking = () => {
               </CardHeader>
               <CardContent className="text-muted-foreground">
                 <p className="mb-3">
-                  Borrow against your cash value at stated loan rates (fixed or variable). Interest accrues, and unpaid
-                  loans reduce your death benefit.
+                  Borrow against your cash value at stated loan rates (fixed or variable). Interest accrues, 
+                  and unpaid loans reduce your death benefit.
                 </p>
                 <p className="text-sm bg-muted/50 p-3 rounded-lg">
-                  <strong>Key Point:</strong> With "wash loans" or "zero-cost loans," the loan rate equals the crediting
-                  rate on borrowed funds.
+                  <strong>Key Point:</strong> With "wash loans" or "zero-cost loans," the loan rate equals the 
+                  crediting rate on borrowed funds.
                 </p>
               </CardContent>
             </Card>
@@ -614,12 +603,12 @@ const IULBanking = () => {
               </CardHeader>
               <CardContent className="text-muted-foreground">
                 <p className="mb-3">
-                  Illustrations show hypothetical scenarios. Only "guaranteed" columns reflect the worst-case assuming
-                  the floor rate every year.
+                  Illustrations show hypothetical scenarios. Only "guaranteed" columns reflect the worst-case 
+                  assuming the floor rate every year.
                 </p>
                 <p className="text-sm bg-muted/50 p-3 rounded-lg">
-                  <strong>Key Point:</strong> Always review the guaranteed column. If the policy doesn't work at
-                  guaranteed rates, it may be under-designed.
+                  <strong>Key Point:</strong> Always review the guaranteed column. If the policy doesn't work 
+                  at guaranteed rates, it may be under-designed.
                 </p>
               </CardContent>
             </Card>
@@ -635,7 +624,7 @@ const IULBanking = () => {
               <AlertTriangle className="w-8 h-8 text-destructive" />
               <h2 className="text-3xl font-bold text-foreground">Risk Considerations</h2>
             </div>
-
+            
             <p className="text-lg text-muted-foreground mb-8">
               IUL is not right for everyone. Understanding these risks is essential before making a decision.
             </p>
@@ -648,8 +637,9 @@ const IULBanking = () => {
                 <div>
                   <h4 className="font-semibold text-foreground">Underfunding Risk</h4>
                   <p className="text-muted-foreground">
-                    If you don't fund the policy adequately or miss premiums, rising COI charges can deplete cash value
-                    and cause the policy to lapse. Lapse can trigger taxable income on previous gains.
+                    If you don't fund the policy adequately or miss premiums, rising COI charges can 
+                    deplete cash value and cause the policy to lapse. Lapse can trigger taxable income 
+                    on previous gains.
                   </p>
                 </div>
               </div>
@@ -661,8 +651,8 @@ const IULBanking = () => {
                 <div>
                   <h4 className="font-semibold text-foreground">Carrier Financial Strength</h4>
                   <p className="text-muted-foreground">
-                    Your policy is only as strong as the insurance company backing it. Choose carriers with A+ ratings
-                    from AM Best, Moody's, or S&P. A carrier failure could impact your policy.
+                    Your policy is only as strong as the insurance company backing it. Choose carriers 
+                    with A+ ratings from AM Best, Moody's, or S&P. A carrier failure could impact your policy.
                   </p>
                 </div>
               </div>
@@ -674,8 +664,8 @@ const IULBanking = () => {
                 <div>
                   <h4 className="font-semibold text-foreground">Long-Term Commitment Required</h4>
                   <p className="text-muted-foreground">
-                    IUL is designed for 10-15+ year time horizons. Early surrender means losing money to surrender
-                    charges and potentially not recovering policy costs.
+                    IUL is designed for 10-15+ year time horizons. Early surrender means losing money 
+                    to surrender charges and potentially not recovering policy costs.
                   </p>
                 </div>
               </div>
@@ -687,8 +677,8 @@ const IULBanking = () => {
                 <div>
                   <h4 className="font-semibold text-foreground">Cap and Rate Changes</h4>
                   <p className="text-muted-foreground">
-                    Insurance companies can adjust caps, participation rates, and spreads within contractual limits.
-                    Today's 10% cap may become 8% in the future based on market conditions.
+                    Insurance companies can adjust caps, participation rates, and spreads within contractual 
+                    limits. Today's 10% cap may become 8% in the future based on market conditions.
                   </p>
                 </div>
               </div>
@@ -700,9 +690,9 @@ const IULBanking = () => {
                 <div>
                   <h4 className="font-semibold text-foreground">Loan Management Required</h4>
                   <p className="text-muted-foreground">
-                    If policy loans plus accrued interest exceed cash value, the policy will lapse. This creates a
-                    taxable event on all gains. Active management of loans is essential for retirement income
-                    strategies.
+                    If policy loans plus accrued interest exceed cash value, the policy will lapse. 
+                    This creates a taxable event on all gains. Active management of loans is essential 
+                    for retirement income strategies.
                   </p>
                 </div>
               </div>
@@ -718,7 +708,7 @@ const IULBanking = () => {
           <p className="text-lg text-muted-foreground mb-10">
             Use our tools to explore whether IUL might be right for your situation, or speak with an advisor.
           </p>
-
+          
           <div className="grid md:grid-cols-3 gap-6">
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardContent className="pt-8 pb-6">
@@ -729,7 +719,7 @@ const IULBanking = () => {
                 <p className="text-sm text-muted-foreground mb-4">
                   Answer questions about your financial situation to see if IUL may be appropriate
                 </p>
-                <Button onClick={() => navigate("/admin/risk-intake")} className="w-full">
+                <Button onClick={() => navigate('/admin/risk-intake')} className="w-full">
                   Start Assessment
                 </Button>
               </CardContent>
@@ -744,7 +734,7 @@ const IULBanking = () => {
                 <p className="text-sm text-muted-foreground mb-4">
                   Upload illustrations and compare multiple IUL policies side-by-side
                 </p>
-                <Button variant="outline" onClick={() => navigate("/iul-compare")} className="w-full">
+                <Button variant="outline" onClick={() => navigate('/iul-compare')} className="w-full">
                   Compare Policies
                 </Button>
               </CardContent>
@@ -759,7 +749,7 @@ const IULBanking = () => {
                 <p className="text-sm text-muted-foreground mb-4">
                   Speak with an advisor about your specific situation and goals
                 </p>
-                <Button variant="outline" onClick={() => navigate("/contact")} className="w-full">
+                <Button variant="outline" onClick={() => navigate('/contact')} className="w-full">
                   Book a Call
                 </Button>
               </CardContent>
@@ -773,10 +763,10 @@ const IULBanking = () => {
         <div className="container-financial py-8">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-sm text-muted-foreground">
-              <strong>Disclaimer:</strong> This content is for educational purposes only and does not constitute
-              financial, tax, or legal advice. Indexed Universal Life insurance involves risk and may not be suitable
-              for everyone. Policy features, costs, and benefits vary by carrier and state. Consult with a licensed
-              insurance professional and your tax advisor before making any decisions. Past index performance does not
+              <strong>Disclaimer:</strong> This content is for educational purposes only and does not constitute 
+              financial, tax, or legal advice. Indexed Universal Life insurance involves risk and may not be suitable 
+              for everyone. Policy features, costs, and benefits vary by carrier and state. Consult with a licensed 
+              insurance professional and your tax advisor before making any decisions. Past index performance does not 
               guarantee future results.
             </p>
           </div>
