@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight, DollarSign, Shield, TrendingUp, TrendingDown, PiggyBank, Users, Percent } from 'lucide-react';
+import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight, DollarSign, Shield, TrendingUp, TrendingDown, PiggyBank, Users, Percent, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
 
 interface Scene {
   id: number;
@@ -23,12 +24,18 @@ const scenes: Scene[] = [
 
 const totalDuration = scenes.reduce((acc, s) => acc + s.duration, 0);
 
+// Audio cache to avoid regenerating audio for the same scene
+const audioCache = new Map<number, string>();
+
 export const IULExplainerAnimation: React.FC = () => {
   const [currentScene, setCurrentScene] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [sceneProgress, setSceneProgress] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const scene = scenes[currentScene];
 
@@ -77,7 +84,89 @@ export const IULExplainerAnimation: React.FC = () => {
     if (isPlaying) {
       startTimer();
     }
+    // Play audio for the new scene if sound is enabled
+    if (soundEnabled) {
+      playSceneAudio(currentScene);
+    }
   }, [currentScene]);
+
+  // Stop audio when sound is disabled
+  useEffect(() => {
+    if (!soundEnabled && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+  }, [soundEnabled]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const playSceneAudio = async (sceneIndex: number) => {
+    const scene = scenes[sceneIndex];
+    if (!scene) return;
+
+    // Stop any currently playing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+
+    // Check cache first
+    if (audioCache.has(sceneIndex)) {
+      const cachedUrl = audioCache.get(sceneIndex)!;
+      const audio = new Audio(cachedUrl);
+      audioRef.current = audio;
+      audio.play().catch(console.error);
+      return;
+    }
+
+    setIsLoadingAudio(true);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text: scene.description }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`TTS request failed: ${response.status}`);
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      // Cache the audio URL
+      audioCache.set(sceneIndex, audioUrl);
+
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      await audio.play();
+    } catch (error) {
+      console.error('Failed to play audio:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Audio Error',
+        description: 'Could not play narration. Please try again.',
+      });
+    } finally {
+      setIsLoadingAudio(false);
+    }
+  };
 
   const handlePlayPause = () => setIsPlaying(!isPlaying);
 
@@ -160,6 +249,22 @@ export const IULExplainerAnimation: React.FC = () => {
 
       {/* Controls */}
       <div className="flex items-center justify-center gap-3 pb-6">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setSoundEnabled(!soundEnabled)}
+          className={cn("h-10 w-10", soundEnabled && "bg-primary/10 border-primary")}
+          title={soundEnabled ? "Mute narration" : "Enable narration"}
+        >
+          {isLoadingAudio ? (
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          ) : soundEnabled ? (
+            <Volume2 className="h-4 w-4" />
+          ) : (
+            <VolumeX className="h-4 w-4" />
+          )}
+        </Button>
+
         <Button
           variant="outline"
           size="icon"

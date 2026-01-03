@@ -261,7 +261,7 @@ const FNAReport = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span>Review our Stress Testing tool to compare IUL vs traditional investments</span>
+                  <span>Review our Stress Testing tool to analyze portfolio performance under different scenarios</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -482,7 +482,7 @@ const FNAReport = () => {
                 </Button>
                 <Button variant="ghost" className="justify-start" onClick={() => navigate('/stress-test')}>
                   <ArrowRight className="w-4 h-4 mr-2" />
-                  Compare IUL vs Investments
+                  Run Stress Tests
                 </Button>
                 <Button variant="ghost" className="justify-start" onClick={() => navigate('/iul')}>
                   <ArrowRight className="w-4 h-4 mr-2" />

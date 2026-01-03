@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Landmark,
@@ -23,6 +24,15 @@ import { IULExplainerAnimation } from "@/components/iul/IULExplainerAnimation";
 
 const IULBanking = () => {
   const navigate = useNavigate();
+  const animationRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to animation section on page load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      animationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/30">
@@ -48,16 +58,12 @@ const IULBanking = () => {
               <Calculator className="w-5 h-5" />
               Take the Suitability Assessment
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate("/iul-compare")} className="gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Compare IUL Scenarios
-            </Button>
           </div>
         </div>
       </section>
 
       {/* Animated IUL Explainer */}
-      <section className="container-financial py-16">
+      <section ref={animationRef} id="iul-animation" className="container-financial py-16">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
             <TrendingUp className="w-8 h-8 text-primary" />
@@ -514,7 +520,7 @@ const IULBanking = () => {
             Use our tools to explore whether IUL might be right for your situation, or speak with an advisor.
           </p>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardContent className="pt-8 pb-6">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -530,20 +536,6 @@ const IULBanking = () => {
               </CardContent>
             </Card>
 
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="pt-8 pb-6">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2 text-foreground">Compare Scenarios</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Upload illustrations and compare multiple IUL policies side-by-side
-                </p>
-                <Button variant="outline" onClick={() => navigate("/iul-compare")} className="w-full">
-                  Compare Policies
-                </Button>
-              </CardContent>
-            </Card>
 
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardContent className="pt-8 pb-6">
