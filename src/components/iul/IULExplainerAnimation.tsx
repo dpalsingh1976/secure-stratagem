@@ -13,13 +13,13 @@ interface Scene {
 }
 
 const scenes: Scene[] = [
-  { id: 1, title: "Premium Payment", description: "You pay premiums into the policy, building your financial foundation.", duration: 6 },
-  { id: 2, title: "Fund Allocation", description: "The insurance company deducts costs for coverage and fees. The rest goes to your cash value.", duration: 8 },
-  { id: 3, title: "Index Linking", description: "Your cash value is linked to market indexes like the S&P 500—without direct market exposure.", duration: 7 },
-  { id: 4, title: "Market Gains", description: "When the index rises, you earn interest up to a cap rate. If the index gains 15%, you might earn 10%.", duration: 7 },
-  { id: 5, title: "Floor Protection", description: "When the index drops, your floor (typically 0%) protects your cash value from losses.", duration: 6 },
-  { id: 6, title: "Tax Advantages", description: "Cash value grows tax-deferred. Access funds later via tax-free loans or withdrawals.", duration: 6 },
-  { id: 7, title: "Death Benefit", description: "Your beneficiaries receive a tax-free death benefit, providing lasting protection.", duration: 5 },
+  { id: 1, title: "Premium Payment", description: "You pay premiums into the policy, building your financial foundation.", duration: 10 },
+  { id: 2, title: "Fund Allocation", description: "The insurance company deducts costs for coverage and fees. The rest goes to your cash value.", duration: 12 },
+  { id: 3, title: "Index Linking", description: "Your cash value is linked to market indexes like the S&P 500—without direct market exposure.", duration: 12 },
+  { id: 4, title: "Market Gains", description: "When the index rises, you earn interest up to a cap rate. If the index gains 15%, you might earn 10%.", duration: 12 },
+  { id: 5, title: "Floor Protection", description: "When the index drops, your floor (typically 0%) protects your cash value from losses.", duration: 10 },
+  { id: 6, title: "Tax Advantages", description: "Cash value grows tax-deferred. Access funds later via tax-free loans or withdrawals.", duration: 10 },
+  { id: 7, title: "Death Benefit", description: "Your beneficiaries receive a tax-free death benefit, providing lasting protection.", duration: 10 },
 ];
 
 const totalDuration = scenes.reduce((acc, s) => acc + s.duration, 0);
