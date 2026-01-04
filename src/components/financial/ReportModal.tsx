@@ -1300,68 +1300,6 @@ export function ReportModal({
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Overall Risk Score Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full ${getRiskLevel(metrics.scores_jsonb.overall).color}`} />
-                    <span>Overall Risk Score: {metrics.scores_jsonb.overall}/100</span>
-                    <Badge className={getRiskLevel(metrics.scores_jsonb.overall).badgeClass}>
-                      {getRiskLevel(metrics.scores_jsonb.overall).label}
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription>
-                    Comprehensive risk assessment across all financial planning areas
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">{formatCurrency(metrics.net_worth)}</div>
-                      <div className="text-sm text-gray-600">Net Worth</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">{formatPercentage(metrics.liquid_pct)}</div>
-                      <div className="text-sm text-gray-600">Liquid Assets</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{metrics.liquidity_runway_months.toFixed(1)}</div>
-                      <div className="text-sm text-gray-600">Months Liquidity</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-600">{formatPercentage(metrics.top_concentration_pct)}</div>
-                      <div className="text-sm text-gray-600">Top Concentration</div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    {Object.entries({
-                      'Protection': metrics.scores_jsonb.protection,
-                      'Liquidity': metrics.scores_jsonb.liquidity,
-                      'Concentration': metrics.scores_jsonb.concentration,
-                      'Volatility/Sequence': metrics.scores_jsonb.volatility_sequence,
-                      'Longevity': metrics.scores_jsonb.longevity,
-                      'Inflation': metrics.scores_jsonb.inflation,
-                      'Tax': metrics.scores_jsonb.tax
-                     }).map(([category, score]) => {
-                      const level = getRiskLevel(score);
-                      return (
-                        <div key={category} className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-3 flex-1">
-                            <span className="font-medium w-40">{category}</span>
-                            <Progress value={score} className="flex-1" />
-                            <span className="text-sm font-medium w-16">{score}/100</span>
-                          </div>
-                          <Badge className={level.badgeClass}>
-                            {level.label}
-                          </Badge>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
 
             <TabsContent value="recommendations" className="space-y-4">
