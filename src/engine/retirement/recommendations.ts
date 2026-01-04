@@ -125,9 +125,16 @@ export function evaluateAnnuityFit(
     yearsToRetirement: projection.years_to_retirement
   });
   
+  // Map AnnuityFit to ProductFit
+  const mapAnnuityFitToProductFit = (fit: typeof suitabilityResult.fit): ProductFit => {
+    if (fit === 'explore') return 'weak';
+    if (fit === 'not_fit_yet') return 'not_recommended';
+    return fit;
+  };
+  
   return {
     product: 'Annuity',
-    fit: suitabilityResult.fit,
+    fit: mapAnnuityFitToProductFit(suitabilityResult.fit),
     score: suitabilityResult.score,
     whyBullets: suitabilityResult.reasons.length > 0 
       ? suitabilityResult.reasons 

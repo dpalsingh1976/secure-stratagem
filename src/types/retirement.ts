@@ -6,6 +6,16 @@ export type ConfidenceLevel = 'low' | 'medium' | 'high';
 export type LiquidityNeed = 'low' | 'medium' | 'high';
 export type ProductFit = 'strong' | 'moderate' | 'weak' | 'not_recommended';
 
+// FIA-specific types
+export type FIAStrategy = 
+  | 'FIA_BUFFER_REDZONE'      // Near retirement or high sequence risk
+  | 'FIA_INCOME_FLOOR'        // Income gap needs + guaranteed income preference
+  | 'FIA_GROWTH_PROTECTION'   // Sequence risk with moderate gap
+  | 'FIA_OPTIONAL'            // No gap, well covered, low sequence risk
+  | 'FIA_NOT_FIT_YET';        // Gated - need reserves first
+
+export type AnnuityFit = 'strong' | 'moderate' | 'explore' | 'not_fit_yet';
+
 export type PrimaryRetirementGoal = 
   | 'maximize_tax_free'
   | 'secure_guaranteed_income'
