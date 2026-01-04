@@ -81,7 +81,30 @@ export function ReportModal({
     return 'Minimal';
   };
 
-  // Generate PDF as base64 for email attachment
+  // Get product recommendations
+  const getProductRecommendations = () => {
+    const iulRec = retirementResult?.recommendations.find(r => r.product === 'IUL');
+    const fiaRec = retirementResult?.recommendations.find(r => r.product === 'Annuity');
+    
+    return {
+      iul: {
+        fit: iulRec?.fit || 'not_recommended',
+        score: iulRec?.score || 0,
+        positives: iulRec?.whyBullets || [],
+        negatives: iulRec?.notIfBullets || []
+      },
+      fia: {
+        fit: fiaRec?.fit || 'not_recommended',
+        score: fiaRec?.score || 0,
+        strategy: (fiaRec as any)?.strategy,
+        positives: (fiaRec as any)?.positives || fiaRec?.whyBullets || [],
+        negatives: (fiaRec as any)?.negatives || fiaRec?.notIfBullets || [],
+        reason: (fiaRec as any)?.reason
+      }
+    };
+  };
+
+  // Generate PDF as base64 for email attachment - FOCUSED VERSION
   const generatePDFBase64 = async (): Promise<string> => {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -98,219 +121,332 @@ export function ReportModal({
       return false;
     };
 
-    const drawSectionHeader = (title: string) => {
+    const drawSectionHeader = (title: string, color: [number, number, number] = [30, 64, 175]) => {
       checkPageBreak(20);
       yPos += 8;
-      pdf.setFillColor(41, 128, 185);
+      pdf.setFillColor(color[0], color[1], color[2]);
       pdf.rect(margin - 5, yPos - 5, pageWidth - 2 * margin + 10, 10, 'F');
       pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(14);
+      pdf.setFontSize(13);
       pdf.setFont('helvetica', 'bold');
       pdf.text(title, margin, yPos + 2);
       pdf.setTextColor(0, 0, 0);
-      yPos += 12;
+      yPos += 14;
     };
 
-    // Cover Page
-    pdf.setFillColor(41, 128, 185);
-    pdf.rect(0, 0, pageWidth, 40, 'F');
+    const drawFitBadge = (fit: string, x: number, y: number) => {
+      const fitStyles: Record<string, { bg: [number, number, number]; label: string }> = {
+        'strong': { bg: [22, 163, 74], label: 'Strong Fit' },
+        'moderate': { bg: [37, 99, 235], label: 'Moderate Fit' },
+        'explore': { bg: [245, 158, 11], label: 'Worth Exploring' },
+        'weak': { bg: [245, 158, 11], label: 'Limited Fit' },
+        'not_fit_yet': { bg: [107, 114, 128], label: 'Not Yet' },
+        'not_recommended': { bg: [107, 114, 128], label: 'Not Recommended' }
+      };
+      const style = fitStyles[fit] || fitStyles['not_recommended'];
+      
+      pdf.setFillColor(style.bg[0], style.bg[1], style.bg[2]);
+      const badgeWidth = pdf.getTextWidth(style.label) + 8;
+      pdf.roundedRect(x, y - 4, badgeWidth, 6, 2, 2, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(style.label, x + 4, y);
+      pdf.setTextColor(0, 0, 0);
+    };
+
+    const productRecs = getProductRecommendations();
+
+    // =====================
+    // COVER PAGE
+    // =====================
+    pdf.setFillColor(30, 58, 95);
+    pdf.rect(0, 0, pageWidth, 50, 'F');
     pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(22);
-    pdf.text('Financial Risk Assessment Report', margin, 20);
+    pdf.setFontSize(24);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Financial Needs Assessment', margin, 25);
     pdf.setFontSize(12);
-    pdf.text(clientName, margin, 30);
-    pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - margin, 30, { align: 'right' });
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(clientName, margin, 35);
+    pdf.text(`The Prosperity Financial`, pageWidth - margin, 35, { align: 'right' });
+    pdf.setFontSize(10);
+    pdf.text(`Generated: ${new Date().toLocaleDateString()}`, margin, 45);
     
-    yPos = 50;
+    yPos = 60;
     pdf.setTextColor(0, 0, 0);
 
     // =====================
-    // SUMMARY SECTION
+    // SECTION 1: DIME COVERAGE ANALYSIS
     // =====================
-    drawSectionHeader('Executive Summary');
+    drawSectionHeader('Life Insurance Coverage Analysis (DIME)', [30, 64, 175]);
     
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    
+    // DIME breakdown
+    const dimeItems = [
+      { label: 'D - Debts & Final Expenses', value: DIME.nonMortgageDebt + DIME.FINAL_EXPENSES },
+      { label: 'I - Income Replacement (10 years)', value: DIME.incomeReplacement },
+      { label: 'M - Mortgage Balance', value: DIME.mortgageBalance },
+      { label: 'E - Education Expenses', value: DIME.education }
+    ];
+
+    dimeItems.forEach(item => {
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(item.label, margin, yPos);
+      pdf.text(formatCurrency(item.value), pageWidth - margin, yPos, { align: 'right' });
+      yPos += 7;
+    });
+
+    yPos += 3;
+    pdf.setLineWidth(0.5);
+    pdf.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 8;
+
+    // Summary table
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(11);
+    pdf.text('Total Protection Need (DIME)', margin, yPos);
+    pdf.text(formatCurrency(DIME.dime_need), pageWidth - margin, yPos, { align: 'right' });
+    yPos += 8;
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.text('Current Coverage', margin, yPos);
+    pdf.text(formatCurrency(DIME.currentCoverage), pageWidth - margin, yPos, { align: 'right' });
+    yPos += 8;
+
+    // Protection Gap - highlighted
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    const gapColor = DIME.protection_gap > 0 ? [220, 38, 38] : [22, 163, 74];
+    pdf.setTextColor(gapColor[0], gapColor[1], gapColor[2]);
+    pdf.text('Protection Gap', margin, yPos);
+    pdf.text(formatCurrency(DIME.protection_gap), pageWidth - margin, yPos, { align: 'right' });
+    pdf.setTextColor(0, 0, 0);
+    yPos += 12;
+
+    // Assessment statement
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'italic');
+    const assessmentText = DIME.protection_gap > 0 
+      ? `A coverage gap of ${formatCurrency(DIME.protection_gap)} exists. Consider reviewing your life insurance coverage.`
+      : 'Your current coverage meets the estimated protection needs.';
+    pdf.text(assessmentText, margin, yPos);
+    yPos += 10;
+
+    // =====================
+    // SECTION 2: PRODUCT FIT ANALYSIS
+    // =====================
+    drawSectionHeader('Product Fit Analysis', [5, 150, 105]);
+
+    // IUL Section
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Indexed Universal Life (IUL)', margin, yPos);
+    drawFitBadge(productRecs.iul.fit, pageWidth - margin - 35, yPos);
+    yPos += 10;
+
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Score: ${productRecs.iul.score}/100`, margin, yPos);
+    yPos += 8;
+
+    // IUL Positives
+    if (productRecs.iul.positives.length > 0) {
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Why It Fits:', margin, yPos);
+      yPos += 6;
+      pdf.setFont('helvetica', 'normal');
+      productRecs.iul.positives.slice(0, 3).forEach(pos => {
+        checkPageBreak(6);
+        const lines = pdf.splitTextToSize(`✓ ${pos}`, pageWidth - 2 * margin - 10);
+        lines.forEach((line: string) => {
+          pdf.text(line, margin + 5, yPos);
+          yPos += 5;
+        });
+      });
+    }
+
+    // IUL Considerations
+    if (productRecs.iul.negatives.length > 0) {
+      yPos += 3;
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Considerations:', margin, yPos);
+      yPos += 6;
+      pdf.setFont('helvetica', 'normal');
+      productRecs.iul.negatives.slice(0, 2).forEach(neg => {
+        checkPageBreak(6);
+        const lines = pdf.splitTextToSize(`• ${neg}`, pageWidth - 2 * margin - 10);
+        lines.forEach((line: string) => {
+          pdf.text(line, margin + 5, yPos);
+          yPos += 5;
+        });
+      });
+    }
+
+    yPos += 10;
+
+    // FIA Section
+    checkPageBreak(40);
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Fixed Indexed Annuity (FIA)', margin, yPos);
+    drawFitBadge(productRecs.fia.fit, pageWidth - margin - 35, yPos);
+    yPos += 10;
+
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Score: ${productRecs.fia.score}/100`, margin, yPos);
+    
+    // FIA Strategy
+    if (productRecs.fia.strategy) {
+      const strategyLabels: Record<string, string> = {
+        'FIA_BUFFER_REDZONE': 'Buffer Zone Strategy',
+        'FIA_INCOME_FLOOR': 'Income Floor Strategy',
+        'FIA_GROWTH_PROTECTION': 'Growth Protection',
+        'FIA_OPTIONAL': 'Optional Enhancement',
+        'FIA_NOT_FIT_YET': 'Build Foundation First'
+      };
+      const strategyLabel = strategyLabels[productRecs.fia.strategy] || productRecs.fia.strategy;
+      pdf.text(`  |  Strategy: ${strategyLabel}`, margin + 35, yPos);
+    }
+    yPos += 8;
+
+    // FIA Positives
+    if (productRecs.fia.positives.length > 0) {
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Why It Fits:', margin, yPos);
+      yPos += 6;
+      pdf.setFont('helvetica', 'normal');
+      productRecs.fia.positives.slice(0, 3).forEach(pos => {
+        checkPageBreak(6);
+        const lines = pdf.splitTextToSize(`✓ ${pos}`, pageWidth - 2 * margin - 10);
+        lines.forEach((line: string) => {
+          pdf.text(line, margin + 5, yPos);
+          yPos += 5;
+        });
+      });
+    }
+
+    // FIA Considerations
+    if (productRecs.fia.negatives.length > 0) {
+      yPos += 3;
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Considerations:', margin, yPos);
+      yPos += 6;
+      pdf.setFont('helvetica', 'normal');
+      productRecs.fia.negatives.slice(0, 2).forEach(neg => {
+        checkPageBreak(6);
+        const lines = pdf.splitTextToSize(`• ${neg}`, pageWidth - 2 * margin - 10);
+        lines.forEach((line: string) => {
+          pdf.text(line, margin + 5, yPos);
+          yPos += 5;
+        });
+      });
+    }
+
+    // FIA One-line reason
+    if (productRecs.fia.reason) {
+      yPos += 5;
+      pdf.setFont('helvetica', 'italic');
+      const reasonLines = pdf.splitTextToSize(productRecs.fia.reason, pageWidth - 2 * margin);
+      reasonLines.forEach((line: string) => {
+        pdf.text(line, margin, yPos);
+        yPos += 5;
+      });
+    }
+
+    yPos += 5;
+
+    // =====================
+    // SECTION 3: TAX BUCKET ANALYSIS
+    // =====================
+    drawSectionHeader('Tax Diversification Analysis', [124, 58, 237]);
+
+    const totalAssets = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
+    const taxNowAmount = assets.filter(a => a.tax_wrapper === 'TAX_NOW').reduce((sum, a) => sum + (a.current_value || 0), 0);
+    const taxLaterAmount = assets.filter(a => a.tax_wrapper === 'TAX_LATER').reduce((sum, a) => sum + (a.current_value || 0), 0);
+    const taxNeverAmount = assets.filter(a => a.tax_wrapper === 'TAX_NEVER').reduce((sum, a) => sum + (a.current_value || 0), 0);
+
     pdf.setFontSize(11);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(`Overall Risk Score: ${metrics.scores_jsonb.overall}/100 (${getRiskLevelLabel(metrics.scores_jsonb.overall)})`, margin, yPos);
+    pdf.text('Current Allocation', margin, yPos);
+    pdf.text('Target Range', pageWidth - margin, yPos, { align: 'right' });
     yPos += 8;
-    
-    if (retirementResult) {
-      pdf.text(`Retirement Readiness: ${retirementResult.overall_score}/100 (Grade: ${retirementResult.overall_grade})`, margin, yPos);
-      yPos += 8;
-    }
-    
+
+    const taxBuckets = [
+      { label: 'Tax Now (Taxable)', pct: metrics.tax_bucket_now_pct, amount: taxNowAmount, target: '20-30%', examples: 'Savings, Brokerage' },
+      { label: 'Tax Later (Tax-Deferred)', pct: metrics.tax_bucket_later_pct, amount: taxLaterAmount, target: '40-50%', examples: '401(k), Traditional IRA' },
+      { label: 'Tax Never (Tax-Free)', pct: metrics.tax_bucket_never_pct, amount: taxNeverAmount, target: '20-30%', examples: 'Roth IRA, IUL, HSA' }
+    ];
+
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(10);
-    const summaryData = [
-      ['Net Worth', formatCurrency(metrics.net_worth)],
-      ['Protection Gap', formatCurrency(DIME.protection_gap)],
-      ['Liquidity Runway', `${metrics.liquidity_runway_months} months`],
-      ['Tax-Free Allocation', `${metrics.tax_bucket_never_pct}%`]
-    ];
-    
-    summaryData.forEach(([label, value]) => {
-      checkPageBreak(7);
-      pdf.text(`${label}:`, margin, yPos);
-      pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
-      yPos += 7;
-    });
 
-    // =====================
-    // RETIREMENT SECTION
-    // =====================
-    if (retirementResult) {
-      drawSectionHeader('Retirement Readiness Assessment');
-
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(`Overall Score: ${retirementResult.overall_score}/100`, margin, yPos);
-      pdf.text(`Grade: ${retirementResult.overall_grade}`, pageWidth - margin, yPos, { align: 'right' });
-      yPos += 10;
-
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Sub-Score', margin, yPos);
-      pdf.text('Score', pageWidth - margin - 30, yPos);
-      pdf.text('Status', pageWidth - margin, yPos, { align: 'right' });
-      yPos += 2;
-      pdf.line(margin, yPos, pageWidth - margin, yPos);
-      yPos += 5;
-
-      pdf.setFont('helvetica', 'normal');
-      const subScores = [
-        { label: 'Income Adequacy', score: retirementResult.sub_scores.income_adequacy },
-        { label: 'Tax Risk', score: retirementResult.sub_scores.tax_risk },
-        { label: 'Sequence Risk', score: retirementResult.sub_scores.sequence_risk },
-        { label: 'Longevity Risk', score: retirementResult.sub_scores.longevity_risk },
-        { label: 'Liquidity', score: retirementResult.sub_scores.liquidity },
-        { label: 'Protection', score: retirementResult.sub_scores.protection }
-      ];
-
-      subScores.forEach(({ label, score }) => {
-        checkPageBreak(7);
-        const status = score >= 70 ? 'Good' : score >= 50 ? 'Fair' : 'Needs Attention';
-        pdf.text(label, margin, yPos);
-        pdf.text(`${score}`, pageWidth - margin - 30, yPos);
-        pdf.text(status, pageWidth - margin, yPos, { align: 'right' });
-        yPos += 6;
-      });
-
-      // Income Projection
-      checkPageBreak(30);
-      yPos += 8;
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Retirement Income Projection', margin, yPos);
-      yPos += 8;
-
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      const projectionData = [
-        ['Projected Monthly Income', formatCurrency(retirementResult.projection.monthly_income_projected)],
-        ['Target Monthly Income', formatCurrency(retirementResult.projection.monthly_income_target)],
-        ['Monthly Gap/Surplus', `${retirementResult.projection.monthly_gap > 0 ? '-' : '+'}${formatCurrency(Math.abs(retirementResult.projection.monthly_gap))}`]
-      ];
-
-      projectionData.forEach(([label, value]) => {
-        checkPageBreak(7);
-        pdf.text(label, margin, yPos);
-        pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
-        yPos += 6;
-      });
-    }
-
-    // =====================
-    // RECOMMENDATIONS SECTION
-    // =====================
-    const recommendations = generateRecommendations();
-    drawSectionHeader('Recommendations');
-
-    recommendations.forEach((rec, index) => {
-      checkPageBreak(25);
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(`${index + 1}. ${rec.title}`, margin, yPos);
-      yPos += 7;
+    taxBuckets.forEach(bucket => {
+      checkPageBreak(16);
       
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      const descLines = pdf.splitTextToSize(rec.description, pageWidth - 2 * margin - 5);
-      descLines.forEach((line: string) => {
-        checkPageBreak(5);
-        pdf.text(line, margin + 5, yPos);
-        yPos += 5;
-      });
-      yPos += 5;
-    });
-
-    // =====================
-    // TAX BUCKETS SECTION
-    // =====================
-    drawSectionHeader('Tax Diversification Strategy');
-
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
-    const taxData = [
-      ['Tax Now (Taxable)', `${metrics.tax_bucket_now_pct}%`, 'Savings, brokerage accounts'],
-      ['Tax Later (Tax-Deferred)', `${metrics.tax_bucket_later_pct}%`, '401(k), Traditional IRA'],
-      ['Tax Never (Tax-Free)', `${metrics.tax_bucket_never_pct}%`, 'Roth IRA, IUL, HSA']
-    ];
-
-    taxData.forEach(([label, value, description]) => {
-      checkPageBreak(10);
+      // Label and percentage
       pdf.setFont('helvetica', 'bold');
-      pdf.text(label, margin, yPos);
-      pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
-      yPos += 5;
+      pdf.text(bucket.label, margin, yPos);
+      
+      const pctColor = bucket.label.includes('Never') && bucket.pct < 20 ? [245, 158, 11] : [0, 0, 0];
+      pdf.setTextColor(pctColor[0], pctColor[1], pctColor[2]);
+      pdf.text(`${bucket.pct}%`, margin + 90, yPos);
+      pdf.setTextColor(0, 0, 0);
+      
       pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(8);
-      pdf.text(description, margin + 5, yPos);
+      pdf.text(bucket.target, pageWidth - margin, yPos, { align: 'right' });
+      yPos += 5;
+      
+      // Amount and examples
+      pdf.setFontSize(9);
+      pdf.text(`${formatCurrency(bucket.amount)}  •  ${bucket.examples}`, margin + 5, yPos);
       pdf.setFontSize(10);
-      yPos += 6;
+      yPos += 10;
     });
 
-    // =====================
-    // COVERAGE SECTION
-    // =====================
-    drawSectionHeader('DIME Life Insurance Needs Analysis');
+    // Tax recommendation
+    yPos += 5;
+    pdf.setFont('helvetica', 'italic');
+    pdf.setFontSize(10);
+    const taxRec = metrics.tax_bucket_never_pct < 20 
+      ? 'Consider increasing tax-free allocation through Roth conversions, IUL, or HSA contributions.'
+      : 'Your tax diversification is well-balanced across all three buckets.';
+    pdf.text(taxRec, margin, yPos);
+    yPos += 10;
 
+    // =====================
+    // SECTION 4: NEXT STEPS
+    // =====================
+    drawSectionHeader('Next Steps', [5, 150, 105]);
+
+    pdf.setFillColor(240, 253, 244);
+    pdf.roundedRect(margin - 5, yPos - 5, pageWidth - 2 * margin + 10, 35, 3, 3, 'F');
+    
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(4, 120, 87);
+    pdf.text('Schedule Your Free Strategy Consultation', margin, yPos + 5);
+    
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(55, 65, 81);
+    pdf.text('Discuss your personalized financial strategy with a licensed professional.', margin, yPos + 15);
+    pdf.text('Visit: theprosperityfinancial.com/contact', margin, yPos + 23);
     
-    const dimeData = [
-      ['Component', 'Amount'],
-      ['Debt (Non-Mortgage) + Final Expenses', formatCurrency(DIME.nonMortgageDebt + DIME.FINAL_EXPENSES)],
-      ['Income Replacement (10 years)', formatCurrency(DIME.incomeReplacement)],
-      ['Mortgage Balance', formatCurrency(DIME.mortgageBalance)],
-      ['Education Expenses', formatCurrency(DIME.education)],
-      ['', ''],
-      ['Total DIME Need', formatCurrency(DIME.dime_need)],
-      ['Current Coverage', formatCurrency(DIME.currentCoverage)],
-      ['Protection Gap', formatCurrency(DIME.protection_gap)]
-    ];
+    pdf.setTextColor(0, 0, 0);
+    yPos += 45;
 
-    dimeData.forEach((row, index) => {
-      checkPageBreak(8);
-      if (index === 0 || index === 6) {
-        pdf.setFont('helvetica', 'bold');
-      } else {
-        pdf.setFont('helvetica', 'normal');
-      }
-      pdf.text(row[0], margin, yPos);
-      pdf.text(row[1], pageWidth - margin, yPos, { align: 'right' });
-      yPos += 7;
-      if (index === 4 || index === 8) {
-        pdf.line(margin, yPos, pageWidth - margin, yPos);
-        yPos += 5;
-      }
-    });
-
-    // Disclaimer
-    checkPageBreak(30);
-    yPos += 10;
+    // =====================
+    // DISCLAIMER
+    // =====================
+    checkPageBreak(25);
     pdf.setFontSize(8);
     pdf.setTextColor(100, 100, 100);
-    const disclaimer = 'DISCLAIMER: This report is for educational purposes only and does not constitute financial, tax, or legal advice. Consult with qualified professionals before making financial decisions. Past performance does not guarantee future results. Insurance products involve costs, fees, and risks.';
+    const disclaimer = 'DISCLAIMER: This report is for educational purposes only and does not constitute financial, tax, or legal advice. Consult with qualified professionals before making financial decisions. Past performance does not guarantee future results. Insurance products involve costs, fees, and risks that should be carefully considered.';
     const disclaimerLines = pdf.splitTextToSize(disclaimer, pageWidth - 2 * margin);
     disclaimerLines.forEach((line: string) => {
       checkPageBreak(4);
@@ -329,12 +465,11 @@ export function ReportModal({
       pdf.text('theprosperityfinancial.com', pageWidth - margin, pageHeight - 10, { align: 'right' });
     }
 
-    // Return as base64 (without data URL prefix)
     const pdfOutput = pdf.output('datauristring');
-    return pdfOutput.split(',')[1]; // Remove the data:application/pdf;base64, prefix
+    return pdfOutput.split(',')[1];
   };
 
-  // Send email with PDF attachment
+  // Send email with PDF attachment - FOCUSED VERSION
   const sendReportEmail = async () => {
     if (!clientEmail || emailSent || isSendingEmail) return;
     
@@ -342,17 +477,27 @@ export function ReportModal({
     
     try {
       const pdfBase64 = await generatePDFBase64();
-      const recommendations = generateRecommendations();
+      const productRecs = getProductRecommendations();
       
       const summary = {
-        overallRiskScore: metrics.scores_jsonb.overall,
-        riskLevel: getRiskLevelLabel(metrics.scores_jsonb.overall),
-        retirementScore: retirementResult?.overall_score,
-        retirementGrade: retirementResult?.overall_grade,
+        // Coverage Analysis
+        dimeNeed: DIME.dime_need,
+        currentCoverage: DIME.currentCoverage,
         protectionGap: DIME.protection_gap,
-        netWorth: metrics.net_worth,
-        liquidityMonths: metrics.liquidity_runway_months,
-        keyRecommendations: recommendations.slice(0, 3).map(r => r.title)
+        // Product Fit - IUL
+        iulFit: productRecs.iul.fit,
+        iulScore: productRecs.iul.score,
+        iulPositives: productRecs.iul.positives.slice(0, 3),
+        // Product Fit - FIA
+        fiaFit: productRecs.fia.fit,
+        fiaScore: productRecs.fia.score,
+        fiaStrategy: productRecs.fia.strategy,
+        fiaPositives: productRecs.fia.positives.slice(0, 3),
+        fiaReason: productRecs.fia.reason,
+        // Tax Buckets
+        taxNowPct: metrics.tax_bucket_now_pct,
+        taxLaterPct: metrics.tax_bucket_later_pct,
+        taxNeverPct: metrics.tax_bucket_never_pct
       };
 
       const { error } = await supabase.functions.invoke('send-report-email', {
@@ -369,7 +514,7 @@ export function ReportModal({
       setEmailSent(true);
       toast({
         title: "Report Sent",
-        description: `Email sent to ${clientEmail} with your comprehensive report.`
+        description: `Email sent to ${clientEmail} with your financial needs assessment.`
       });
     } catch (error) {
       console.error('Error sending report email:', error);
@@ -542,7 +687,6 @@ export function ReportModal({
       const margin = 20;
       let yPos = margin;
 
-      // Helper function to add new page if needed
       const checkPageBreak = (height: number) => {
         if (yPos + height > pageHeight - margin) {
           pdf.addPage();
@@ -552,340 +696,319 @@ export function ReportModal({
         return false;
       };
 
-      // Helper to draw a section header
-      const drawSectionHeader = (title: string) => {
+      const drawSectionHeader = (title: string, color: [number, number, number] = [30, 64, 175]) => {
         checkPageBreak(20);
         yPos += 8;
-        pdf.setFillColor(41, 128, 185);
+        pdf.setFillColor(color[0], color[1], color[2]);
         pdf.rect(margin - 5, yPos - 5, pageWidth - 2 * margin + 10, 10, 'F');
         pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(14);
+        pdf.setFontSize(13);
         pdf.setFont('helvetica', 'bold');
         pdf.text(title, margin, yPos + 2);
         pdf.setTextColor(0, 0, 0);
-        yPos += 12;
+        yPos += 14;
       };
 
-      // Header
-      pdf.setFillColor(41, 128, 185);
-      pdf.rect(0, 0, pageWidth, 40, 'F');
+      const drawFitBadge = (fit: string, x: number, y: number) => {
+        const fitStyles: Record<string, { bg: [number, number, number]; label: string }> = {
+          'strong': { bg: [22, 163, 74], label: 'Strong Fit' },
+          'moderate': { bg: [37, 99, 235], label: 'Moderate Fit' },
+          'explore': { bg: [245, 158, 11], label: 'Worth Exploring' },
+          'weak': { bg: [245, 158, 11], label: 'Limited Fit' },
+          'not_fit_yet': { bg: [107, 114, 128], label: 'Not Yet' },
+          'not_recommended': { bg: [107, 114, 128], label: 'Not Recommended' }
+        };
+        const style = fitStyles[fit] || fitStyles['not_recommended'];
+        
+        pdf.setFillColor(style.bg[0], style.bg[1], style.bg[2]);
+        const badgeWidth = pdf.getTextWidth(style.label) + 8;
+        pdf.roundedRect(x, y - 4, badgeWidth, 6, 2, 2, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(style.label, x + 4, y);
+        pdf.setTextColor(0, 0, 0);
+      };
+
+      const productRecs = getProductRecommendations();
+
+      // =====================
+      // COVER PAGE
+      // =====================
+      pdf.setFillColor(30, 58, 95);
+      pdf.rect(0, 0, pageWidth, 50, 'F');
       pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(22);
-      pdf.text('Financial Risk Assessment Report', margin, 20);
+      pdf.setFontSize(24);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Financial Needs Assessment', margin, 25);
       pdf.setFontSize(12);
-      pdf.text(`${profileData.name_first} ${profileData.name_last}`, margin, 30);
-      pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - margin, 30, { align: 'right' });
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(clientName, margin, 35);
+      pdf.text(`The Prosperity Financial`, pageWidth - margin, 35, { align: 'right' });
+      pdf.setFontSize(10);
+      pdf.text(`Generated: ${new Date().toLocaleDateString()}`, margin, 45);
       
-      yPos = 50;
+      yPos = 60;
       pdf.setTextColor(0, 0, 0);
 
       // =====================
-      // RETIREMENT READINESS SECTION
+      // SECTION 1: DIME COVERAGE ANALYSIS
       // =====================
-      if (retirementResult) {
-        drawSectionHeader('Retirement Readiness Assessment');
-
-        // Score and Grade
-        pdf.setFontSize(12);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(`Overall Score: ${retirementResult.overall_score}/100`, margin, yPos);
-        pdf.text(`Grade: ${retirementResult.overall_grade}`, pageWidth - margin, yPos, { align: 'right' });
-        yPos += 10;
-
-        // Sub-scores table
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('Sub-Score', margin, yPos);
-        pdf.text('Score', pageWidth - margin - 30, yPos);
-        pdf.text('Status', pageWidth - margin, yPos, { align: 'right' });
-        yPos += 2;
-        pdf.line(margin, yPos, pageWidth - margin, yPos);
-        yPos += 5;
-
-        pdf.setFont('helvetica', 'normal');
-        const subScores = [
-          { label: 'Income Adequacy', score: retirementResult.sub_scores.income_adequacy },
-          { label: 'Tax Risk', score: retirementResult.sub_scores.tax_risk },
-          { label: 'Sequence Risk', score: retirementResult.sub_scores.sequence_risk },
-          { label: 'Longevity Risk', score: retirementResult.sub_scores.longevity_risk },
-          { label: 'Liquidity', score: retirementResult.sub_scores.liquidity },
-          { label: 'Protection', score: retirementResult.sub_scores.protection }
-        ];
-
-        subScores.forEach(({ label, score }) => {
-          checkPageBreak(7);
-          const status = score >= 70 ? 'Good' : score >= 50 ? 'Fair' : 'Needs Attention';
-          pdf.text(label, margin, yPos);
-          pdf.text(`${score}`, pageWidth - margin - 30, yPos);
-          pdf.text(status, pageWidth - margin, yPos, { align: 'right' });
-          yPos += 6;
-        });
-
-        // Income Projection
-        checkPageBreak(30);
-        yPos += 8;
-        pdf.setFontSize(12);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('Retirement Income Projection', margin, yPos);
-        yPos += 8;
-
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'normal');
-        const incomeData = [
-          ['Projected Monthly Income', formatCurrency(retirementResult.projection.monthly_income_projected)],
-          ['Target Monthly Income', formatCurrency(retirementResult.projection.monthly_income_target)],
-          ['Monthly Gap/Surplus', `${retirementResult.projection.monthly_gap > 0 ? '-' : '+'}${formatCurrency(Math.abs(retirementResult.projection.monthly_gap))}`]
-        ];
-
-        incomeData.forEach(([label, value]) => {
-          checkPageBreak(7);
-          pdf.text(label, margin, yPos);
-          pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
-          yPos += 6;
-        });
-
-        // Income Sources Breakdown
-        checkPageBreak(40);
-        yPos += 6;
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('Income Sources Breakdown:', margin, yPos);
-        yPos += 6;
-        pdf.setFont('helvetica', 'normal');
-
-        const sources = retirementResult.projection.income_sources;
-        const sourceData = [
-          ['Social Security', formatCurrency(sources.social_security)],
-          ['Pension', formatCurrency(sources.pension)],
-          ['Annuity Income', formatCurrency(sources.annuity)],
-          ['Portfolio Withdrawal', formatCurrency(sources.portfolio_withdrawal)],
-          ['Part-time Income', formatCurrency(sources.part_time)]
-        ];
-
-        sourceData.forEach(([label, value]) => {
-          checkPageBreak(6);
-          pdf.text(`  • ${label}`, margin, yPos);
-          pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
-          yPos += 5;
-        });
-
-        // Stress Test Scenarios
-        if (retirementResult.scenarios.length > 0) {
-          checkPageBreak(50);
-          yPos += 8;
-          pdf.setFontSize(12);
-          pdf.setFont('helvetica', 'bold');
-          pdf.text('Stress Test Scenarios', margin, yPos);
-          yPos += 8;
-
-          pdf.setFontSize(9);
-          pdf.setFont('helvetica', 'bold');
-          pdf.text('Scenario', margin, yPos);
-          pdf.text('Success', margin + 55, yPos);
-          pdf.text('Shortfall Age', margin + 80, yPos);
-          pdf.text('End Balance', margin + 110, yPos);
-          yPos += 2;
-          pdf.line(margin, yPos, pageWidth - margin, yPos);
-          yPos += 5;
-
-          pdf.setFont('helvetica', 'normal');
-          retirementResult.scenarios.forEach((scenario) => {
-            checkPageBreak(6);
-            pdf.text(scenario.scenario_name, margin, yPos);
-            pdf.text(`${scenario.success_probability}%`, margin + 55, yPos);
-            pdf.text(scenario.projected_shortfall_age ? `Age ${scenario.projected_shortfall_age}` : 'None', margin + 80, yPos);
-            pdf.text(formatCurrency(scenario.ending_balance_at_90), margin + 110, yPos);
-            yPos += 5;
-          });
-        }
-
-        // Product Recommendations
-        if (retirementResult.recommendations.length > 0) {
-          checkPageBreak(40);
-          yPos += 10;
-          pdf.setFontSize(12);
-          pdf.setFont('helvetica', 'bold');
-          pdf.text('Product Suitability Analysis', margin, yPos);
-          yPos += 8;
-
-          retirementResult.recommendations.forEach((rec) => {
-            checkPageBreak(25);
-            pdf.setFontSize(11);
-            pdf.setFont('helvetica', 'bold');
-            const fitLabel = rec.fit === 'strong' ? '★★★ Strong Fit' : 
-                            rec.fit === 'moderate' ? '★★ Moderate Fit' : 
-                            rec.fit === 'weak' ? '★ Weak Fit' : '○ Not Recommended';
-            pdf.text(`${rec.product} - ${fitLabel}`, margin, yPos);
-            yPos += 6;
-
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'normal');
-            
-            // Why bullets
-            rec.whyBullets.slice(0, 2).forEach((bullet) => {
-              checkPageBreak(5);
-              const lines = pdf.splitTextToSize(`✓ ${bullet}`, pageWidth - 2 * margin - 5);
-              lines.forEach((line: string) => {
-                pdf.text(line, margin + 5, yPos);
-                yPos += 4;
-              });
-            });
-
-            // Not if bullets
-            rec.notIfBullets.slice(0, 1).forEach((bullet) => {
-              checkPageBreak(5);
-              const lines = pdf.splitTextToSize(`⚠ ${bullet}`, pageWidth - 2 * margin - 5);
-              lines.forEach((line: string) => {
-                pdf.text(line, margin + 5, yPos);
-                yPos += 4;
-              });
-            });
-
-            yPos += 3;
-          });
-        }
-
-        // Key Insights
-        if (retirementResult.key_insights.length > 0) {
-          checkPageBreak(30);
-          yPos += 8;
-          pdf.setFontSize(12);
-          pdf.setFont('helvetica', 'bold');
-          pdf.text('Key Insights & Action Items', margin, yPos);
-          yPos += 8;
-
-          pdf.setFontSize(10);
-          pdf.setFont('helvetica', 'normal');
-          retirementResult.key_insights.forEach((insight, i) => {
-            checkPageBreak(10);
-            const lines = pdf.splitTextToSize(`${i + 1}. ${insight}`, pageWidth - 2 * margin);
-            lines.forEach((line: string) => {
-              pdf.text(line, margin, yPos);
-              yPos += 5;
-            });
-            yPos += 2;
-          });
-        }
-      }
-
-      // =====================
-      // DIME ANALYSIS SECTION
-      // =====================
-      drawSectionHeader('DIME Life Insurance Needs Analysis');
-
+      drawSectionHeader('Life Insurance Coverage Analysis (DIME)', [30, 64, 175]);
+      
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
       
-      const dimeData = [
-        ['Component', 'Amount'],
-        ['Debt (Non-Mortgage) + Final Expenses', formatCurrency(DIME.nonMortgageDebt + DIME.FINAL_EXPENSES)],
-        ['Income Replacement (10 years)', formatCurrency(DIME.incomeReplacement)],
-        ['Mortgage Balance', formatCurrency(DIME.mortgageBalance)],
-        ['Education Expenses', formatCurrency(DIME.education)],
-        ['', ''],
-        ['Total DIME Need', formatCurrency(DIME.dime_need)],
-        ['Current Coverage', formatCurrency(DIME.currentCoverage)],
-        ['Protection Gap', formatCurrency(DIME.protection_gap)]
+      const dimeItems = [
+        { label: 'D - Debts & Final Expenses', value: DIME.nonMortgageDebt + DIME.FINAL_EXPENSES },
+        { label: 'I - Income Replacement (10 years)', value: DIME.incomeReplacement },
+        { label: 'M - Mortgage Balance', value: DIME.mortgageBalance },
+        { label: 'E - Education Expenses', value: DIME.education }
       ];
 
-      dimeData.forEach((row, index) => {
-        checkPageBreak(8);
-        if (index === 0 || index === 6) {
-          pdf.setFont('helvetica', 'bold');
-        } else {
-          pdf.setFont('helvetica', 'normal');
-        }
-        pdf.text(row[0], margin, yPos);
-        pdf.text(row[1], pageWidth - margin, yPos, { align: 'right' });
+      dimeItems.forEach(item => {
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(item.label, margin, yPos);
+        pdf.text(formatCurrency(item.value), pageWidth - margin, yPos, { align: 'right' });
         yPos += 7;
-        if (index === 4 || index === 8) {
-          pdf.line(margin, yPos, pageWidth - margin, yPos);
-          yPos += 5;
-        }
       });
 
-      // Overall Risk Score
-      drawSectionHeader('Overall Risk Assessment');
-
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(`Risk Score: ${metrics.scores_jsonb.overall}/100`, margin, yPos);
-      pdf.text(`Level: ${getRiskLevel(metrics.scores_jsonb.overall).label}`, pageWidth - margin, yPos, { align: 'right' });
-      yPos += 12;
-
-      // Key Metrics
-      pdf.setFontSize(11);
-      pdf.text('Key Financial Metrics', margin, yPos);
+      yPos += 3;
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPos, pageWidth - margin, yPos);
       yPos += 8;
 
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(11);
+      pdf.text('Total Protection Need (DIME)', margin, yPos);
+      pdf.text(formatCurrency(DIME.dime_need), pageWidth - margin, yPos, { align: 'right' });
+      yPos += 8;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.text('Current Coverage', margin, yPos);
+      pdf.text(formatCurrency(DIME.currentCoverage), pageWidth - margin, yPos, { align: 'right' });
+      yPos += 8;
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      const gapColor = DIME.protection_gap > 0 ? [220, 38, 38] : [22, 163, 74];
+      pdf.setTextColor(gapColor[0], gapColor[1], gapColor[2]);
+      pdf.text('Protection Gap', margin, yPos);
+      pdf.text(formatCurrency(DIME.protection_gap), pageWidth - margin, yPos, { align: 'right' });
+      pdf.setTextColor(0, 0, 0);
+      yPos += 12;
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'italic');
+      const assessmentText = DIME.protection_gap > 0 
+        ? `A coverage gap of ${formatCurrency(DIME.protection_gap)} exists. Consider reviewing your life insurance coverage.`
+        : 'Your current coverage meets the estimated protection needs.';
+      pdf.text(assessmentText, margin, yPos);
+      yPos += 10;
+
+      // =====================
+      // SECTION 2: PRODUCT FIT ANALYSIS
+      // =====================
+      drawSectionHeader('Product Fit Analysis', [5, 150, 105]);
+
+      // IUL Section
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Indexed Universal Life (IUL)', margin, yPos);
+      drawFitBadge(productRecs.iul.fit, pageWidth - margin - 35, yPos);
+      yPos += 10;
+
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      const keyMetricsData = [
-        ['Net Worth', formatCurrency(metrics.net_worth)],
-        ['Liquidity Runway', `${metrics.liquidity_runway_months} months`],
-        ['Tax-Never Allocation', `${metrics.tax_bucket_never_pct}%`],
-        ['Retirement Gap (Monthly)', formatCurrency(metrics.retirement_gap_mo)]
-      ];
+      pdf.text(`Score: ${productRecs.iul.score}/100`, margin, yPos);
+      yPos += 8;
 
-      keyMetricsData.forEach(([label, value]) => {
-        checkPageBreak(7);
-        pdf.text(`${label}:`, margin, yPos);
-        pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
-        yPos += 7;
-      });
-
-      // Tax Diversification
-      drawSectionHeader('Tax Diversification Strategy');
-
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      const taxData = [
-        ['Tax Now (Taxable)', `${metrics.tax_bucket_now_pct}%`, 'Savings, brokerage accounts'],
-        ['Tax Later (Tax-Deferred)', `${metrics.tax_bucket_later_pct}%`, '401(k), Traditional IRA'],
-        ['Tax Never (Tax-Free)', `${metrics.tax_bucket_never_pct}%`, 'Roth IRA, IUL, HSA']
-      ];
-
-      taxData.forEach(([label, value, description]) => {
-        checkPageBreak(10);
+      if (productRecs.iul.positives.length > 0) {
         pdf.setFont('helvetica', 'bold');
-        pdf.text(label, margin, yPos);
-        pdf.text(value, pageWidth - margin, yPos, { align: 'right' });
-        yPos += 5;
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8);
-        pdf.text(description, margin + 5, yPos);
-        pdf.setFontSize(10);
+        pdf.text('Why It Fits:', margin, yPos);
         yPos += 6;
-      });
-
-      // Recommendations
-      drawSectionHeader('Recommendations');
-
-      const recommendations = generateRecommendations();
-      recommendations.forEach((rec, index) => {
-        checkPageBreak(25);
-        pdf.setFontSize(11);
-        pdf.setFont('helvetica', 'bold');
-        const priorityIcon = rec.priority === 'high' ? '🔴' : rec.priority === 'medium' ? '🟡' : '🟢';
-        pdf.text(`${index + 1}. ${rec.title}`, margin, yPos);
-        yPos += 7;
-        
-        pdf.setFontSize(10);
         pdf.setFont('helvetica', 'normal');
-        const descLines = pdf.splitTextToSize(rec.description, pageWidth - 2 * margin - 5);
-        descLines.forEach((line: string) => {
-          checkPageBreak(5);
-          pdf.text(line, margin + 5, yPos);
+        productRecs.iul.positives.slice(0, 3).forEach(pos => {
+          checkPageBreak(6);
+          const lines = pdf.splitTextToSize(`✓ ${pos}`, pageWidth - 2 * margin - 10);
+          lines.forEach((line: string) => {
+            pdf.text(line, margin + 5, yPos);
+            yPos += 5;
+          });
+        });
+      }
+
+      if (productRecs.iul.negatives.length > 0) {
+        yPos += 3;
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Considerations:', margin, yPos);
+        yPos += 6;
+        pdf.setFont('helvetica', 'normal');
+        productRecs.iul.negatives.slice(0, 2).forEach(neg => {
+          checkPageBreak(6);
+          const lines = pdf.splitTextToSize(`• ${neg}`, pageWidth - 2 * margin - 10);
+          lines.forEach((line: string) => {
+            pdf.text(line, margin + 5, yPos);
+            yPos += 5;
+          });
+        });
+      }
+
+      yPos += 10;
+
+      // FIA Section
+      checkPageBreak(40);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Fixed Indexed Annuity (FIA)', margin, yPos);
+      drawFitBadge(productRecs.fia.fit, pageWidth - margin - 35, yPos);
+      yPos += 10;
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Score: ${productRecs.fia.score}/100`, margin, yPos);
+      
+      if (productRecs.fia.strategy) {
+        const strategyLabels: Record<string, string> = {
+          'FIA_BUFFER_REDZONE': 'Buffer Zone Strategy',
+          'FIA_INCOME_FLOOR': 'Income Floor Strategy',
+          'FIA_GROWTH_PROTECTION': 'Growth Protection',
+          'FIA_OPTIONAL': 'Optional Enhancement',
+          'FIA_NOT_FIT_YET': 'Build Foundation First'
+        };
+        const strategyLabel = strategyLabels[productRecs.fia.strategy] || productRecs.fia.strategy;
+        pdf.text(`  |  Strategy: ${strategyLabel}`, margin + 35, yPos);
+      }
+      yPos += 8;
+
+      if (productRecs.fia.positives.length > 0) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Why It Fits:', margin, yPos);
+        yPos += 6;
+        pdf.setFont('helvetica', 'normal');
+        productRecs.fia.positives.slice(0, 3).forEach(pos => {
+          checkPageBreak(6);
+          const lines = pdf.splitTextToSize(`✓ ${pos}`, pageWidth - 2 * margin - 10);
+          lines.forEach((line: string) => {
+            pdf.text(line, margin + 5, yPos);
+            yPos += 5;
+          });
+        });
+      }
+
+      if (productRecs.fia.negatives.length > 0) {
+        yPos += 3;
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Considerations:', margin, yPos);
+        yPos += 6;
+        pdf.setFont('helvetica', 'normal');
+        productRecs.fia.negatives.slice(0, 2).forEach(neg => {
+          checkPageBreak(6);
+          const lines = pdf.splitTextToSize(`• ${neg}`, pageWidth - 2 * margin - 10);
+          lines.forEach((line: string) => {
+            pdf.text(line, margin + 5, yPos);
+            yPos += 5;
+          });
+        });
+      }
+
+      if (productRecs.fia.reason) {
+        yPos += 5;
+        pdf.setFont('helvetica', 'italic');
+        const reasonLines = pdf.splitTextToSize(productRecs.fia.reason, pageWidth - 2 * margin);
+        reasonLines.forEach((line: string) => {
+          pdf.text(line, margin, yPos);
           yPos += 5;
         });
+      }
+
+      yPos += 5;
+
+      // =====================
+      // SECTION 3: TAX BUCKET ANALYSIS
+      // =====================
+      drawSectionHeader('Tax Diversification Analysis', [124, 58, 237]);
+
+      const totalAssets = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
+      const taxNowAmount = assets.filter(a => a.tax_wrapper === 'TAX_NOW').reduce((sum, a) => sum + (a.current_value || 0), 0);
+      const taxLaterAmount = assets.filter(a => a.tax_wrapper === 'TAX_LATER').reduce((sum, a) => sum + (a.current_value || 0), 0);
+      const taxNeverAmount = assets.filter(a => a.tax_wrapper === 'TAX_NEVER').reduce((sum, a) => sum + (a.current_value || 0), 0);
+
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Current Allocation', margin, yPos);
+      pdf.text('Target Range', pageWidth - margin, yPos, { align: 'right' });
+      yPos += 8;
+
+      const taxBuckets = [
+        { label: 'Tax Now (Taxable)', pct: metrics.tax_bucket_now_pct, amount: taxNowAmount, target: '20-30%', examples: 'Savings, Brokerage' },
+        { label: 'Tax Later (Tax-Deferred)', pct: metrics.tax_bucket_later_pct, amount: taxLaterAmount, target: '40-50%', examples: '401(k), Traditional IRA' },
+        { label: 'Tax Never (Tax-Free)', pct: metrics.tax_bucket_never_pct, amount: taxNeverAmount, target: '20-30%', examples: 'Roth IRA, IUL, HSA' }
+      ];
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+
+      taxBuckets.forEach(bucket => {
+        checkPageBreak(16);
+        
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(bucket.label, margin, yPos);
+        
+        const pctColor = bucket.label.includes('Never') && bucket.pct < 20 ? [245, 158, 11] : [0, 0, 0];
+        pdf.setTextColor(pctColor[0], pctColor[1], pctColor[2]);
+        pdf.text(`${bucket.pct}%`, margin + 90, yPos);
+        pdf.setTextColor(0, 0, 0);
+        
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(bucket.target, pageWidth - margin, yPos, { align: 'right' });
         yPos += 5;
+        
+        pdf.setFontSize(9);
+        pdf.text(`${formatCurrency(bucket.amount)}  •  ${bucket.examples}`, margin + 5, yPos);
+        pdf.setFontSize(10);
+        yPos += 10;
       });
 
-      // Disclaimer
-      checkPageBreak(30);
+      yPos += 5;
+      pdf.setFont('helvetica', 'italic');
+      pdf.setFontSize(10);
+      const taxRec = metrics.tax_bucket_never_pct < 20 
+        ? 'Consider increasing tax-free allocation through Roth conversions, IUL, or HSA contributions.'
+        : 'Your tax diversification is well-balanced across all three buckets.';
+      pdf.text(taxRec, margin, yPos);
       yPos += 10;
+
+      // =====================
+      // SECTION 4: NEXT STEPS
+      // =====================
+      drawSectionHeader('Next Steps', [5, 150, 105]);
+
+      pdf.setFillColor(240, 253, 244);
+      pdf.roundedRect(margin - 5, yPos - 5, pageWidth - 2 * margin + 10, 35, 3, 3, 'F');
+      
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(4, 120, 87);
+      pdf.text('Schedule Your Free Strategy Consultation', margin, yPos + 5);
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(55, 65, 81);
+      pdf.text('Discuss your personalized financial strategy with a licensed professional.', margin, yPos + 15);
+      pdf.text('Visit: theprosperityfinancial.com/contact', margin, yPos + 23);
+      
+      pdf.setTextColor(0, 0, 0);
+      yPos += 45;
+
+      // =====================
+      // DISCLAIMER
+      // =====================
+      checkPageBreak(25);
       pdf.setFontSize(8);
       pdf.setTextColor(100, 100, 100);
-      const disclaimer = 'DISCLAIMER: This report is for educational purposes only and does not constitute financial, tax, or legal advice. Consult with qualified professionals before making financial decisions. Past performance does not guarantee future results. Insurance products involve costs, fees, and risks.';
+      const disclaimer = 'DISCLAIMER: This report is for educational purposes only and does not constitute financial, tax, or legal advice. Consult with qualified professionals before making financial decisions. Past performance does not guarantee future results. Insurance products involve costs, fees, and risks that should be carefully considered.';
       const disclaimerLines = pdf.splitTextToSize(disclaimer, pageWidth - 2 * margin);
       disclaimerLines.forEach((line: string) => {
         checkPageBreak(4);
@@ -907,40 +1030,26 @@ export function ReportModal({
       // Save the PDF
       pdf.save(`Financial-Assessment-${profileData.name_last}-${new Date().toISOString().split('T')[0]}.pdf`);
 
-      // Save to database with retirement data
+      // Save to database
+      const productRecsData = getProductRecommendations();
       const reportData = {
         summary: {
           client_name: `${profileData.name_first} ${profileData.name_last}`,
-          generated_date: new Date().toISOString(),
-          overall_risk_score: metrics.scores_jsonb.overall,
-          net_worth: metrics.net_worth,
-          key_metrics: {
-            protection_gap: DIME.protection_gap,
-            liquidity_months: metrics.liquidity_runway_months,
-            concentration_pct: metrics.top_concentration_pct,
-            retirement_gap: metrics.retirement_gap_mo
-          }
-        },
-        retirement_readiness: retirementResult ? {
-          overall_score: retirementResult.overall_score,
-          overall_grade: retirementResult.overall_grade,
-          sub_scores: retirementResult.sub_scores,
-          projection: retirementResult.projection,
-          scenarios: retirementResult.scenarios,
-          recommendations: retirementResult.recommendations,
-          key_insights: retirementResult.key_insights
-        } : null,
-        recommendations: generateRecommendations(),
-        tax_buckets: {
-          tax_now: { percent: metrics.tax_bucket_now_pct, amount: assets.filter(a => a.tax_wrapper === 'TAX_NOW').reduce((sum, a) => sum + a.current_value, 0) },
-          tax_later: { percent: metrics.tax_bucket_later_pct, amount: assets.filter(a => a.tax_wrapper === 'TAX_LATER').reduce((sum, a) => sum + a.current_value, 0) },
-          tax_never: { percent: metrics.tax_bucket_never_pct, amount: assets.filter(a => a.tax_wrapper === 'TAX_NEVER').reduce((sum, a) => sum + a.current_value, 0) }
+          generated_date: new Date().toISOString()
         },
         coverage_analysis: {
           dime_need: DIME.dime_need,
-          protection_gap: DIME.protection_gap,
-          disability_gap: metrics.disability_gap,
-          ltc_gap: metrics.ltc_gap
+          current_coverage: DIME.currentCoverage,
+          protection_gap: DIME.protection_gap
+        },
+        product_fit: {
+          iul: productRecsData.iul,
+          fia: productRecsData.fia
+        },
+        tax_buckets: {
+          tax_now: { percent: metrics.tax_bucket_now_pct, amount: taxNowAmount },
+          tax_later: { percent: metrics.tax_bucket_later_pct, amount: taxLaterAmount },
+          tax_never: { percent: metrics.tax_bucket_never_pct, amount: taxNeverAmount }
         }
       };
 
@@ -954,7 +1063,7 @@ export function ReportModal({
 
       toast({
         title: "PDF Generated",
-        description: "Your comprehensive financial assessment report has been downloaded."
+        description: "Your financial needs assessment has been downloaded."
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
