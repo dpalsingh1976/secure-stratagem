@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -11,12 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Collapsible,
   CollapsibleContent,
@@ -40,21 +34,6 @@ const TAX_BRACKETS = [
   { value: '0.37', label: '37%' },
 ];
 
-function TooltipIcon({ content }: { content: string }) {
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger>
-          <HelpCircle className="h-4 w-4 text-muted-foreground" />
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">
-          <p>{content}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
-
 export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -76,10 +55,7 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
       <div className="grid gap-6 md:grid-cols-2">
         {/* Child Age */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="childAge">Child's Current Age</Label>
-            <TooltipIcon content="Age of the child you're saving for (0-17 years)." />
-          </div>
+          <Label htmlFor="childAge">Child's Current Age</Label>
           <Input
             id="childAge"
             type="number"
@@ -89,17 +65,13 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
             onChange={(e) => {
               const age = Math.min(17, Math.max(0, parseInt(e.target.value) || 0));
               onInputChange('childAge', age);
-              onInputChange('yearsToGoal', 18 - age);
             }}
           />
         </div>
 
         {/* Years to Goal */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="yearsToGoal">Years to Goal</Label>
-            <TooltipIcon content="Number of years until funds are needed (typically age 18)." />
-          </div>
+          <Label htmlFor="yearsToGoal">Years to Goal</Label>
           <Input
             id="yearsToGoal"
             type="number"
@@ -112,10 +84,7 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
 
         {/* Monthly Contribution */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="monthlyContribution">Monthly Contribution</Label>
-            <TooltipIcon content="Amount you plan to contribute each month." />
-          </div>
+          <Label htmlFor="monthlyContribution">Monthly Contribution</Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
             <Input
@@ -131,10 +100,7 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
 
         {/* Initial Lump Sum */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="initialLumpSum">Initial Lump Sum (Optional)</Label>
-            <TooltipIcon content="One-time initial contribution, if any." />
-          </div>
+          <Label htmlFor="initialLumpSum">Initial Lump Sum (Optional)</Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
             <Input
@@ -151,10 +117,7 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
 
       {/* Risk Tolerance */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Label>Risk Tolerance</Label>
-          <TooltipIcon content="Affects assumed return rates. Higher risk = higher potential returns but more volatility." />
-        </div>
+        <Label>Risk Tolerance</Label>
         <div className="flex gap-2">
           {(['conservative', 'balanced', 'growth'] as RiskTolerance[]).map((level) => (
             <Button
@@ -169,18 +132,15 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
           ))}
         </div>
         <p className="text-xs text-muted-foreground text-center">
-          {inputs.riskTolerance === 'conservative' && '529: ~4.5% | IUL: ~4% (illustrative net)'}
-          {inputs.riskTolerance === 'balanced' && '529: ~5.5% | IUL: ~5% (illustrative net)'}
-          {inputs.riskTolerance === 'growth' && '529: ~6.5% | IUL: ~6% (illustrative net)'}
+          {inputs.riskTolerance === 'conservative' && '529: ~4.5% | IUL: 6% (illustrative net)'}
+          {inputs.riskTolerance === 'balanced' && '529: ~5.5% | IUL: 6% (illustrative net)'}
+          {inputs.riskTolerance === 'growth' && '529: ~6.5% | IUL: 6% (illustrative net)'}
         </p>
       </div>
 
       {/* Liquidity Need */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Label>Liquidity Need</Label>
-          <TooltipIcon content="How important is accessing funds for non-education purposes?" />
-        </div>
+        <Label>Liquidity Need</Label>
         <div className="flex gap-2">
           {(['low', 'medium', 'high'] as LiquidityNeed[]).map((level) => (
             <Button
@@ -203,10 +163,7 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
         <div className="grid gap-4 md:grid-cols-2">
           {/* Federal Tax Bracket */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label>Federal Tax Bracket at Withdrawal</Label>
-              <TooltipIcon content="Your expected marginal tax rate when funds are withdrawn." />
-            </div>
+            <Label>Federal Tax Bracket at Withdrawal</Label>
             <Select
               value={inputs.federalTaxBracket.toString()}
               onValueChange={(value) => onInputChange('federalTaxBracket', parseFloat(value))}
@@ -227,10 +184,7 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
           {/* State Tax Benefit */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Label>State Tax Benefit</Label>
-                <TooltipIcon content="Some states offer tax deductions or credits for 529 contributions." />
-              </div>
+              <Label>State Tax Benefit</Label>
               <Switch
                 checked={inputs.stateTaxBenefitEnabled}
                 onCheckedChange={(checked) => onInputChange('stateTaxBenefitEnabled', checked)}
@@ -255,10 +209,7 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
 
       {/* Mixed Scenario Slider */}
       <div className="space-y-4 pt-4 border-t border-border">
-        <div className="flex items-center gap-2">
-          <Label>Mixed Scenario: % Used for Education</Label>
-          <TooltipIcon content="For the 'Mixed Usage' scenario, what percentage of funds would go to qualified education?" />
-        </div>
+        <Label>Mixed Scenario: % Used for Education</Label>
         <Slider
           value={[inputs.percentUsedForEducation]}
           onValueChange={(values) => onInputChange('percentUsedForEducation', values[0])}
@@ -286,10 +237,7 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
           {/* Roth Rollover */}
           <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Label>Consider Roth Rollover (529 → Roth IRA)</Label>
-                <TooltipIcon content="Starting 2024, unused 529 funds can be rolled into a Roth IRA (up to $35,000 lifetime, with restrictions)." />
-              </div>
+              <Label>Consider Roth Rollover (529 → Roth IRA)</Label>
               <Switch
                 checked={inputs.considerRothRollover}
                 onCheckedChange={(checked) => onInputChange('considerRothRollover', checked)}
@@ -347,10 +295,7 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Label>MEC Risk Guard</Label>
-                <TooltipIcon content="Assumes policy is designed to avoid Modified Endowment Contract (MEC) status." />
-              </div>
+              <Label>MEC Risk Guard</Label>
               <Switch
                 checked={inputs.mecRiskGuard}
                 onCheckedChange={(checked) => onInputChange('mecRiskGuard', checked)}
@@ -358,10 +303,7 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm">Max Loan-to-Value Ratio</Label>
-                <TooltipIcon content="Maximum percentage of cash value accessible via policy loans (typically 70-90%)." />
-              </div>
+              <Label className="text-sm">Max Loan-to-Value Ratio</Label>
               <Slider
                 value={[inputs.maxLoanToValueRatio * 100]}
                 onValueChange={(values) => onInputChange('maxLoanToValueRatio', values[0] / 100)}
@@ -377,10 +319,7 @@ export function WizardStep3({ inputs, onInputChange }: WizardStep3Props) {
 
           {/* Inflation Assumption */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label>Inflation Assumption</Label>
-              <TooltipIcon content="Annual inflation rate for adjusting values (default 3%)." />
-            </div>
+            <Label>Inflation Assumption</Label>
             <Slider
               value={[inputs.inflationAssumption * 100]}
               onValueChange={(values) => onInputChange('inflationAssumption', values[0] / 100)}
