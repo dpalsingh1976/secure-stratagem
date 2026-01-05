@@ -36,17 +36,24 @@ const Index = () => {
       path: "/tax-bucket-estimator",
     },
     {
+      title: "529 vs IUL Comparison",
+      description: "Compare education-first vs flexible-family-bank strategies with scenario testing",
+      icon: Target,
+      color: "secondary",
+      path: "/529-vs-iul",
+    },
+    {
       title: "Inflation Stress Test",
       description: "Analyze market volatility and inflation impact on savings",
       icon: BarChart3,
-      color: "secondary",
+      color: "accent",
       path: "/inflation-stress-test",
     },
     {
       title: "Retirement Calculator",
       description: "Calculate how much to save annually to reach your retirement goal",
       icon: Calculator,
-      color: "accent",
+      color: "primary",
       path: "/retirement-calculator",
     },
   ];
