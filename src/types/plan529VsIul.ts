@@ -143,7 +143,7 @@ export const DEFAULT_INPUTS: Plan529VsIulInputs = {
   nonTraditionalPath: false,
   childAge: 0,
   yearsToGoal: 18,
-  monthlyContribution: 500,
+  monthlyContribution: 1000,
   initialLumpSum: 0,
   inflationAssumption: 0.03,
   riskTolerance: 'balanced',

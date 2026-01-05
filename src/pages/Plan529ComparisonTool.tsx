@@ -42,6 +42,7 @@ export default function Plan529VsIul() {
       setCurrentStep(currentStep + 1);
     } else {
       setShowResults(true);
+      window.scrollTo(0, 0);
     }
   };
 
