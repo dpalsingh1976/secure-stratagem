@@ -17,7 +17,7 @@ import PolicyDetail from "./pages/PolicyDetail";
 import FNAReport from "./pages/FNAReport";
 import IULBanking from "./pages/IULBanking";
 import Annuities from "./pages/Annuities";
-import Plan529VsIul from "./pages/Plan529VsIul";
+import Plan529ComparisonTool from "./pages/Plan529ComparisonTool";
 
 import Resources from "./pages/Resources";
 import InflationStressTest from "./pages/InflationStressTest";
@@ -64,7 +64,7 @@ const App = () => (
             <Route path="/iul" element={<IULBanking />} />
             <Route path="/iul-banking" element={<IULBanking />} />
             <Route path="/annuities" element={<Annuities />} />
-            <Route path="/529-vs-iul" element={<Plan529VsIul />} />
+            <Route path="/529-comparison-tool" element={<Plan529ComparisonTool />} />
             
             <Route path="/resources" element={<Resources />} />
             <Route path="/inflation-stress-test" element={<InflationStressTest />} />
