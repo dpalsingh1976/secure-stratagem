@@ -1,14 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { DollarSign, Percent, Calendar, AlertTriangle, Info } from "lucide-react";
+import { DollarSign, Calendar, AlertTriangle, Info } from "lucide-react";
 import { Plan529VsIulResult, Plan529VsIulInputs } from "@/types/plan529VsIul";
 import { formatCurrency, formatPercent } from "@/engine/comparisons/plan529VsIul";
-import { ScenarioCards } from "./ScenarioCards";
+import { InfiniteBankingComparison } from "./InfiniteBankingComparison";
 import { ComparisonTable, generateScorecardItems } from "./ComparisonTable";
 import { RecommendationLens } from "./RecommendationLens";
 import { IULEducation } from "./IULEducation";
 import { ComplianceFooter } from "./ComplianceFooter";
-
 interface ResultsDashboardProps {
   result: Plan529VsIulResult;
   inputs: Plan529VsIulInputs;
@@ -106,8 +105,8 @@ export function ResultsDashboard({ result, inputs }: ResultsDashboardProps) {
         </div>
       )}
 
-      {/* Scenario Cards */}
-      <ScenarioCards scenarios={result.scenarios} />
+      {/* Infinite Banking Comparison */}
+      <InfiniteBankingComparison result={result} inputs={inputs} />
 
       <Separator />
 

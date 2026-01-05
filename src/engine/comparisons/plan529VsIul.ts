@@ -2,8 +2,8 @@ import {
   Plan529VsIulInputs,
   Plan529VsIulResult,
   RecommendationResult,
-  ScenarioResult,
   AssumptionsSnapshot,
+  InfiniteBankingResult,
 } from '@/types/plan529VsIul';
 
 // Return rate assumptions by risk tolerance
@@ -13,13 +13,12 @@ const RETURN_RATES_529: Record<string, number> = {
   growth: 0.065,        // 6.5%
 };
 
-const RETURN_RATES_IUL_NET: Record<string, number> = {
-  conservative: 0.04,   // 4% (after policy costs, illustrative)
-  balanced: 0.05,       // 5%
-  growth: 0.06,         // 6%
-};
+// Fixed 6% IUL illustrated rate
+const IUL_ILLUSTRATED_RATE = 0.06;
 
 const PENALTY_RATE_529 = 0.10; // 10% penalty on earnings for non-qualified withdrawals
+const IUL_INCOME_WITHDRAWAL_RATE = 0.05; // 5% sustainable withdrawal via policy loans
+const IUL_INCOME_YEARS = 20; // Default years of income distribution
 
 /**
  * Compute future value with monthly compounding
@@ -136,11 +135,35 @@ function computeIulAccessible(
 }
 
 /**
+ * Compute Infinite Banking income projections for IUL
+ */
+function computeInfiniteBanking(
+  cashValueAtStart: number
+): InfiniteBankingResult {
+  // Sustainable income = 5% of cash value annually via policy loans
+  const annualIncome = cashValueAtStart * IUL_INCOME_WITHDRAWAL_RATE;
+  const totalIncome = annualIncome * IUL_INCOME_YEARS;
+  
+  // Cash value after income phase (simplified model)
+  // Cash value grows at 6%, loans accrue at ~5%, net ~1% growth
+  const netGrowthDuringIncome = 0.01;
+  const cashValueAfterIncome = cashValueAtStart * Math.pow(1 + netGrowthDuringIncome, IUL_INCOME_YEARS);
+  
+  return {
+    iulAnnualIncomeAvailable: annualIncome,
+    iulIncomeYears: IUL_INCOME_YEARS,
+    iulTotalIncomeProjected: totalIncome,
+    iulCashValueAfterIncome: cashValueAfterIncome,
+    can529GenerateIncome: false,
+    reason529CannotDoIB: '529 funds must be spent on qualified education or face 10% penalty + taxes. Cannot be used as a family bank for ongoing tax-free income.',
+  };
+}
+
+/**
  * Generate recommendation based on inputs and results
  */
 function computeRecommendation(
   inputs: Plan529VsIulInputs,
-  scenarios: ScenarioResult[],
   totalContributed: number
 ): RecommendationResult {
   const { educationProbability, liquidityNeed, nonTraditionalPath, scholarshipLikely, goals } = inputs;
@@ -238,7 +261,7 @@ function computeRecommendation(
  */
 export function compute529VsIulComparison(inputs: Plan529VsIulInputs): Plan529VsIulResult {
   const return529 = RETURN_RATES_529[inputs.riskTolerance];
-  const returnIulNet = RETURN_RATES_IUL_NET[inputs.riskTolerance];
+  const returnIulNet = IUL_ILLUSTRATED_RATE; // Fixed 6%
   
   // Calculate total contributions
   const totalContributed = computeTotalContributions(
@@ -308,49 +331,12 @@ export function compute529VsIulComparison(inputs: Plan529VsIulInputs): Plan529Vs
   // IUL accessible amount
   const iulResult = computeIulAccessible(fvIulCashValueGross, inputs.maxLoanToValueRatio);
   
-  // Build scenarios
-  const scenarios: ScenarioResult[] = [
-    {
-      scenarioName: '100% Education',
-      scenarioDescription: 'All funds used for qualified education expenses',
-      fv529Net: fv529EducationNet,
-      fvIulAccessible: iulResult.accessible,
-      taxesPaid529: 0,
-      penalties529: 0,
-      rothRolloverAmount: 0,
-      winner: fv529EducationNet >= iulResult.accessible ? '529' : 'IUL',
-      summary: fv529EducationNet >= iulResult.accessible
-        ? '529 wins when funds are fully used for education due to tax-free growth.'
-        : 'IUL provides more accessible value even for education (unusual scenario).',
-    },
-    {
-      scenarioName: '0% Education',
-      scenarioDescription: 'No education use—scholarship, trade school, or other path',
-      fv529Net: inputs.considerRothRollover ? remainingNonQualified : fv529NonQualifiedNet,
-      fvIulAccessible: iulResult.accessible,
-      taxesPaid529: inputs.considerRothRollover ? taxesAfterRollover : nonQualResult.taxes,
-      penalties529: inputs.considerRothRollover ? penaltiesAfterRollover : nonQualResult.penalties,
-      rothRolloverAmount: rothRolloverPossible,
-      winner: (inputs.considerRothRollover ? remainingNonQualified : fv529NonQualifiedNet) >= iulResult.accessible ? '529' : 'IUL',
-      summary: 'IUL provides penalty-free access while 529 faces taxes + 10% penalty on earnings.',
-    },
-    {
-      scenarioName: 'Mixed Usage',
-      scenarioDescription: `${inputs.percentUsedForEducation}% education, ${100 - inputs.percentUsedForEducation}% other`,
-      fv529Net: fv529MixedNet,
-      fvIulAccessible: iulResult.accessible,
-      taxesPaid529: (fv529Gross - fv529MixedNet) * (inputs.federalTaxBracket / (inputs.federalTaxBracket + PENALTY_RATE_529)),
-      penalties529: (fv529Gross - fv529MixedNet) * (PENALTY_RATE_529 / (inputs.federalTaxBracket + PENALTY_RATE_529)),
-      rothRolloverAmount: 0,
-      winner: fv529MixedNet >= iulResult.accessible ? '529' : 'IUL',
-      summary: `Partial education use reduces 529 penalties, but flexibility portion still incurs costs.`,
-    },
-  ];
+  // Compute Infinite Banking income projections
+  const infiniteBanking = computeInfiniteBanking(fvIulCashValueGross);
   
   // Generate recommendation
   const recommendation = computeRecommendation(
     inputs,
-    scenarios,
     totalContributed
   );
   
@@ -378,7 +364,7 @@ export function compute529VsIulComparison(inputs: Plan529VsIulInputs): Plan529Vs
     policyLoanRiskFlag: iulResult.riskFlag,
     rothRolloverPossible,
     remainingNonQualified,
-    scenarios,
+    infiniteBanking,
     recommendation,
     assumptionsUsed,
   };
