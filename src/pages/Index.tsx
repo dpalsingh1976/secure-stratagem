@@ -40,7 +40,7 @@ const Index = () => {
       description: "Compare education-first vs flexible-family-bank strategies with scenario testing",
       icon: Target,
       color: "secondary",
-      path: "/529-vs-iul",
+      path: "/529-comparison-tool",
     },
     {
       title: "Inflation Stress Test",
