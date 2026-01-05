@@ -5,10 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { WizardStep1 } from "@/components/calculators/529-vs-iul/WizardStep1";
-import { WizardStep2 } from "@/components/calculators/529-vs-iul/WizardStep2";
-import { WizardStep3 } from "@/components/calculators/529-vs-iul/WizardStep3";
-import { ResultsDashboard } from "@/components/calculators/529-vs-iul/ResultsDashboard";
+import { WizardStep1 } from "@/components/calculators/529-comparison-tool/WizardStep1";
+import { WizardStep2 } from "@/components/calculators/529-comparison-tool/WizardStep2";
+import { WizardStep3 } from "@/components/calculators/529-comparison-tool/WizardStep3";
+import { ResultsDashboard } from "@/components/calculators/529-comparison-tool/ResultsDashboard";
 import { Plan529VsIulInputs, DEFAULT_INPUTS } from "@/types/plan529VsIul";
 import { compute529VsIulComparison } from "@/engine/comparisons/plan529VsIul";
 
