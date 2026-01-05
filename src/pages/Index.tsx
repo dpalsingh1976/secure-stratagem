@@ -115,7 +115,7 @@ const Index = () => {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-secondary" />
-                <span>AI-Powered Insights</span>
+                <span>Expert Insights</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-secondary" />
