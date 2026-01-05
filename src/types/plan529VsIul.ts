@@ -66,6 +66,16 @@ export interface ScenarioResult {
   summary: string;
 }
 
+// Infinite Banking result
+export interface InfiniteBankingResult {
+  iulAnnualIncomeAvailable: number;
+  iulIncomeYears: number;
+  iulTotalIncomeProjected: number;
+  iulCashValueAfterIncome: number;
+  can529GenerateIncome: boolean;
+  reason529CannotDoIB: string;
+}
+
 // Full comparison result
 export interface Plan529VsIulResult {
   // Contribution totals
@@ -89,8 +99,8 @@ export interface Plan529VsIulResult {
   rothRolloverPossible: number;
   remainingNonQualified: number;
   
-  // Scenarios
-  scenarios: ScenarioResult[];
+  // Infinite Banking
+  infiniteBanking: InfiniteBankingResult;
   
   // Recommendation
   recommendation: RecommendationResult;
