@@ -97,7 +97,7 @@ export default function Contact() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Professional-grade calculators and AI-powered insights backed by decades of financial planning
+                  Professional-grade calculators and expert insights backed by decades of financial planning
                   experience and industry best practices.
                 </p>
               </CardContent>
@@ -154,7 +154,7 @@ export default function Contact() {
 
             <Card className="card-financial">
               <CardContent className="p-6">
-                <h3 className="text-xl font-semibold mb-2">AI-Powered Policy Analysis</h3>
+                <h3 className="text-xl font-semibold mb-2">Smart Policy Analysis</h3>
                 <p className="text-muted-foreground">
                   Upload your insurance policies for intelligent analysis that identifies coverage gaps and optimization
                   opportunities.

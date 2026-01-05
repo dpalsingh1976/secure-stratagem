@@ -324,7 +324,7 @@ export default function PolicyAssistant() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Smart Policy Assistant</h1>
-              <p className="text-gray-600">AI-powered help for insurance and annuity policy questions</p>
+              <p className="text-gray-600">Expert help for insurance and annuity policy questions</p>
             </div>
           </div>
         </div>
@@ -398,7 +398,7 @@ export default function PolicyAssistant() {
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        Upload your insurance policy document (PDF or DOC) to get AI-powered analysis of coverage, gaps, and improvement suggestions.
+                        Upload your insurance policy document (PDF or DOC) to get smart analysis of coverage, gaps, and improvement suggestions.
                       </AlertDescription>
                     </Alert>
                   )}
