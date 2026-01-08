@@ -8,9 +8,9 @@ import {
 
 // Return rate assumptions by risk tolerance
 const RETURN_RATES_529: Record<string, number> = {
-  conservative: 0.045,  // 4.5%
-  balanced: 0.055,      // 5.5%
-  growth: 0.065,        // 6.5%
+  conservative: 0.06,  // 6%
+  balanced: 0.06,      // 6%
+  growth: 0.06,        // 6%
 };
 
 // Fixed 6% IUL illustrated rate
