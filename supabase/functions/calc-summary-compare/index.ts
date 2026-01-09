@@ -1,9 +1,50 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schemas
+const Scenario401kSchema = z.object({
+  net_income: z.number(),
+  total_annual_tax: z.number(),
+  gross_income: z.number(),
+  payback_years: z.number(),
+  front_end_savings_total: z.number(),
+  cum_tax_20: z.number(),
+  cum_tax_30: z.number(),
+  taxable_ssi: z.number(),
+  ssi_tax_due: z.number()
+});
+
+const ScenarioRothSchema = z.object({
+  net_income: z.number(),
+  total_annual_tax: z.number(),
+  annual_tax_free_income: z.number(),
+  cum_tax_20: z.number(),
+  cum_tax_30: z.number(),
+  ssi_retained: z.number()
+});
+
+const HeirsSchema = z.object({
+  heirs_tax_due: z.number()
+}).optional();
+
+const Inputs401kSchema = z.object({
+  years: z.number().min(1).max(50),
+  ssi_annual: z.number().min(0).max(500000)
+});
+
+const CalcSummarySchema = z.object({
+  scenario_401k: Scenario401kSchema,
+  scenario_roth: ScenarioRothSchema,
+  heirs_401k: HeirsSchema,
+  heirs_roth: HeirsSchema,
+  inputs_401k: Inputs401kSchema,
+  inputs_roth: z.object({}).optional()
+});
 
 /**
  * Summary Comparison Generator
@@ -28,16 +69,32 @@ serve(async (req) => {
   }
 
   try {
-    const inputs = await req.json();
-    console.log('[calc-summary-compare] Received inputs:', inputs);
+    const rawInputs = await req.json();
+    console.log('[calc-summary-compare] Received inputs:', rawInputs);
 
+    // Validate inputs with Zod
+    const parseResult = CalcSummarySchema.safeParse(rawInputs);
+    if (!parseResult.success) {
+      console.error('[calc-summary-compare] Validation error:', parseResult.error.errors);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: parseResult.error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const inputs = parseResult.data;
     const {
       scenario_401k,
       scenario_roth,
       heirs_401k,
       heirs_roth,
-      inputs_401k,
-      inputs_roth
+      inputs_401k
     } = inputs;
 
     // Extract KPIs
@@ -140,7 +197,7 @@ function formatCurrency(amount: number): string {
   }).format(Math.abs(amount));
 }
 
-function generateCumulativeData(scenario_401k: any, scenario_roth: any) {
+function generateCumulativeData(scenario_401k: z.infer<typeof Scenario401kSchema>, scenario_roth: z.infer<typeof ScenarioRothSchema>) {
   const years = [5, 10, 15, 20, 25, 30];
   return years.map(year => ({
     year,

@@ -1,9 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const Calc401kSchema = z.object({
+  annual_contrib: z.number().min(0).max(10000000),
+  years: z.number().int().min(1).max(50),
+  pre_tax_rate_now: z.number().min(0).max(1),
+  assumed_return: z.number().min(-0.5).max(0.5),
+  draw_mode: z.enum(['interest', 'swr', 'fixed_period']),
+  retire_return: z.number().min(-0.5).max(0.5).optional().default(0.05),
+  swr_rate: z.number().min(0).max(0.2).optional().default(0.04),
+  fixed_years: z.number().int().min(1).max(50).optional().default(20),
+  retire_bracket: z.number().min(0).max(1),
+  ssi_annual: z.number().min(0).max(500000),
+  filing_status: z.enum(['single', 'mfj']).optional().default('mfj')
+});
 
 /**
  * 401k Calculator with SSI Provisional Income Analysis
@@ -43,22 +59,38 @@ serve(async (req) => {
   }
 
   try {
-    const inputs = await req.json();
-    console.log('[calc-401k] Received inputs:', inputs);
+    const rawInputs = await req.json();
+    console.log('[calc-401k] Received inputs:', rawInputs);
 
-    // Extract and validate inputs
+    // Validate inputs with Zod
+    const parseResult = Calc401kSchema.safeParse(rawInputs);
+    if (!parseResult.success) {
+      console.error('[calc-401k] Validation error:', parseResult.error.errors);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: parseResult.error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const inputs = parseResult.data;
     const {
       annual_contrib,
       years,
       pre_tax_rate_now,
       assumed_return,
       draw_mode,
-      retire_return = 0.05,
-      swr_rate = 0.04,
-      fixed_years = 20,
+      retire_return,
+      swr_rate,
+      fixed_years,
       retire_bracket,
       ssi_annual,
-      filing_status = 'mfj'
+      filing_status
     } = inputs;
 
     // Calculate future value (ordinary annuity)
@@ -112,14 +144,14 @@ serve(async (req) => {
 
     // Front-end savings analysis
     const front_end_savings_total = annual_contrib * pre_tax_rate_now * years;
-    const payback_years = front_end_savings_total / total_annual_tax;
+    const payback_years = total_annual_tax > 0 ? front_end_savings_total / total_annual_tax : Infinity;
 
     // Lifetime tax projections
     const cum_tax_20 = total_annual_tax * 20;
     const cum_tax_30 = total_annual_tax * 30;
 
     // Effective rate including SSI impact
-    const effective_rate_incl_ssi = total_annual_tax / gross_income;
+    const effective_rate_incl_ssi = gross_income > 0 ? total_annual_tax / gross_income : 0;
 
     // Sensitivity analysis
     const sensitivity = {
@@ -162,18 +194,29 @@ serve(async (req) => {
 });
 
 // Helper function for sensitivity calculations
-function calculateScenario(inputs: any) {
+function calculateScenario(inputs: {
+  annual_contrib: number;
+  years: number;
+  assumed_return: number;
+  draw_mode: string;
+  retire_return: number;
+  swr_rate: number;
+  fixed_years: number;
+  retire_bracket: number;
+  ssi_annual: number;
+  filing_status: string;
+}) {
   const {
     annual_contrib,
     years,
     assumed_return,
     draw_mode,
-    retire_return = 0.05,
-    swr_rate = 0.04,
-    fixed_years = 20,
+    retire_return,
+    swr_rate,
+    fixed_years,
     retire_bracket,
     ssi_annual,
-    filing_status = 'mfj'
+    filing_status
   } = inputs;
 
   const fv_factor = (Math.pow(1 + assumed_return, years) - 1) / assumed_return;
