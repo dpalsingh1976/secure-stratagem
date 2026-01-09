@@ -168,3 +168,110 @@ export const DEFAULT_RETIREMENT_PREFERENCES: RetirementPreferencesData = {
   can_commit_10yr_contributions: false,
   open_to_tax_diversification: false
 };
+
+// ============================================
+// SCENARIO COMPARISON TYPES
+// ============================================
+
+export type MarketRiskExposure = 'high' | 'moderate' | 'low';
+
+/**
+ * Projection for a single retirement scenario (Current Path or Optimized)
+ */
+export interface ScenarioProjection {
+  scenario_name: 'Current Path' | 'Optimized Strategy';
+  scenario_description: string;
+  
+  // Core Income Metrics
+  retirement_income_gross: number;
+  retirement_income_net: number;
+  lifetime_taxes_paid: number;
+  
+  // Risk & Protection Flags
+  has_guaranteed_income: boolean;
+  has_tax_free_income: boolean;
+  money_runs_out_age: number | null;
+  
+  // Asset Values at Key Ages
+  portfolio_at_retirement: number;
+  legacy_value_at_90: number;
+  legacy_value_at_95: number;
+  
+  // Market Exposure Assessment
+  market_risk_exposure: MarketRiskExposure;
+  
+  // Allocation Details (for Scenario B only)
+  iul_allocation_percent?: number;
+  iul_annual_premium?: number;
+  iul_projected_cash_value?: number;
+  iul_tax_free_income?: number;
+  iul_death_benefit?: number;
+  
+  annuity_allocation_percent?: number;
+  annuity_premium?: number;
+  annuity_guaranteed_income?: number;
+  
+  // Income Sources Breakdown
+  income_sources: {
+    social_security: number;
+    pension: number;
+    portfolio_withdrawal: number;
+    iul_loans: number;
+    annuity_income: number;
+    part_time: number;
+  };
+  
+  // Year-by-year projections for timeline
+  yearly_projections: YearlyProjection[];
+}
+
+export interface YearlyProjection {
+  age: number;
+  year: number;
+  portfolio_value: number;
+  total_income: number;
+  taxes_paid: number;
+  withdrawal_amount: number;
+}
+
+/**
+ * Comparison between Current Path and Optimized Strategy
+ */
+export interface ScenarioComparison {
+  scenario_a: ScenarioProjection;
+  scenario_b: ScenarioProjection;
+  
+  // Improvement Metrics
+  comparison_metrics: {
+    income_improvement_percent: number;
+    income_improvement_monthly: number;
+    tax_savings_lifetime: number;
+    longevity_improvement_years: number;
+    legacy_improvement_amount: number;
+    market_risk_reduction: boolean;
+  };
+  
+  // Include IUL/Annuity in optimization?
+  includes_iul: boolean;
+  includes_annuity: boolean;
+  iul_reason?: string;
+  annuity_reason?: string;
+  
+  // Plain-English Summaries
+  plain_english_summary: string;
+  product_positioning: {
+    iul_explanation?: string;
+    annuity_explanation?: string;
+  };
+  
+  // Advisor-Only Section
+  advisor_summary: {
+    iul_included_reason?: string;
+    annuity_included_reason?: string;
+    client_objections: string[];
+    conversation_focus: string[];
+  };
+  
+  // Compliance
+  disclaimer: string;
+}
