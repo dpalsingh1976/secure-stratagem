@@ -29,6 +29,7 @@ export * from './recommendations';
 export * from './allocationEngine';
 export * from './iulSuitability';
 export * from './annuitySuitability';
+export * from './scenarioSimulator';
 
 /**
  * Generate key insights based on analysis
