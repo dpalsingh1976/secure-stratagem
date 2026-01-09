@@ -68,12 +68,10 @@ function calculateAnnualIncome(incomeData: IncomeExpensesData): number {
 function calculateMonthlySavingsCapacity(incomeData: IncomeExpensesData): number {
   const totalIncome = calculateAnnualIncome(incomeData);
   const totalExpenses = (
-    (incomeData.federal_taxes || 0) +
-    (incomeData.state_taxes || 0) +
     (incomeData.fixed_expenses || 0) +
     (incomeData.variable_expenses || 0) +
     (incomeData.debt_service || 0)
-  );
+  ) * 12; // Convert monthly expenses to annual
   const annualSavings = Math.max(0, totalIncome - totalExpenses);
   return Math.round(annualSavings / 12);
 }

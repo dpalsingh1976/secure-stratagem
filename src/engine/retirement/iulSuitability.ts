@@ -66,8 +66,19 @@ export function computeIULSuitability(inputs: SuitabilityInputs): IULSuitability
   let disqualified = false;
   let disqualification_reason: string | undefined;
 
-  const annualIncome = ((incomeData.w2_income || 0) + (incomeData.business_income || 0)) * 12;
+  const monthlyIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
+  const annualIncome = monthlyIncome * 12;
   const emergencyMonths = protectionData.emergency_fund_months || 0;
+  
+  // ============================================
+  // EXPENSE RATIO CALCULATION
+  // ============================================
+  const totalMonthlyExpenses = (incomeData.fixed_expenses || 0) + (incomeData.variable_expenses || 0);
+  const expenseRatio = monthlyIncome > 0 ? totalMonthlyExpenses / monthlyIncome : 1;
+  const savingsCapacity = monthlyIncome - totalMonthlyExpenses;
+  const fixedExpenseRatio = totalMonthlyExpenses > 0 
+    ? (incomeData.fixed_expenses || 0) / totalMonthlyExpenses 
+    : 0.5;
 
   // ============================================
   // HARD DISQUALIFIERS - Any true = Not Recommended
@@ -171,6 +182,22 @@ export function computeIULSuitability(inputs: SuitabilityInputs): IULSuitability
     score = Math.min(score, 25);
   }
 
+  // 7. Expense Ratio Check - NEW
+  preconditions.push({
+    id: 'expense_ratio',
+    label: 'Expense-to-Income Ratio',
+    status: expenseRatio < 0.70 ? 'pass' : 
+            expenseRatio < 0.85 ? 'warning' : 'fail',
+    value: `${Math.round(expenseRatio * 100)}% of income`,
+    importance: 'important'
+  });
+
+  if (expenseRatio > 0.85) {
+    disqualified = true;
+    disqualification_reason = `Your expenses consume ${Math.round(expenseRatio * 100)}% of income. Build more savings margin before committing to IUL premiums.`;
+    score = Math.min(score, 20);
+  }
+
   // ============================================
   // STRONG-FIT SIGNALS (increase score when not disqualified)
   // ============================================
@@ -262,6 +289,32 @@ export function computeIULSuitability(inputs: SuitabilityInputs): IULSuitability
     if (dependents > 0) {
       score += 5;
     }
+
+    // ============================================
+    // EXPENSE-BASED SCORING - NEW
+    // ============================================
+    
+    // Strong savings capacity
+    if (expenseRatio < 0.60) {
+      score += 10;
+      reasons.push(`Your expense ratio of ${Math.round(expenseRatio * 100)}% leaves substantial room for IUL premium commitments.`);
+    } else if (expenseRatio < 0.70) {
+      score += 5;
+      reasons.push(`With ${Math.round(expenseRatio * 100)}% expense-to-income ratio, you have adequate capacity for premiums.`);
+    } else if (expenseRatio >= 0.80) {
+      score -= 5;
+    }
+
+    // High fixed expense ratio indicates need for protection
+    if (fixedExpenseRatio > 0.70 && dependents > 0) {
+      score += 5;
+      reasons.push(`${Math.round(fixedExpenseRatio * 100)}% of expenses are essential fixed costs—permanent coverage provides family protection.`);
+    }
+
+    // Positive savings capacity check
+    if (savingsCapacity > 1000) {
+      score += 5;
+    }
   }
 
   // ============================================
@@ -277,6 +330,15 @@ export function computeIULSuitability(inputs: SuitabilityInputs): IULSuitability
   
   if (annualIncome < 100000) {
     notIf.push('At income levels below $100K, maximizing 401(k), Roth IRA, and HSA may provide better returns.');
+  }
+
+  // Expense-based warnings - NEW
+  if (expenseRatio >= 0.70 && expenseRatio < 0.85) {
+    notIf.push(`Your ${Math.round(expenseRatio * 100)}% expense ratio is borderline—ensure you can maintain premiums through income fluctuations.`);
+  }
+  
+  if (savingsCapacity < 500 && !disqualified) {
+    notIf.push('Limited monthly savings capacity may make consistent premium payments challenging.');
   }
   
   notIf.push('IUL is not a "set it and forget it" product—annual policy reviews are essential.');

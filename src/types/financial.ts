@@ -62,10 +62,8 @@ export interface FinancialProfile {
     annuity_income?: number;
   };
   expenses_jsonb: {
-    federal_taxes?: number;
-    state_taxes?: number;
-    fixed_expenses?: number;
-    variable_expenses?: number;
+    fixed_expenses?: number;      // Essential fixed expenses
+    variable_expenses?: number;   // Discretionary spending
     debt_service?: number;
   };
   preferences_jsonb: {
@@ -212,10 +210,8 @@ export interface IncomeExpensesData {
   pension_income: number;
   social_security: number;
   annuity_income: number;
-  federal_taxes: number;
-  state_taxes: number;
-  fixed_expenses: number;
-  variable_expenses: number;
+  fixed_expenses: number;       // Essential fixed expenses (mortgage, utilities, insurance, loans)
+  variable_expenses: number;    // Discretionary spending (dining, entertainment, shopping, travel)
   debt_service: number;
   employer_match_pct: number;
   hsa_eligible: boolean;

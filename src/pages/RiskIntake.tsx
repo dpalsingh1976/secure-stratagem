@@ -78,8 +78,6 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     pension_income: 0,
     social_security: 0,
     annuity_income: 0,
-    federal_taxes: 0,
-    state_taxes: 0,
     fixed_expenses: 0,
     variable_expenses: 0,
     debt_service: 0,
@@ -157,8 +155,6 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
       await saveStepData({ 
         income_jsonb: incomeData,
         expenses_jsonb: {
-          federal_taxes: incomeData.federal_taxes,
-          state_taxes: incomeData.state_taxes,
           fixed_expenses: incomeData.fixed_expenses,
           variable_expenses: incomeData.variable_expenses,
           debt_service: incomeData.debt_service
