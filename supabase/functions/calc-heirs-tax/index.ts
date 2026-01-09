@@ -1,9 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const CalcHeirsSchema = z.object({
+  pretax_balance: z.number().min(0).max(100000000),
+  beneficiary_bracket: z.number().min(0).max(1),
+  mode: z.enum(['lump', '10yr']).optional().default('lump')
+});
 
 /**
  * Heirs Tax Calculator
@@ -25,13 +33,30 @@ serve(async (req) => {
   }
 
   try {
-    const inputs = await req.json();
-    console.log('[calc-heirs-tax] Received inputs:', inputs);
+    const rawInputs = await req.json();
+    console.log('[calc-heirs-tax] Received inputs:', rawInputs);
 
+    // Validate inputs with Zod
+    const parseResult = CalcHeirsSchema.safeParse(rawInputs);
+    if (!parseResult.success) {
+      console.error('[calc-heirs-tax] Validation error:', parseResult.error.errors);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: parseResult.error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const inputs = parseResult.data;
     const {
       pretax_balance,
       beneficiary_bracket,
-      mode = 'lump'
+      mode
     } = inputs;
 
     let heirs_tax_due = 0;

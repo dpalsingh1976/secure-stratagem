@@ -1,9 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const CalcSSISchema = z.object({
+  ssi_annual: z.number().min(0).max(500000),
+  other_ordinary_income: z.number().min(0).max(50000000),
+  filing_status: z.enum(['single', 'mfj']).optional().default('mfj'),
+  tax_rate: z.number().min(0).max(1)
+});
 
 /**
  * SSI Taxation Calculator
@@ -27,13 +36,30 @@ serve(async (req) => {
   }
 
   try {
-    const inputs = await req.json();
-    console.log('[calc-ssi] Received inputs:', inputs);
+    const rawInputs = await req.json();
+    console.log('[calc-ssi] Received inputs:', rawInputs);
 
+    // Validate inputs with Zod
+    const parseResult = CalcSSISchema.safeParse(rawInputs);
+    if (!parseResult.success) {
+      console.error('[calc-ssi] Validation error:', parseResult.error.errors);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: parseResult.error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const inputs = parseResult.data;
     const {
       ssi_annual,
       other_ordinary_income,
-      filing_status = 'mfj',
+      filing_status,
       tax_rate
     } = inputs;
 
@@ -55,13 +81,13 @@ serve(async (req) => {
     } else if (provisional_income <= thresholds.upper) {
       // Up to 50% of SSI is taxable
       taxable_ssi = Math.min(ssi_annual * 0.5, (provisional_income - thresholds.base) * 0.5);
-      taxability_pct = (taxable_ssi / ssi_annual) * 100;
+      taxability_pct = ssi_annual > 0 ? (taxable_ssi / ssi_annual) * 100 : 0;
     } else {
       // Up to 85% of SSI is taxable
       const amount_over_upper = provisional_income - thresholds.upper;
       const base_taxable = Math.min(ssi_annual * 0.5, (thresholds.upper - thresholds.base) * 0.5);
       taxable_ssi = Math.min(ssi_annual * 0.85, base_taxable + amount_over_upper * 0.85);
-      taxability_pct = (taxable_ssi / ssi_annual) * 100;
+      taxability_pct = ssi_annual > 0 ? (taxable_ssi / ssi_annual) * 100 : 0;
     }
 
     const ssi_tax_due = taxable_ssi * tax_rate;
