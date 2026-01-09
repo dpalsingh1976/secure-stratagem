@@ -13,6 +13,9 @@ import { formatCurrency, formatPercentage } from '@/utils/riskComputation';
 import jsPDF from 'jspdf';
 import BookingCalendar from '@/components/BookingCalendar';
 import { RetirementScoreRing } from './RetirementScoreRing';
+import { ScenarioComparisonCard } from './ScenarioComparisonCard';
+import { RetirementTimeline } from './RetirementTimeline';
+import { computeScenarioComparison } from '@/engine/retirement/scenarioSimulator';
 
 import type { 
   ComputedMetrics,
@@ -20,10 +23,11 @@ import type {
   IncomeExpensesData, 
   AssetFormData,
   LiabilityFormData,
-  ProtectionHealthData
+  ProtectionHealthData,
+  PlanningReadinessData
 } from '@/types/financial';
 
-import type { RetirementReadinessResult } from '@/types/retirement';
+import type { RetirementReadinessResult, ScenarioComparison, RetirementPreferencesData, DEFAULT_RETIREMENT_PREFERENCES } from '@/types/retirement';
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -71,6 +75,60 @@ export function ReportModal({
   // Get client email from profile data
   const clientEmail = profileData.email || '';
   const clientName = `${profileData.name_first} ${profileData.name_last}`;
+
+  // Compute scenario comparison for "Current Path vs Optimized Strategy"
+  const scenarioComparison = useMemo<ScenarioComparison | null>(() => {
+    if (!retirementResult) return null;
+    
+    try {
+      // Map profileData to RetirementPreferencesData
+      const preferences: RetirementPreferencesData = {
+        retirement_lifestyle: profileData.retirement_lifestyle || 'comfortable',
+        spending_target_method: profileData.spending_target_method || 'fixed',
+        spending_percent_of_income: profileData.spending_percent_of_income || 80,
+        planned_retirement_state: profileData.planned_retirement_state || profileData.state,
+        annual_retirement_contribution: incomeData.annual_retirement_contribution || 0,
+        contribution_growth_rate: incomeData.contribution_growth_rate || 2,
+        social_security_confidence: incomeData.social_security_confidence || 'medium',
+        expected_part_time_income: incomeData.expected_part_time_income || 0,
+        prefers_guaranteed_income: protectionData.prefers_guaranteed_income || false,
+        liquidity_need_next_5yr: protectionData.liquidity_need_next_5yr || 'medium',
+        can_commit_10yr_contributions: protectionData.can_commit_10yr_contributions || false,
+        open_to_tax_diversification: protectionData.open_to_tax_diversification || false
+      };
+      
+      // Build planning readiness from available data
+      const planningReadiness: PlanningReadinessData = {
+        income_stability: 'stable',
+        funding_commitment_years: protectionData.can_commit_10yr_contributions ? '10-20' : '5-10',
+        funding_discipline: 'medium',
+        near_term_liquidity_need: protectionData.liquidity_need_next_5yr || 'medium',
+        contributing_to_401k_match: incomeData.employer_match_pct > 0,
+        maxing_qualified_plans: 'some',
+        current_tax_bracket: '24',
+        tax_concern_level: 'medium',
+        wants_tax_free_bucket: protectionData.open_to_tax_diversification || false,
+        sequence_risk_concern: 'medium',
+        legacy_priority: 'medium',
+        permanent_coverage_need: protectionData.permanent_life_cv > 0 || protectionData.permanent_life_db > 0,
+        debt_pressure_level: 'low'
+      };
+      
+      return computeScenarioComparison(
+        profileData,
+        incomeData,
+        assets,
+        preferences,
+        retirementResult.projection,
+        metrics,
+        protectionData,
+        planningReadiness
+      );
+    } catch (error) {
+      console.error('Error computing scenario comparison:', error);
+      return null;
+    }
+  }, [retirementResult, profileData, incomeData, assets, metrics, protectionData]);
 
   // Helper to get risk level label
   const getRiskLevelLabel = (score: number) => {
@@ -1139,90 +1197,70 @@ export function ReportModal({
                     </CardContent>
                   </Card>
 
-                  {/* Product Recommendations - Moved before Income Gap */}
-                  {retirementResult.recommendations.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Product Fit Analysis</CardTitle>
-                        <CardDescription>Based on your profile and goals</CardDescription>
-                      </CardHeader>
-                      <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {retirementResult.recommendations.map((rec) => (
-                          <Card key={rec.product} className={`border-2 ${
-                            rec.fit === 'strong' ? 'border-green-300 bg-green-50' :
-                            rec.fit === 'moderate' ? 'border-blue-300 bg-blue-50' :
-                            rec.fit === 'weak' ? 'border-yellow-300 bg-yellow-50' :
-                            'border-red-300 bg-red-50'
-                          }`}>
-                            <CardHeader className="pb-2">
-                              <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg">{rec.product}</CardTitle>
-                                <Badge className={
-                                  rec.fit === 'strong' ? 'bg-green-600' :
-                                  rec.fit === 'moderate' ? 'bg-blue-600' :
-                                  rec.fit === 'weak' ? 'bg-yellow-600' :
-                                  'bg-red-600'
-                                }>{rec.fit === 'not_recommended' ? 'Not Yet' : rec.fit}</Badge>
+                  {/* Scenario Comparison - "What happens if you don't change vs what improves" */}
+                  {scenarioComparison && (
+                    <>
+                      {/* Side-by-Side Comparison Table */}
+                      <ScenarioComparisonCard comparison={scenarioComparison} />
+                      
+                      {/* Timeline Visualization */}
+                      <RetirementTimeline 
+                        scenarioA={scenarioComparison.scenario_a}
+                        scenarioB={scenarioComparison.scenario_b}
+                        retirementAge={profileData.retirement_age || 65}
+                      />
+                      
+                      {/* Plain-English Explanation */}
+                      <Card className="bg-blue-50 border-blue-200">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <Info className="h-5 w-5 text-blue-700" />
+                            What This Means For You
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-muted-foreground leading-relaxed">
+                            {scenarioComparison.plain_english_summary}
+                          </p>
+                        </CardContent>
+                      </Card>
+                      
+                      {/* Why IUL/Annuity Exists (Soft Positioning) */}
+                      {(scenarioComparison.includes_iul || scenarioComparison.includes_annuity) && (
+                        <Card className="bg-muted/50">
+                          <CardHeader>
+                            <CardTitle>Why These Strategies Exist in Your Plan</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            {scenarioComparison.product_positioning.iul_explanation && (
+                              <div className="flex items-start gap-3">
+                                <Badge variant="secondary" className="bg-green-100 text-green-800 shrink-0">
+                                  Tax-Free Income
+                                </Badge>
+                                <p className="text-sm text-muted-foreground">
+                                  {scenarioComparison.product_positioning.iul_explanation}
+                                </p>
                               </div>
-                              {rec.score !== undefined && (
-                                <div className="text-xs text-muted-foreground">Score: {rec.score}/100</div>
-                              )}
-                            </CardHeader>
-                            <CardContent className="text-sm space-y-3">
-                              {/* Not Recommended State - Show Why & Fix First */}
-                              {rec.fit === 'not_recommended' ? (
-                                <>
-                                  {rec.disqualification_reason && (
-                                    <div className="p-2 bg-red-100 rounded-lg border border-red-200">
-                                      <p className="font-medium text-red-800 text-xs flex items-center gap-1">
-                                        <AlertTriangle className="h-3 w-3" /> Why It Doesn't Fit
-                                      </p>
-                                      <p className="text-xs text-red-700 mt-1">{rec.disqualification_reason}</p>
-                                    </div>
-                                  )}
-                                  {rec.fixFirstBullets && rec.fixFirstBullets.length > 0 && (
-                                    <div className="p-2 bg-amber-100 rounded-lg border border-amber-200">
-                                      <p className="font-medium text-amber-800 text-xs flex items-center gap-1">
-                                        <CheckCircle className="h-3 w-3" /> What to Fix First
-                                      </p>
-                                      <ul className="list-disc list-inside text-xs text-amber-700 mt-1 space-y-0.5">
-                                        {rec.fixFirstBullets.map((b, i) => <li key={i}>{b}</li>)}
-                                      </ul>
-                                    </div>
-                                  )}
-                                  {rec.nextSteps.length > 0 && (
-                                    <div>
-                                      <p className="font-medium text-gray-700 text-xs">Next Steps:</p>
-                                      <ul className="list-disc list-inside text-xs text-gray-600">
-                                        {rec.nextSteps.slice(0, 2).map((b, i) => <li key={i}>{b}</li>)}
-                                      </ul>
-                                    </div>
-                                  )}
-                                </>
-                              ) : (
-                                <>
-                                  {/* Regular State - Show Why It Fits */}
-                                  <div>
-                                    <p className="font-medium text-green-700">Why it fits:</p>
-                                    <ul className="list-disc list-inside text-xs">
-                                      {rec.whyBullets.slice(0, 2).map((b, i) => <li key={i}>{b}</li>)}
-                                    </ul>
-                                  </div>
-                                  {rec.notIfBullets.length > 0 && (
-                                    <div>
-                                      <p className="font-medium text-amber-700">Consider if:</p>
-                                      <ul className="list-disc list-inside text-xs">
-                                        {rec.notIfBullets.slice(0, 2).map((b, i) => <li key={i}>{b}</li>)}
-                                      </ul>
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </CardContent>
-                    </Card>
+                            )}
+                            {scenarioComparison.product_positioning.annuity_explanation && (
+                              <div className="flex items-start gap-3">
+                                <Badge variant="secondary" className="bg-purple-100 text-purple-800 shrink-0">
+                                  Guaranteed Income
+                                </Badge>
+                                <p className="text-sm text-muted-foreground">
+                                  {scenarioComparison.product_positioning.annuity_explanation}
+                                </p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )}
+                      
+                      {/* Disclaimer */}
+                      <div className="text-xs text-muted-foreground p-3 bg-muted rounded-lg">
+                        {scenarioComparison.disclaimer}
+                      </div>
+                    </>
                   )}
 
                   {/* Income Gap - Moved after Product Fit Analysis */}
