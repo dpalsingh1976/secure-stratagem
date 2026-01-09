@@ -7,6 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -15,11 +18,38 @@ serve(async (req) => {
   try {
     const { documentId, question } = await req.json();
     
+    // Validate documentId format
+    if (!documentId || !UUID_REGEX.test(documentId)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid document ID format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Extract user from JWT for ownership validation
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization header required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Fetch document data
     const { data: document, error: docError } = await supabase
@@ -29,7 +59,19 @@ serve(async (req) => {
       .single();
 
     if (docError || !document) {
-      throw new Error('Document not found');
+      return new Response(
+        JSON.stringify({ error: 'Document not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify document ownership - user can only access their own documents
+    if (document.user_id !== null && document.user_id !== user.id) {
+      console.warn('Access denied: user', user.id, 'attempted to analyze document owned by', document.user_id);
+      return new Response(
+        JSON.stringify({ error: 'Access denied: you do not have permission to analyze this document' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Download the file from storage

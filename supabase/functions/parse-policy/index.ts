@@ -33,7 +33,26 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('Fetching document:', documentId);
+    // Extract user from JWT for ownership validation
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization header required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Fetching document:', documentId, 'for user:', user.id);
 
     // Fetch document data
     const { data: document, error: docError } = await supabase
@@ -43,7 +62,19 @@ serve(async (req) => {
       .single();
 
     if (docError || !document) {
-      throw new Error('Document not found');
+      return new Response(
+        JSON.stringify({ error: 'Document not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify document ownership - user can only access their own documents
+    if (document.user_id !== null && document.user_id !== user.id) {
+      console.warn('Access denied: user', user.id, 'attempted to access document owned by', document.user_id);
+      return new Response(
+        JSON.stringify({ error: 'Access denied: you do not have permission to access this document' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Update status to processing

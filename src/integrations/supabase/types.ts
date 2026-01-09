@@ -450,6 +450,7 @@ export type Database = {
       }
       documents: {
         Row: {
+          access_token: string | null
           analysis_result: Json | null
           analysis_status: string | null
           created_at: string
@@ -470,6 +471,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          access_token?: string | null
           analysis_result?: Json | null
           analysis_status?: string | null
           created_at?: string
@@ -490,6 +492,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          access_token?: string | null
           analysis_result?: Json | null
           analysis_status?: string | null
           created_at?: string
@@ -1214,6 +1217,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_document_by_access_token: {
+        Args: { p_access_token: string }
+        Returns: {
+          analysis_result: Json
+          analysis_status: string
+          created_at: string
+          file_size: number
+          filename: string
+          id: string
+          metadata: Json
+          mime_type: string
+          original_filename: string
+          parsing_method: string
+          processed_at: string
+          processing_progress: number
+          storage_path: string
+          updated_at: string
+          upload_status: string
+        }[]
+      }
       get_report_by_public_link: {
         Args: { _public_link_id: string }
         Returns: {
