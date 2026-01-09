@@ -1,8 +1,9 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { HelpCircle } from 'lucide-react';
 import type { IncomeExpensesData } from '@/types/financial';
 
 interface IncomeExpensesFormProps {
@@ -24,6 +25,7 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
         <Card>
           <CardHeader>
             <CardTitle>Monthly Income Sources</CardTitle>
+            <CardDescription>Enter your gross monthly income from all sources</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -48,23 +50,66 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
         <Card>
           <CardHeader>
             <CardTitle>Monthly Expenses</CardTitle>
+            <CardDescription>Categorize your monthly spending to help determine your savings capacity</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Fixed Expenses</Label>
-              <Input type="number" value={data.fixed_expenses} onChange={(e) => handleInputChange('fixed_expenses', parseFloat(e.target.value) || 0)} />
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label>Essential Fixed Expenses</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p className="font-medium mb-1">Must-pay bills that stay the same each month:</p>
+                    <ul className="text-xs list-disc list-inside space-y-0.5">
+                      <li>Mortgage or rent payment</li>
+                      <li>Utilities (electric, gas, water)</li>
+                      <li>Insurance premiums (health, auto, home)</li>
+                      <li>Loan payments (auto, student)</li>
+                      <li>Internet, phone, subscriptions</li>
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <Input 
+                type="number" 
+                value={data.fixed_expenses} 
+                onChange={(e) => handleInputChange('fixed_expenses', parseFloat(e.target.value) || 0)} 
+                placeholder="e.g., 3500"
+              />
+              <p className="text-xs text-muted-foreground">
+                Bills you must pay regardless of your budget
+              </p>
             </div>
-            <div>
-              <Label>Variable Expenses</Label>
-              <Input type="number" value={data.variable_expenses} onChange={(e) => handleInputChange('variable_expenses', parseFloat(e.target.value) || 0)} />
-            </div>
-            <div>
-              <Label>Federal Taxes</Label>
-              <Input type="number" value={data.federal_taxes} onChange={(e) => handleInputChange('federal_taxes', parseFloat(e.target.value) || 0)} />
-            </div>
-            <div>
-              <Label>State Taxes</Label>
-              <Input type="number" value={data.state_taxes} onChange={(e) => handleInputChange('state_taxes', parseFloat(e.target.value) || 0)} />
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label>Discretionary Spending</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p className="font-medium mb-1">Flexible spending you can adjust:</p>
+                    <ul className="text-xs list-disc list-inside space-y-0.5">
+                      <li>Dining out & takeout</li>
+                      <li>Entertainment & hobbies</li>
+                      <li>Shopping & clothing</li>
+                      <li>Travel & vacations</li>
+                      <li>Gifts & personal care</li>
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <Input 
+                type="number" 
+                value={data.variable_expenses} 
+                onChange={(e) => handleInputChange('variable_expenses', parseFloat(e.target.value) || 0)} 
+                placeholder="e.g., 1500"
+              />
+              <p className="text-xs text-muted-foreground">
+                Spending you can reduce if needed
+              </p>
             </div>
           </CardContent>
         </Card>

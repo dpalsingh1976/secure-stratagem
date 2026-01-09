@@ -80,19 +80,35 @@ export function computeAnnuitySuitability(inputs: AnnuitySuitabilityInputs): Ann
   const prefersGuaranteed = protectionData.prefers_guaranteed_income || false;
   const sequenceRisk = planningReadiness.sequence_risk_concern || 'medium';
   const taxConcern = planningReadiness.tax_concern_level || 'medium';
+  const incomeStability = planningReadiness.income_stability || 'somewhat_stable';
+  const debtPressure = planningReadiness.debt_pressure_level || 'low';
+  const legacyPriority = planningReadiness.legacy_priority || 'medium';
+  
+  // ============================================
+  // EXPENSE CALCULATIONS - NEW
+  // ============================================
+  const monthlyIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
+  const totalMonthlyExpenses = (incomeData.fixed_expenses || 0) + (incomeData.variable_expenses || 0);
+  const fixedExpenses = incomeData.fixed_expenses || 0;
+  const fixedExpenseRatio = totalMonthlyExpenses > 0 
+    ? fixedExpenses / totalMonthlyExpenses 
+    : 0.5;
+  const expenseRatio = monthlyIncome > 0 ? totalMonthlyExpenses / monthlyIncome : 1;
   
   // Calculate income gap percentage
   const gapPercentage = projection?.gap_percentage || 0;
   
   // Calculate guaranteed coverage ratio (as ratio 0-1, not percentage)
   const monthlyTarget = projection?.monthly_income_target || 1;
-  const essentialsTarget = monthlyTarget * 0.60; // 60% considered essential
+  // Use actual fixed expenses as essentials target if available, else 60% of target
+  const essentialsTarget = fixedExpenses > 0 ? fixedExpenses : monthlyTarget * 0.60;
   const guaranteedIncome = projection 
     ? (projection.income_sources.social_security + projection.income_sources.pension)
     : 0;
   const guaranteedCoverageRatio = essentialsTarget > 0 
     ? guaranteedIncome / essentialsTarget 
     : 0;
+  const essentialsCoverageGap = Math.max(0, fixedExpenses - guaranteedIncome);
 
   // ============================================
   // STEP 2: SINGLE "NOT FIT YET" GATE
@@ -173,6 +189,27 @@ export function computeAnnuitySuitability(inputs: AnnuitySuitabilityInputs): Ann
             sequenceRisk === 'medium' ? 'pass' : 'warning',
     value: sequenceRisk === 'high' ? 'High concern (FIA helps)' :
            sequenceRisk === 'medium' ? 'Some concern' : 'Low concern',
+    importance: 'important'
+  });
+
+  // Income Stability Check - NEW
+  preconditions.push({
+    id: 'income_stability',
+    label: 'Income Stability',
+    status: incomeStability === 'stable' ? 'pass' :
+            incomeStability === 'somewhat_stable' ? 'warning' : 'fail',
+    value: incomeStability === 'stable' ? 'Stable' :
+           incomeStability === 'somewhat_stable' ? 'Somewhat Stable' : 'Unstable',
+    importance: 'important'
+  });
+
+  // Expense Coverage Check - NEW
+  preconditions.push({
+    id: 'expense_coverage',
+    label: 'Essential Expense Coverage',
+    status: guaranteedCoverageRatio >= 0.80 ? 'pass' :
+            guaranteedCoverageRatio >= 0.50 ? 'warning' : 'fail',
+    value: `${Math.round(guaranteedCoverageRatio * 100)}% of essential expenses covered`,
     importance: 'important'
   });
 
@@ -257,6 +294,53 @@ export function computeAnnuitySuitability(inputs: AnnuitySuitabilityInputs): Ann
     if (taxConcern === 'high') {
       score += 2;
     }
+
+    // ============================================
+    // EXPENSE-BASED SCORING - NEW
+    // ============================================
+    
+    // High fixed expense ratio indicates need for guaranteed income
+    if (fixedExpenseRatio > 0.70) {
+      score += 8;
+      positives.push(`${Math.round(fixedExpenseRatio * 100)}% of expenses are essential fixed costs—guaranteed income provides stability`);
+    } else if (fixedExpenseRatio > 0.50) {
+      score += 4;
+    }
+
+    // Essential expenses coverage gap
+    if (essentialsCoverageGap > 500) {
+      score += 10;
+      positives.push(`$${Math.round(essentialsCoverageGap).toLocaleString()}/mo gap between guaranteed income and essential expenses`);
+    } else if (essentialsCoverageGap > 0) {
+      score += 5;
+    }
+
+    // Income stability affects FIA attractiveness
+    if (incomeStability === 'unstable') {
+      score += 6;
+      positives.push('Unstable income makes guaranteed retirement income more valuable');
+    } else if (incomeStability === 'somewhat_stable') {
+      score += 3;
+    }
+
+    // Debt pressure (lower pressure = more suitable for FIA)
+    if (debtPressure === 'low') {
+      score += 4;
+    } else if (debtPressure === 'high') {
+      score -= 8;
+      negatives.push('High debt pressure—address debt before locking funds in annuity');
+    }
+
+    // Legacy priority (FIA may not be best for high legacy goals)
+    if (legacyPriority === 'high') {
+      score -= 4;
+      negatives.push('High legacy priority—IUL may better serve estate planning goals');
+    }
+
+    // Low expense ratio means less need for guaranteed floor
+    if (expenseRatio < 0.50) {
+      score -= 3;
+    }
   }
 
   // Clamp final score to [0, 100]
@@ -282,10 +366,11 @@ export function computeAnnuitySuitability(inputs: AnnuitySuitabilityInputs): Ann
   // ============================================
 
   if (!disqualified) {
+    // Favor FIA_INCOME_FLOOR when fixed expenses are high and guaranteed coverage is low
     if (
       (fit === 'strong' || fit === 'moderate') && 
-      prefersGuaranteed && 
-      (gapPercentage > 10 || guaranteedCoverageRatio < 0.80)
+      (prefersGuaranteed || fixedExpenseRatio > 0.70) && 
+      (gapPercentage > 10 || guaranteedCoverageRatio < 0.80 || essentialsCoverageGap > 500)
     ) {
       strategy = 'FIA_INCOME_FLOOR';
     } else if (yearsToRetirement <= 3 || sequenceRisk === 'high' || sequenceRisk === 'medium') {
@@ -335,6 +420,15 @@ export function computeAnnuitySuitability(inputs: AnnuitySuitabilityInputs): Ann
   
   if (liquidityNeed !== 'low') {
     notIf.push('If major expenses are expected soon (home, education, business), address those first.');
+  }
+
+  // Expense-based warnings - NEW
+  if (debtPressure === 'high') {
+    notIf.push('High debt pressure suggests focusing on debt reduction before annuity commitments.');
+  }
+
+  if (fixedExpenseRatio < 0.40 && !disqualified) {
+    notIf.push('With mostly discretionary expenses, you may prefer investment flexibility over guaranteed income.');
   }
   
   notIf.push('FIA fees and surrender charges vary significantly—compare multiple products carefully.');
