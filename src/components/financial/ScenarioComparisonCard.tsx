@@ -4,18 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { 
-  ArrowRight, 
   TrendingUp, 
-  TrendingDown, 
   Shield, 
-  DollarSign,
   CheckCircle,
-  XCircle,
-  AlertTriangle,
   Info,
-  BarChart3
+  Heart
 } from 'lucide-react';
-import type { ScenarioComparison, OtherAssetType } from '@/types/retirement';
+import type { ScenarioComparison } from '@/types/retirement';
 import { AssumptionsModal } from './AssumptionsModal';
 
 interface ClientAllocations {
@@ -26,7 +21,6 @@ interface ClientAllocations {
 interface ScenarioComparisonCardProps {
   comparison: ScenarioComparison;
   clientAllocations?: ClientAllocations;
-  otherAssetType?: OtherAssetType;
 }
 
 const formatCurrency = (amount: number): string => {
@@ -42,34 +36,35 @@ const formatPercent = (value: number): string => {
   return `${Math.round(value)}%`;
 };
 
-const OTHER_ASSET_LABELS: Record<OtherAssetType, string> = {
-  stocks: 'Stock Index',
-  bonds: 'Bond Fund',
-  balanced: '60/40 Balanced',
-  none: 'None'
-};
-
-export function ScenarioComparisonCard({ comparison, clientAllocations, otherAssetType }: ScenarioComparisonCardProps) {
+export function ScenarioComparisonCard({ comparison, clientAllocations }: ScenarioComparisonCardProps) {
   const [showAssumptions, setShowAssumptions] = useState(false);
-  const { scenario_a, scenario_b, scenario_c, comparison_metrics, comparison_vs_alternative } = comparison;
+  const { scenario_a, scenario_b, comparison_metrics } = comparison;
   
-  const hasScenarioC = scenario_c && otherAssetType && otherAssetType !== 'none';
-  const gridCols = hasScenarioC ? 'grid-cols-5' : 'grid-cols-4';
-  
+  // Calculate death benefit leverage if IUL is included
+  const iulDeathBenefit = scenario_b.iul_death_benefit || 0;
+  const iulAnnualPremium = scenario_b.iul_annual_premium || 0;
+  const deathBenefitLeverage = iulAnnualPremium > 0 ? Math.round(iulDeathBenefit / iulAnnualPremium) : 0;
+
   const metrics = [
     {
       label: 'Monthly Retirement Income (Net)',
       valueA: formatCurrency(scenario_a.retirement_income_net),
       valueB: formatCurrency(scenario_b.retirement_income_net),
-      valueC: scenario_c ? formatCurrency(scenario_c.retirement_income_net) : undefined,
       improved: scenario_b.retirement_income_net > scenario_a.retirement_income_net,
       difference: formatCurrency(comparison_metrics.income_improvement_monthly),
+    },
+    {
+      label: 'Death Benefit (Tax-Free)',
+      valueA: '$0',
+      valueB: formatCurrency(iulDeathBenefit),
+      improved: iulDeathBenefit > 0,
+      difference: iulDeathBenefit > 0 ? formatCurrency(iulDeathBenefit) : undefined,
+      highlight: true,
     },
     {
       label: 'Lifetime Taxes Paid',
       valueA: formatCurrency(scenario_a.lifetime_taxes_paid),
       valueB: formatCurrency(scenario_b.lifetime_taxes_paid),
-      valueC: scenario_c ? formatCurrency(scenario_c.lifetime_taxes_paid) : undefined,
       improved: scenario_b.lifetime_taxes_paid < scenario_a.lifetime_taxes_paid,
       difference: formatCurrency(comparison_metrics.tax_savings_lifetime),
       lowerIsBetter: true,
@@ -78,7 +73,6 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
       label: 'Guaranteed Income',
       valueA: scenario_a.has_guaranteed_income ? 'Yes (SS/Pension)' : 'None',
       valueB: scenario_b.has_guaranteed_income ? 'Yes' : 'No',
-      valueC: scenario_c?.has_guaranteed_income ? 'Yes (SS/Pension)' : 'None',
       improved: scenario_b.has_guaranteed_income && !scenario_a.has_guaranteed_income,
       isBoolean: true,
     },
@@ -86,7 +80,6 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
       label: 'Tax-Free Income',
       valueA: scenario_a.has_tax_free_income ? 'Yes' : 'None',
       valueB: scenario_b.has_tax_free_income ? 'Yes' : 'None',
-      valueC: scenario_c?.has_tax_free_income ? 'Yes' : 'None',
       improved: scenario_b.has_tax_free_income && !scenario_a.has_tax_free_income,
       isBoolean: true,
     },
@@ -94,7 +87,6 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
       label: 'Money Lasts Until Age',
       valueA: scenario_a.money_runs_out_age ? `${scenario_a.money_runs_out_age}` : '95+',
       valueB: scenario_b.money_runs_out_age ? `${scenario_b.money_runs_out_age}` : '95+',
-      valueC: scenario_c?.money_runs_out_age ? `${scenario_c.money_runs_out_age}` : '95+',
       improved: comparison_metrics.longevity_improvement_years > 0,
       difference: comparison_metrics.longevity_improvement_years > 0 
         ? `+${comparison_metrics.longevity_improvement_years} years` 
@@ -104,7 +96,6 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
       label: 'Market Risk Exposure',
       valueA: scenario_a.market_risk_exposure,
       valueB: scenario_b.market_risk_exposure,
-      valueC: scenario_c?.market_risk_exposure,
       improved: comparison_metrics.market_risk_reduction,
       isRisk: true,
     },
@@ -112,7 +103,6 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
       label: 'Legacy Value at Age 90',
       valueA: formatCurrency(scenario_a.legacy_value_at_90),
       valueB: formatCurrency(scenario_b.legacy_value_at_90),
-      valueC: scenario_c ? formatCurrency(scenario_c.legacy_value_at_90) : undefined,
       improved: scenario_b.legacy_value_at_90 > scenario_a.legacy_value_at_90,
       difference: formatCurrency(comparison_metrics.legacy_improvement_amount),
     },
@@ -137,12 +127,6 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
         <CardTitle className="flex items-center gap-2 text-lg">
           <TrendingUp className="h-5 w-5 text-primary" />
           Side-by-Side Comparison
-          {hasScenarioC && (
-            <Badge variant="outline" className="ml-2 bg-orange-50 text-orange-700 border-orange-200">
-              <BarChart3 className="h-3 w-3 mr-1" />
-              vs {OTHER_ASSET_LABELS[otherAssetType!]}
-            </Badge>
-          )}
           <Button 
             variant="ghost" 
             size="sm" 
@@ -156,7 +140,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
       </CardHeader>
       <CardContent>
         {/* Header Row */}
-        <div className={`grid ${gridCols} gap-2 md:gap-4 mb-4 pb-2 border-b`}>
+        <div className="grid grid-cols-4 gap-2 md:gap-4 mb-4 pb-2 border-b">
           <div className="font-medium text-muted-foreground text-xs md:text-sm">Metric</div>
           <div className="font-semibold text-center text-xs md:text-sm">
             <span className="text-muted-foreground text-xs block">A</span>
@@ -166,12 +150,6 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
             <span className="text-muted-foreground text-xs block">B</span>
             Optimized
           </div>
-          {hasScenarioC && (
-            <div className="font-semibold text-center text-orange-600 text-xs md:text-sm">
-              <span className="text-muted-foreground text-xs block">C</span>
-              {OTHER_ASSET_LABELS[otherAssetType!]}
-            </div>
-          )}
           <div className="font-semibold text-center text-xs md:text-sm">
             B vs A
           </div>
@@ -182,9 +160,10 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
           {metrics.map((metric, index) => (
             <div 
               key={metric.label} 
-              className={`grid ${gridCols} gap-2 md:gap-4 py-2 ${index % 2 === 0 ? 'bg-muted/30 rounded-lg px-2 -mx-2' : ''}`}
+              className={`grid grid-cols-4 gap-2 md:gap-4 py-2 ${metric.highlight ? 'bg-blue-50 dark:bg-blue-950/30 rounded-lg px-2 -mx-2 border border-blue-200 dark:border-blue-800' : index % 2 === 0 ? 'bg-muted/30 rounded-lg px-2 -mx-2' : ''}`}
             >
               <div className="text-sm font-medium flex items-center">
+                {metric.highlight && <Heart className="h-4 w-4 text-blue-600 mr-1.5" />}
                 {metric.label}
               </div>
               
@@ -220,25 +199,6 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
                 )}
               </div>
               
-              {/* Scenario C Value (Alternative Investment) */}
-              {hasScenarioC && (
-                <div className="text-center text-sm">
-                  {metric.isRisk ? (
-                    <Badge variant="outline" className={getRiskBadgeStyle(metric.valueC as string)}>
-                      {(metric.valueC as string)?.charAt(0).toUpperCase() + (metric.valueC as string)?.slice(1)}
-                    </Badge>
-                  ) : metric.isBoolean ? (
-                    <span className="text-orange-600">
-                      {metric.valueC || '—'}
-                    </span>
-                  ) : (
-                    <span className="text-orange-600">
-                      {metric.valueC || '—'}
-                    </span>
-                  )}
-                </div>
-              )}
-              
               {/* B vs A Difference */}
               <div className="text-center">
                 {metric.improved ? (
@@ -257,6 +217,30 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
             </div>
           ))}
         </div>
+
+        {/* Death Benefit Leverage Callout */}
+        {iulDeathBenefit > 0 && iulAnnualPremium > 0 && (
+          <>
+            <Separator className="my-6" />
+            <div className="p-4 rounded-lg border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="h-5 w-5 text-blue-600" />
+                <h4 className="font-semibold text-blue-900 dark:text-blue-100">Death Benefit Leverage</h4>
+              </div>
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                With an annual IUL premium of <span className="font-bold">{formatCurrency(iulAnnualPremium)}</span>, 
+                your family receives a tax-free death benefit of{' '}
+                <span className="font-bold">{formatCurrency(iulDeathBenefit)}</span>.
+                {deathBenefitLeverage > 1 && (
+                  <> This is <span className="font-bold text-blue-600">{deathBenefitLeverage}x</span> your annual premium—providing immediate protection from day one.</>
+                )}
+              </p>
+              <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
+                💡 Traditional investments require decades to accumulate this level of protection. IUL provides this death benefit immediately while also building tax-free cash value.
+              </p>
+            </div>
+          </>
+        )}
         
         <Separator className="my-6" />
         
