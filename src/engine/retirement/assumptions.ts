@@ -90,3 +90,27 @@ export const GRADE_THRESHOLDS = {
   D: 35,
   F: 0,
 } as const;
+
+// Alternative Asset Type Comparisons
+export const OTHER_ASSET_RETURNS = {
+  stocks: 0.07,      // 7% average (historical S&P minus fees)
+  bonds: 0.035,      // 3.5% bond returns
+  balanced: 0.055,   // 5.5% 60/40 portfolio
+  none: 0
+} as const;
+
+export const OTHER_ASSET_TAX_DRAG = {
+  stocks: 0.015,     // 1.5% annual drag from dividends + capital gains
+  bonds: 0.022,      // 2.2% ordinary income rate on interest (assuming 22% bracket)
+  balanced: 0.018,   // 1.8% blended
+  none: 0
+} as const;
+
+export const OTHER_ASSET_LABELS = {
+  stocks: 'Stock Index Fund',
+  bonds: 'Bond Fund',
+  balanced: '60/40 Balanced Fund',
+  none: 'None'
+} as const;
+
+export type OtherAssetType = keyof typeof OTHER_ASSET_RETURNS;

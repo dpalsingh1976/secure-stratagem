@@ -16,7 +16,9 @@ import type {
   RetirementProjection,
   ScenarioProjection,
   ScenarioComparison,
-  YearlyProjection
+  YearlyProjection,
+  AllocationOverrides,
+  OtherAssetType
 } from '@/types/retirement';
 
 import { 
@@ -24,7 +26,10 @@ import {
   INFLATION_ASSUMPTIONS,
   WITHDRAWAL_RATES,
   TAX_ASSUMPTIONS,
-  LIFE_EXPECTANCY
+  LIFE_EXPECTANCY,
+  OTHER_ASSET_RETURNS,
+  OTHER_ASSET_TAX_DRAG,
+  OTHER_ASSET_LABELS
 } from './assumptions';
 
 import { getCurrentAge, getYearsToRetirement, futureValue } from './projection';
@@ -197,7 +202,8 @@ function simulateScenarioB(
   projection: RetirementProjection,
   metrics: ComputedMetrics,
   protectionData: ProtectionHealthData,
-  planningReadiness: PlanningReadinessData
+  planningReadiness: PlanningReadinessData,
+  allocationOverrides?: AllocationOverrides
 ): ScenarioProjection & { 
   includesIUL: boolean; 
   includesAnnuity: boolean; 
@@ -274,7 +280,11 @@ function simulateScenarioB(
     includesIUL = true;
     iulEligibility.is_eligible = true;
     iulAllocationPercent = 12; // 12% of contributions reallocated
-    iulAnnualPremium = preferences.annual_retirement_contribution * (iulAllocationPercent / 100);
+    
+    // Use client override if provided, otherwise calculate default
+    iulAnnualPremium = allocationOverrides?.iul_annual_premium !== undefined && allocationOverrides.iul_annual_premium > 0
+      ? allocationOverrides.iul_annual_premium
+      : preferences.annual_retirement_contribution * (iulAllocationPercent / 100);
     
     // Build reason
     const reasons: string[] = [];
@@ -355,7 +365,11 @@ function simulateScenarioB(
     includesAnnuity = true;
     annuityEligibility.is_eligible = true;
     annuityAllocationPercent = 15; // 15% of retirement assets to FIA
-    annuityPremium = projection.projected_portfolio_at_retirement * (annuityAllocationPercent / 100);
+    
+    // Use client override if provided, otherwise calculate default
+    annuityPremium = allocationOverrides?.annuity_one_time_premium !== undefined && allocationOverrides.annuity_one_time_premium > 0
+      ? allocationOverrides.annuity_one_time_premium
+      : projection.projected_portfolio_at_retirement * (annuityAllocationPercent / 100);
     
     const reasons: string[] = [];
     if (prefersGuaranteed) reasons.push('prefers guaranteed income');
@@ -689,6 +703,123 @@ function generateAdvisorSummary(
 }
 
 // ============================================
+// SCENARIO C: ALTERNATIVE INVESTMENT
+// ============================================
+
+function simulateScenarioC(
+  profileData: ProfileGoalsData,
+  incomeData: IncomeExpensesData,
+  assets: AssetFormData[],
+  preferences: RetirementPreferencesData,
+  projection: RetirementProjection,
+  allocationAmount: number,
+  assetType: OtherAssetType
+): ScenarioProjection {
+  const currentAge = getCurrentAge(profileData.dob);
+  const retirementAge = profileData.retirement_age || 65;
+  const yearsToRetirement = getYearsToRetirement(profileData.dob, retirementAge);
+  const planToAge = LIFE_EXPECTANCY.CONSERVATIVE;
+  
+  const assetReturn = OTHER_ASSET_RETURNS[assetType];
+  const taxDrag = OTHER_ASSET_TAX_DRAG[assetType];
+  const netReturn = assetReturn - taxDrag; // After-tax return
+  const assetLabel = OTHER_ASSET_LABELS[assetType];
+  
+  const marginalRate = TAX_ASSUMPTIONS.MARGINAL_RATE_DEFAULT;
+  
+  // Accumulate alternative investment during working years
+  // Assume same allocation split as IUL+Annuity scenario
+  const annualContribution = allocationAmount / yearsToRetirement; // Simplified annual allocation
+  let alternativeAccountValue = 0;
+  
+  for (let year = 0; year < yearsToRetirement; year++) {
+    alternativeAccountValue = (alternativeAccountValue + annualContribution) * (1 + netReturn);
+  }
+  
+  // At retirement, this becomes part of taxable portfolio
+  const portfolioAtRetirement = projection.projected_portfolio_at_retirement + alternativeAccountValue;
+  
+  // Guaranteed income (no additional - just SS/Pension)
+  const guaranteedMonthly = projection.income_sources.social_security + 
+                            projection.income_sources.pension;
+  
+  const targetIncome = projection.monthly_income_target;
+  const neededFromPortfolio = Math.max(0, targetIncome - guaranteedMonthly);
+  
+  // Simulate year-by-year from retirement
+  const yearlyProjections: YearlyProjection[] = [];
+  let portfolioBalance = portfolioAtRetirement;
+  let lifetimeTaxes = 0;
+  let moneyRunsOutAge: number | null = null;
+  
+  const returnRate = RETURN_ASSUMPTIONS.BASE;
+  
+  for (let age = retirementAge; age <= planToAge; age++) {
+    const year = age - retirementAge + 1;
+    
+    const annualNeed = neededFromPortfolio * 12;
+    const withdrawal = Math.min(annualNeed, portfolioBalance);
+    
+    // All withdrawals are taxable (higher portion in taxable account)
+    const taxesThisYear = calculateTaxOnWithdrawal(withdrawal, marginalRate);
+    lifetimeTaxes += taxesThisYear;
+    
+    portfolioBalance = portfolioBalance - withdrawal;
+    if (portfolioBalance > 0) {
+      portfolioBalance = portfolioBalance * (1 + returnRate - taxDrag);
+    }
+    
+    if (portfolioBalance <= 0 && moneyRunsOutAge === null) {
+      moneyRunsOutAge = age;
+      portfolioBalance = 0;
+    }
+    
+    const netIncome = (guaranteedMonthly * 12) + withdrawal - taxesThisYear;
+    
+    yearlyProjections.push({
+      age,
+      year,
+      portfolio_value: Math.max(0, portfolioBalance),
+      total_income: netIncome,
+      taxes_paid: taxesThisYear,
+      withdrawal_amount: withdrawal
+    });
+  }
+  
+  const proj90 = yearlyProjections.find(p => p.age === 90);
+  const proj95 = yearlyProjections.find(p => p.age === 95);
+  
+  const annualWithdrawal = neededFromPortfolio * 12;
+  const annualTax = calculateTaxOnWithdrawal(annualWithdrawal, marginalRate);
+  const grossMonthly = guaranteedMonthly + neededFromPortfolio;
+  const netMonthly = guaranteedMonthly + neededFromPortfolio - (annualTax / 12);
+  
+  return {
+    scenario_name: 'Optimized Strategy', // Reusing type, but represents alternative
+    scenario_description: `Same allocation invested in ${assetLabel}. No tax advantages, no death benefit, no guaranteed income—standard market-based growth.`,
+    retirement_income_gross: grossMonthly,
+    retirement_income_net: netMonthly,
+    lifetime_taxes_paid: lifetimeTaxes,
+    has_guaranteed_income: guaranteedMonthly > 0,
+    has_tax_free_income: false,
+    money_runs_out_age: moneyRunsOutAge,
+    portfolio_at_retirement: portfolioAtRetirement,
+    legacy_value_at_90: proj90?.portfolio_value || 0,
+    legacy_value_at_95: proj95?.portfolio_value || 0,
+    market_risk_exposure: 'high',
+    income_sources: {
+      social_security: projection.income_sources.social_security,
+      pension: projection.income_sources.pension,
+      portfolio_withdrawal: neededFromPortfolio,
+      iul_loans: 0,
+      annuity_income: 0,
+      part_time: projection.income_sources.part_time
+    },
+    yearly_projections: yearlyProjections
+  };
+}
+
+// ============================================
 // MAIN EXPORT: COMPUTE SCENARIO COMPARISON
 // ============================================
 
@@ -700,7 +831,8 @@ export function computeScenarioComparison(
   projection: RetirementProjection,
   metrics: ComputedMetrics,
   protectionData: ProtectionHealthData,
-  planningReadiness: PlanningReadinessData
+  planningReadiness: PlanningReadinessData,
+  allocationOverrides?: AllocationOverrides
 ): ScenarioComparison {
   // Simulate Scenario A (Current Path)
   const scenarioA = simulateScenarioA(
@@ -711,7 +843,7 @@ export function computeScenarioComparison(
     projection
   );
   
-  // Simulate Scenario B (Optimized Strategy)
+  // Simulate Scenario B (Optimized Strategy) - with client allocation overrides
   const scenarioBResult = simulateScenarioB(
     profileData,
     incomeData,
@@ -720,12 +852,40 @@ export function computeScenarioComparison(
     projection,
     metrics,
     protectionData,
-    planningReadiness
+    planningReadiness,
+    allocationOverrides
   );
   
   const { includesIUL, includesAnnuity, iulReason, annuityReason, annuityEligibility, iulEligibility, ...scenarioB } = scenarioBResult;
   
-  // Calculate comparison metrics
+  // Calculate total allocation for Scenario C comparison
+  const totalAllocation = (scenarioB.iul_annual_premium || 0) * getYearsToRetirement(profileData.dob, profileData.retirement_age || 65) + 
+                          (scenarioB.annuity_premium || 0);
+  
+  // Simulate Scenario C (Alternative Investment) if requested
+  let scenarioC: ScenarioProjection | undefined;
+  let comparisonVsAlternative: { income_improvement_monthly: number; tax_savings_lifetime: number; legacy_improvement_amount: number } | undefined;
+  
+  if (allocationOverrides?.other_asset_type && allocationOverrides.other_asset_type !== 'none' && totalAllocation > 0) {
+    scenarioC = simulateScenarioC(
+      profileData,
+      incomeData,
+      assets,
+      preferences,
+      projection,
+      totalAllocation,
+      allocationOverrides.other_asset_type
+    );
+    
+    // Calculate comparison vs alternative
+    comparisonVsAlternative = {
+      income_improvement_monthly: scenarioB.retirement_income_net - scenarioC.retirement_income_net,
+      tax_savings_lifetime: scenarioC.lifetime_taxes_paid - scenarioB.lifetime_taxes_paid,
+      legacy_improvement_amount: scenarioB.legacy_value_at_90 - scenarioC.legacy_value_at_90
+    };
+  }
+  
+  // Calculate comparison metrics (B vs A)
   const incomeImprovementMonthly = scenarioB.retirement_income_net - scenarioA.retirement_income_net;
   const incomeImprovementPercent = scenarioA.retirement_income_net > 0
     ? (incomeImprovementMonthly / scenarioA.retirement_income_net) * 100
@@ -749,6 +909,7 @@ export function computeScenarioComparison(
   return {
     scenario_a: scenarioA,
     scenario_b: scenarioB,
+    scenario_c: scenarioC,
     comparison_metrics: {
       income_improvement_percent: Math.max(0, incomeImprovementPercent),
       income_improvement_monthly: Math.max(0, incomeImprovementMonthly),
@@ -757,6 +918,7 @@ export function computeScenarioComparison(
       legacy_improvement_amount: Math.max(0, legacyImprovement),
       market_risk_reduction: marketRiskReduction
     },
+    comparison_vs_alternative: comparisonVsAlternative,
     includes_iul: includesIUL,
     includes_annuity: includesAnnuity,
     iul_reason: iulReason,
