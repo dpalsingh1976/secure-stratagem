@@ -223,21 +223,35 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
           <>
             <Separator className="my-6" />
             <div className="p-4 rounded-lg border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-3">
                 <Shield className="h-5 w-5 text-blue-600" />
                 <h4 className="font-semibold text-blue-900 dark:text-blue-100">Death Benefit Leverage</h4>
               </div>
+              
+              {/* Prominent Death Benefit Display */}
+              <div className="flex items-center justify-center bg-blue-100 dark:bg-blue-900/50 rounded-lg p-4 mb-3">
+                <div className="text-center">
+                  <span className="text-3xl font-bold text-blue-700 dark:text-blue-300">{formatCurrency(iulDeathBenefit)}</span>
+                  <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">Tax-Free Death Benefit</p>
+                </div>
+              </div>
+              
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                With an annual IUL premium of <span className="font-bold">{formatCurrency(iulAnnualPremium)}</span>, 
-                your family receives a tax-free death benefit of{' '}
+                Based on an annual IUL premium of <span className="font-bold">{formatCurrency(iulAnnualPremium)}</span>, 
+                your family receives immediate protection of{' '}
                 <span className="font-bold">{formatCurrency(iulDeathBenefit)}</span>.
                 {deathBenefitLeverage > 1 && (
-                  <> This is <span className="font-bold text-blue-600">{deathBenefitLeverage}x</span> your annual premium—providing immediate protection from day one.</>
+                  <> That's <span className="font-bold text-blue-600 dark:text-blue-400">{deathBenefitLeverage}x</span> your annual premium investment.</>
                 )}
               </p>
-              <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
-                💡 Traditional investments require decades to accumulate this level of protection. IUL provides this death benefit immediately while also building tax-free cash value.
-              </p>
+              
+              {/* Comparison Callout */}
+              <div className="mt-3 p-3 bg-white/50 dark:bg-blue-900/30 rounded border border-blue-200 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  <strong>💡 Traditional Path:</strong> To accumulate {formatCurrency(iulDeathBenefit)} in investments would require decades of saving and market growth. 
+                  With IUL, your family has this protection <strong>immediately</strong> while you also build tax-free retirement income.
+                </p>
+              </div>
             </div>
           </>
         )}
