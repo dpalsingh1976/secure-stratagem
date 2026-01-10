@@ -158,9 +158,32 @@ export function checkDataCompleteness(
 export function checkSuitabilityConstraints(
   planningReadiness: PlanningReadinessData,
   protectionData: ProtectionHealthData,
-  yearsToRetirement: number
+  yearsToRetirement: number,
+  currentAge?: number
 ): SuitabilityGuardrail[] {
   const guardrails: SuitabilityGuardrail[] = [];
+  
+  // 0. AGE-BASED CONSTRAINT FOR GUARANTEED INCOME PRODUCTS (Critical)
+  // Young clients with long time horizons should not be recommended annuities
+  const AGE_MINIMUM_FOR_ANNUITY = 45;
+  const AGE_EXCEPTION_YEARS_TO_RETIREMENT = 15;
+  
+  if (currentAge && currentAge < AGE_MINIMUM_FOR_ANNUITY && yearsToRetirement > AGE_EXCEPTION_YEARS_TO_RETIREMENT) {
+    // Check if extreme indicators are present that would override age constraint
+    const hasExtremeIndicators = 
+      planningReadiness.longevity_concern === 'high' &&
+      planningReadiness.wants_monthly_paycheck_feel === true &&
+      ['panic_sell', 'reduce_risk'].includes(planningReadiness.behavior_in_down_market || '');
+    
+    if (!hasExtremeIndicators) {
+      guardrails.push({
+        passes: false,
+        constraint_type: 'time_horizon',
+        message: `At age ${currentAge} with ${yearsToRetirement} years to retirement, focus on growth strategies. Guaranteed income products are better suited for ages 50+, or those within 15 years of retirement.`,
+        severity: 'block'
+      });
+    }
+  }
   
   // 1. Emergency Fund Constraint (Critical)
   const emergencyMonths = protectionData.emergency_fund_months || 0;
@@ -401,11 +424,24 @@ export function runBestInterestGuardrails(
     };
   }
   
+  // Calculate current age from DOB if available
+  let currentAge: number | undefined;
+  if (profileData?.dob) {
+    const today = new Date();
+    const dob = new Date(profileData.dob);
+    currentAge = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      currentAge--;
+    }
+  }
+  
   // Check suitability constraints
   const guardrails = checkSuitabilityConstraints(
     planningReadiness,
     protection,
-    yearsToRetirement || 20
+    yearsToRetirement || 20,
+    currentAge
   );
   
   // Determine if all blocking guardrails pass

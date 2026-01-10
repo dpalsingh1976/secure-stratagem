@@ -40,6 +40,7 @@ interface ReportModalProps {
   assets: AssetFormData[];
   liabilities: LiabilityFormData[];
   protectionData: ProtectionHealthData;
+  planningReadiness?: PlanningReadinessData;
 }
 
 interface RiskRecommendation {
@@ -63,7 +64,8 @@ export function ReportModal({
   incomeData,
   assets,
   liabilities,
-  protectionData
+  protectionData,
+  planningReadiness: externalPlanningReadiness
 }: ReportModalProps) {
   const [activeTab, setActiveTab] = useState('summary');
   const [isExporting, setIsExporting] = useState(false);
@@ -97,8 +99,10 @@ export function ReportModal({
         open_to_tax_diversification: protectionData.open_to_tax_diversification || false
       };
       
-      // Build planning readiness from available data
-      const planningReadiness: PlanningReadinessData = {
+      // Build planning readiness - USE ACTUAL DATA if provided, otherwise use sensible defaults
+      // CRITICAL: If externalPlanningReadiness is provided, use it. Otherwise mark as incomplete.
+      const planningReadiness: PlanningReadinessData = externalPlanningReadiness || {
+        // Mark as needing data collection if not provided
         income_stability: 'stable',
         funding_commitment_years: protectionData.can_commit_10yr_contributions ? '10-20' : '5-10',
         funding_discipline: 'medium',
@@ -106,7 +110,7 @@ export function ReportModal({
         short_term_cash_needs_1_3yr: 'low',
         contributing_to_401k_match: incomeData.employer_match_pct > 0,
         maxing_qualified_plans: 'some',
-        current_tax_bracket: '24',
+        current_tax_bracket: 'not_sure', // Don't assume - mark as unknown
         tax_concern_level: 'medium',
         wants_tax_free_bucket: protectionData.open_to_tax_diversification || false,
         expects_higher_future_taxes: false,
@@ -115,22 +119,19 @@ export function ReportModal({
         legacy_priority: 'medium',
         permanent_coverage_need: protectionData.permanent_life_cv > 0 || protectionData.permanent_life_db > 0,
         debt_pressure_level: 'low',
-        self_assessed_health: 'good',
-        family_longevity_history: 'average',
-        longevity_concern: 'medium',
-        goal_priorities: {
-          guaranteed_income: 2,
-          flexibility_liquidity: 1,
-          legacy_estate: 3,
-          inflation_protection: 4
-        },
-        investment_experience_level: 'intermediate',
-        comfort_with_complex_products: 'medium',
-        willingness_illiquidity_years: 7,
-        behavior_in_down_market: 'hold',
-        wants_monthly_paycheck_feel: false,
-        sleep_at_night_priority: 'medium',
-        survivor_income_need: 'medium'
+        // CRITICAL: Don't assume health data - use undefined to trigger education mode
+        self_assessed_health: undefined,
+        family_longevity_history: undefined,
+        longevity_concern: undefined,
+        // CRITICAL: Don't assume behavior - use undefined to trigger education mode
+        goal_priorities: undefined,
+        investment_experience_level: undefined,
+        comfort_with_complex_products: undefined,
+        willingness_illiquidity_years: undefined,
+        behavior_in_down_market: undefined,
+        wants_monthly_paycheck_feel: undefined,
+        sleep_at_night_priority: undefined,
+        survivor_income_need: undefined
       };
       
       return computeScenarioComparison(
