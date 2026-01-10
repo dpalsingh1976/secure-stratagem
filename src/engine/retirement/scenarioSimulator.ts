@@ -112,8 +112,10 @@ function simulateScenarioA(
   const guaranteedMonthly = projection.income_sources.social_security + 
                             projection.income_sources.pension;
   
-  // Target withdrawal
-  const targetIncome = projection.monthly_income_target;
+  // Target withdrawal - use fallback if monthly_income_target is 0 or undefined
+  const targetIncome = projection.monthly_income_target || 
+    (projection.projected_portfolio_at_retirement * WITHDRAWAL_RATES.SAFE_RATE / 12) || 
+    5000; // Fallback minimum
   const neededFromPortfolio = Math.max(0, targetIncome - guaranteedMonthly);
   
   for (let age = retirementAge; age <= planToAge; age++) {
@@ -162,7 +164,7 @@ function simulateScenarioA(
   // Gross vs Net income calculation
   const annualWithdrawal = neededFromPortfolio * 12;
   const annualTax = calculateTaxOnWithdrawal(annualWithdrawal, marginalRate);
-  const grossMonthly = guaranteedMonthly + neededFromPortfolio;
+  const grossMonthly = Math.max(0, guaranteedMonthly + neededFromPortfolio);
   const netMonthly = guaranteedMonthly + neededFromPortfolio - (annualTax / 12);
   
   return {
