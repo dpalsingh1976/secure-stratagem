@@ -17,8 +17,14 @@ import {
 import type { ScenarioComparison } from '@/types/retirement';
 import { AssumptionsModal } from './AssumptionsModal';
 
+interface ClientAllocations {
+  iul: number;
+  annuity: number;
+}
+
 interface ScenarioComparisonCardProps {
   comparison: ScenarioComparison;
+  clientAllocations?: ClientAllocations;
 }
 
 const formatCurrency = (amount: number): string => {
@@ -34,7 +40,7 @@ const formatPercent = (value: number): string => {
   return `${Math.round(value)}%`;
 };
 
-export function ScenarioComparisonCard({ comparison }: ScenarioComparisonCardProps) {
+export function ScenarioComparisonCard({ comparison, clientAllocations }: ScenarioComparisonCardProps) {
   const [showAssumptions, setShowAssumptions] = useState(false);
   const { scenario_a, scenario_b, comparison_metrics } = comparison;
   
@@ -240,13 +246,39 @@ export function ScenarioComparisonCard({ comparison }: ScenarioComparisonCardPro
               <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 IUL for Tax-Free Income
+                {clientAllocations?.iul ? ` (${formatCurrency(clientAllocations.iul)}/yr)` : ''}
               </Badge>
             )}
             {comparison.includes_annuity && (
               <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-200">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 FIA for Guaranteed Income
+                {clientAllocations?.annuity ? ` (${formatCurrency(clientAllocations.annuity)})` : ''}
               </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Why Not Included - Exclusion Reasons */}
+        {(!comparison.includes_iul || !comparison.includes_annuity) && (
+          <div className="mt-4 space-y-2">
+            {!comparison.includes_iul && comparison.iul_eligibility?.exclusion_reason && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border">
+                <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Why IUL Not Included:</p>
+                  <p className="text-sm text-muted-foreground">{comparison.iul_eligibility.exclusion_reason}</p>
+                </div>
+              </div>
+            )}
+            {!comparison.includes_annuity && comparison.annuity_eligibility?.exclusion_reason && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border">
+                <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Why Guaranteed Income Not Included:</p>
+                  <p className="text-sm text-muted-foreground">{comparison.annuity_eligibility.exclusion_reason}</p>
+                </div>
+              </div>
             )}
           </div>
         )}

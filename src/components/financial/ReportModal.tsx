@@ -15,7 +15,9 @@ import BookingCalendar from '@/components/BookingCalendar';
 import { RetirementScoreRing } from './RetirementScoreRing';
 import { ScenarioComparisonCard } from './ScenarioComparisonCard';
 import { RetirementTimeline } from './RetirementTimeline';
+import { AllocationInputCard, AllocationSources } from './AllocationInputCard';
 import { computeScenarioComparison } from '@/engine/retirement/scenarioSimulator';
+import { computeAllocationSources } from '@/engine/retirement/allocationEngine';
 
 import type { 
   ComputedMetrics,
@@ -73,6 +75,10 @@ export function ReportModal({
   const [bookingOpen, setBookingOpen] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  
+  // Client allocation inputs for IUL/Annuity
+  const [iulAllocation, setIulAllocation] = useState(0);
+  const [annuityAllocation, setAnnuityAllocation] = useState(0);
 
   // Get client email from profile data
   const clientEmail = profileData.email || '';
@@ -678,6 +684,25 @@ export function ReportModal({
     };
   }, [liabilities, incomeData, profileData, protectionData]);
 
+  // Compute allocation sources for IUL/Annuity allocation inputs
+  const allocationSources = useMemo<AllocationSources>(() => {
+    const hasIncomeGap = retirementResult ? retirementResult.projection.gap_percentage > 10 : false;
+    const incomeGapMonthly = retirementResult?.projection.monthly_gap || 0;
+    
+    // Check eligibility based on scenario comparison
+    const annuityEligible = scenarioComparison?.annuity_eligibility?.is_eligible ?? false;
+    const iulEligible = scenarioComparison?.iul_eligibility?.is_eligible ?? false;
+    
+    return computeAllocationSources(
+      incomeData,
+      DIME.protection_gap,
+      incomeGapMonthly,
+      hasIncomeGap,
+      annuityEligible,
+      iulEligible
+    );
+  }, [incomeData, DIME.protection_gap, retirementResult, scenarioComparison]);
+
   const getRiskLevel = (score: number) => {
     if (score >= 80) return { 
       label: 'Critical', 
@@ -1220,8 +1245,26 @@ export function ReportModal({
                   {/* Scenario Comparison - "What happens if you don't change vs what improves" */}
                   {scenarioComparison && (
                     <>
+                      {/* Allocation Sources & Input Card */}
+                      <AllocationInputCard
+                        allocationSources={allocationSources}
+                        protectionGap={DIME.protection_gap}
+                        incomeGapMonthly={retirementResult?.projection.monthly_gap || 0}
+                        onIULAllocationChange={setIulAllocation}
+                        onAnnuityAllocationChange={setAnnuityAllocation}
+                        iulAllocation={iulAllocation}
+                        annuityAllocation={annuityAllocation}
+                        iulEligible={scenarioComparison.iul_eligibility?.is_eligible ?? false}
+                        annuityEligible={scenarioComparison.annuity_eligibility?.is_eligible ?? false}
+                        iulExclusionReason={scenarioComparison.iul_eligibility?.exclusion_reason}
+                        annuityExclusionReason={scenarioComparison.annuity_eligibility?.exclusion_reason}
+                      />
+                      
                       {/* Side-by-Side Comparison Table */}
-                      <ScenarioComparisonCard comparison={scenarioComparison} />
+                      <ScenarioComparisonCard 
+                        comparison={scenarioComparison} 
+                        clientAllocations={{ iul: iulAllocation, annuity: annuityAllocation }}
+                      />
                       
                       {/* Timeline Visualization */}
                       <RetirementTimeline 

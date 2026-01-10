@@ -303,6 +303,7 @@ export interface ScenarioComparison {
     has_legacy_priority: boolean;
     has_protection_gap: boolean;
     is_eligible: boolean;
+    exclusion_reason?: string;
   };
   
   calculation_inputs?: {

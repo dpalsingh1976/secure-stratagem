@@ -510,3 +510,87 @@ function formatCurrency(amount: number): string {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+// =====================================================
+// ALLOCATION SOURCES COMPUTATION
+// Calculates available funds for IUL/Annuity allocation
+// =====================================================
+
+export interface AllocationSources {
+  idle_checking_cash: number;
+  old_401k_rollover: number;
+  monthly_savings_capacity: number;
+  total_available_for_allocation: number;
+  suggested_iul_allocation: number;
+  suggested_annuity_allocation: number;
+}
+
+/**
+ * Compute available allocation sources for IUL and Annuity strategies
+ * This helps clients understand what funds are available for optimization
+ */
+export function computeAllocationSources(
+  incomeData: IncomeExpensesData,
+  protectionGap: number,
+  incomeGapMonthly: number,
+  hasGuaranteedIncomeGap: boolean,
+  annuityEligible: boolean,
+  iulEligible: boolean
+): AllocationSources {
+  // Idle cash in checking (after expenses)
+  const idleCash = incomeData.monthly_checking_balance || 0;
+  
+  // Old 401(k) rollover available
+  const rolloverAvailable = incomeData.has_old_401k ? (incomeData.old_401k_balance || 0) : 0;
+  
+  // Monthly savings capacity
+  const monthlySavingsCapacity = calculateMonthlySavingsCapacity(incomeData);
+  
+  // Total available = idle cash + rollover + annual savings capacity
+  const annualSavingsCapacity = monthlySavingsCapacity * 12;
+  const totalAvailable = idleCash + rolloverAvailable + annualSavingsCapacity;
+  
+  // Suggested allocations based on needs and eligibility
+  let suggestedIUL = 0;
+  let suggestedAnnuity = 0;
+  
+  // IUL suggestion: Based on protection gap and available cash
+  // Rule of thumb: ~$1 of premium per $15 of death benefit needed (rough approximation)
+  if (iulEligible && protectionGap > 0 && idleCash > 0) {
+    const estimatedPremiumForGap = Math.round(protectionGap / 15);
+    // Suggest the smaller of: estimated premium, 60% of idle cash, or $24,000/year
+    suggestedIUL = Math.min(
+      estimatedPremiumForGap,
+      idleCash * 0.6,
+      24000
+    );
+    // Ensure minimum meaningful contribution
+    suggestedIUL = suggestedIUL >= 6000 ? suggestedIUL : 0;
+  }
+  
+  // Annuity suggestion: Based on income gap and rollover availability
+  if (annuityEligible && hasGuaranteedIncomeGap && rolloverAvailable > 0) {
+    // Rule of thumb: ~$100K premium generates ~$5-7K/year income
+    // For a monthly gap, calculate needed premium
+    const annualGap = incomeGapMonthly * 12;
+    const estimatedPremiumForIncome = Math.round(annualGap / 0.06); // ~6% payout rate
+    
+    // Suggest the smaller of: estimated premium, 40% of rollover, or $200K
+    suggestedAnnuity = Math.min(
+      estimatedPremiumForIncome,
+      rolloverAvailable * 0.4,
+      200000
+    );
+    // Ensure minimum meaningful contribution
+    suggestedAnnuity = suggestedAnnuity >= 50000 ? suggestedAnnuity : 0;
+  }
+  
+  return {
+    idle_checking_cash: idleCash,
+    old_401k_rollover: rolloverAvailable,
+    monthly_savings_capacity: monthlySavingsCapacity,
+    total_available_for_allocation: totalAvailable,
+    suggested_iul_allocation: suggestedIUL,
+    suggested_annuity_allocation: suggestedAnnuity
+  };
+}

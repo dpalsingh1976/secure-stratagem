@@ -223,6 +223,11 @@ export interface IncomeExpensesData {
   // Additional guaranteed income (NEW)
   monthly_retirement_income_goal_net: number;
   other_guaranteed_income_monthly: number; // Beyond SS/pension (e.g., rental, existing annuity)
+  // Available Cash & Rollover Assets (for allocation optimization)
+  monthly_checking_balance: number;         // Idle cash in checking after monthly spending
+  has_old_401k: boolean;                    // Has 401(k) from previous employer
+  old_401k_balance: number;                 // Balance available for rollover
+  old_401k_employer_name: string;           // Previous employer name (optional)
 }
 
 export interface AssetFormData {
