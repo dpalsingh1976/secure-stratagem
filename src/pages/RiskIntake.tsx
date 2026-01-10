@@ -86,7 +86,9 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     annual_retirement_contribution: 0,
     contribution_growth_rate: 2,
     social_security_confidence: 'medium',
-    expected_part_time_income: 0
+    expected_part_time_income: 0,
+    monthly_retirement_income_goal_net: 0,
+    other_guaranteed_income_monthly: 0
   });
 
   const [assets, setAssets] = useState<AssetFormData[]>([]);
@@ -102,7 +104,8 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     prefers_guaranteed_income: false,
     liquidity_need_next_5yr: 'medium',
     can_commit_10yr_contributions: false,
-    open_to_tax_diversification: false
+    open_to_tax_diversification: false,
+    existing_db_pension_monthly: 0
   });
   
   const [planningReadiness, setPlanningReadiness] = useState<PlanningReadinessData>(

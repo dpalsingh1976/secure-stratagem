@@ -103,15 +103,34 @@ export function ReportModal({
         funding_commitment_years: protectionData.can_commit_10yr_contributions ? '10-20' : '5-10',
         funding_discipline: 'medium',
         near_term_liquidity_need: protectionData.liquidity_need_next_5yr || 'medium',
+        short_term_cash_needs_1_3yr: 'low',
         contributing_to_401k_match: incomeData.employer_match_pct > 0,
         maxing_qualified_plans: 'some',
         current_tax_bracket: '24',
         tax_concern_level: 'medium',
         wants_tax_free_bucket: protectionData.open_to_tax_diversification || false,
+        expects_higher_future_taxes: false,
+        rmd_concern: 'low',
         sequence_risk_concern: 'medium',
         legacy_priority: 'medium',
         permanent_coverage_need: protectionData.permanent_life_cv > 0 || protectionData.permanent_life_db > 0,
-        debt_pressure_level: 'low'
+        debt_pressure_level: 'low',
+        self_assessed_health: 'good',
+        family_longevity_history: 'average',
+        longevity_concern: 'medium',
+        goal_priorities: {
+          guaranteed_income: 2,
+          flexibility_liquidity: 1,
+          legacy_estate: 3,
+          inflation_protection: 4
+        },
+        investment_experience_level: 'intermediate',
+        comfort_with_complex_products: 'medium',
+        willingness_illiquidity_years: 7,
+        behavior_in_down_market: 'hold',
+        wants_monthly_paycheck_feel: false,
+        sleep_at_night_priority: 'medium',
+        survivor_income_need: 'medium'
       };
       
       return computeScenarioComparison(

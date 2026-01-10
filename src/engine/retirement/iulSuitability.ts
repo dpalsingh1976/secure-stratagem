@@ -420,14 +420,33 @@ export function getDefaultPlanningReadiness(): PlanningReadinessData {
     funding_commitment_years: '5-10',
     funding_discipline: 'medium',
     near_term_liquidity_need: 'medium',
+    short_term_cash_needs_1_3yr: 'low',
     contributing_to_401k_match: true,
     maxing_qualified_plans: 'some',
     current_tax_bracket: 'not_sure',
     tax_concern_level: 'medium',
     wants_tax_free_bucket: false,
+    expects_higher_future_taxes: false,
+    rmd_concern: 'low',
     sequence_risk_concern: 'medium',
     legacy_priority: 'medium',
     permanent_coverage_need: false,
-    debt_pressure_level: 'low'
+    debt_pressure_level: 'low',
+    self_assessed_health: 'good',
+    family_longevity_history: 'average',
+    longevity_concern: 'medium',
+    goal_priorities: {
+      guaranteed_income: 2,
+      flexibility_liquidity: 1,
+      legacy_estate: 3,
+      inflation_protection: 4
+    },
+    investment_experience_level: 'intermediate',
+    comfort_with_complex_products: 'medium',
+    willingness_illiquidity_years: 7,
+    behavior_in_down_market: 'hold',
+    wants_monthly_paycheck_feel: false,
+    sleep_at_night_priority: 'medium',
+    survivor_income_need: 'medium'
   };
 }
