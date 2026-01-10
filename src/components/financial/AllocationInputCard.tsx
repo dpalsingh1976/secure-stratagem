@@ -5,13 +5,6 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
   Wallet, 
   RefreshCw, 
   TrendingUp, 
@@ -21,11 +14,9 @@ import {
   AlertCircle,
   CheckCircle,
   DollarSign,
-  Info,
-  BarChart3
+  Info
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { OtherAssetType } from '@/types/retirement';
 
 export interface AllocationSources {
   idle_checking_cash: number;
@@ -42,10 +33,8 @@ interface AllocationInputCardProps {
   incomeGapMonthly: number;
   onIULAllocationChange: (amount: number) => void;
   onAnnuityAllocationChange: (amount: number) => void;
-  onOtherAssetTypeChange: (type: OtherAssetType) => void;
   iulAllocation: number;
   annuityAllocation: number;
-  otherAssetType: OtherAssetType;
   iulEligible: boolean;
   annuityEligible: boolean;
   iulExclusionReason?: string;
@@ -67,10 +56,8 @@ export function AllocationInputCard({
   incomeGapMonthly,
   onIULAllocationChange,
   onAnnuityAllocationChange,
-  onOtherAssetTypeChange,
   iulAllocation,
   annuityAllocation,
-  otherAssetType,
   iulEligible,
   annuityEligible,
   iulExclusionReason,
@@ -310,51 +297,6 @@ export function AllocationInputCard({
                   </p>
                 )}
               </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Alternative Investment Comparison */}
-          <div>
-            <h4 className="font-semibold mb-4 flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Compare Against Traditional Investment
-            </h4>
-            
-            <div className="p-4 rounded-lg border bg-muted/30">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <Label className="font-medium">What if I invested the same amount in...</Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    See a third comparison column showing traditional investment outcomes
-                  </p>
-                </div>
-              </div>
-              
-              <Select
-                value={otherAssetType}
-                onValueChange={(value) => onOtherAssetTypeChange(value as OtherAssetType)}
-              >
-                <SelectTrigger className="w-full md:w-[280px]">
-                  <SelectValue placeholder="Select asset type to compare" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Don't show alternative</SelectItem>
-                  <SelectItem value="stocks">Stock Index Fund (7% avg return)</SelectItem>
-                  <SelectItem value="balanced">60/40 Balanced Fund (5.5% avg return)</SelectItem>
-                  <SelectItem value="bonds">Bond Fund (3.5% avg return)</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              {otherAssetType !== 'none' && totalAllocated > 0 && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Comparing {formatCurrency(totalAllocated)} allocated to IUL/FIA vs same amount in {
-                    otherAssetType === 'stocks' ? 'Stock Index Fund' :
-                    otherAssetType === 'balanced' ? '60/40 Balanced Fund' : 'Bond Fund'
-                  }
-                </p>
-              )}
             </div>
           </div>
 
