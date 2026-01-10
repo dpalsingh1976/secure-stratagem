@@ -33,8 +33,10 @@ interface AllocationInputCardProps {
   incomeGapMonthly: number;
   onIULAllocationChange: (amount: number) => void;
   onAnnuityAllocationChange: (amount: number) => void;
+  onIULDeathBenefitChange: (amount: number) => void;
   iulAllocation: number;
   annuityAllocation: number;
+  iulDeathBenefit: number;
   iulEligible: boolean;
   annuityEligible: boolean;
   iulExclusionReason?: string;
@@ -56,8 +58,10 @@ export function AllocationInputCard({
   incomeGapMonthly,
   onIULAllocationChange,
   onAnnuityAllocationChange,
+  onIULDeathBenefitChange,
   iulAllocation,
   annuityAllocation,
+  iulDeathBenefit,
   iulEligible,
   annuityEligible,
   iulExclusionReason,
@@ -227,24 +231,41 @@ export function AllocationInputCard({
                   )}
                 </div>
                 
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Annual Premium</Label>
-                  <Input
-                    type="number"
-                    value={iulAllocation || ''}
-                    onChange={(e) => onIULAllocationChange(parseFloat(e.target.value) || 0)}
-                    placeholder={iulEligible ? formatCurrency(allocationSources.suggested_iul_allocation) : '0'}
-                    disabled={!iulEligible}
-                    className="text-lg"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Source: Idle checking cash / ongoing contributions
-                  </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Annual Premium</Label>
+                    <Input
+                      type="number"
+                      value={iulAllocation || ''}
+                      onChange={(e) => onIULAllocationChange(parseFloat(e.target.value) || 0)}
+                      placeholder={iulEligible ? formatCurrency(allocationSources.suggested_iul_allocation) : '0'}
+                      disabled={!iulEligible}
+                      className="text-lg"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Yearly contribution
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Desired Death Benefit</Label>
+                    <Input
+                      type="number"
+                      value={iulDeathBenefit || ''}
+                      onChange={(e) => onIULDeathBenefitChange(parseFloat(e.target.value) || 0)}
+                      placeholder={iulEligible ? 'e.g., 500000' : '0'}
+                      disabled={!iulEligible}
+                      className="text-lg"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Tax-free to family
+                    </p>
+                  </div>
                 </div>
                 
                 {iulEligible && allocationSources.suggested_iul_allocation > 0 && (
                   <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
-                    Suggested: {formatCurrency(allocationSources.suggested_iul_allocation)}/year based on protection gap
+                    Suggested premium: {formatCurrency(allocationSources.suggested_iul_allocation)}/year based on protection gap
                   </p>
                 )}
               </div>

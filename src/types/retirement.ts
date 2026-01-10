@@ -245,6 +245,7 @@ export type OtherAssetType = 'stocks' | 'bonds' | 'balanced' | 'none';
 
 export interface AllocationOverrides {
   iul_annual_premium?: number;
+  iul_death_benefit?: number;  // User-specified death benefit
   annuity_one_time_premium?: number;
   other_asset_type?: OtherAssetType;
 }
