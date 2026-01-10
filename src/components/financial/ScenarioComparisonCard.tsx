@@ -12,9 +12,10 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Info
+  Info,
+  BarChart3
 } from 'lucide-react';
-import type { ScenarioComparison } from '@/types/retirement';
+import type { ScenarioComparison, OtherAssetType } from '@/types/retirement';
 import { AssumptionsModal } from './AssumptionsModal';
 
 interface ClientAllocations {
@@ -25,6 +26,7 @@ interface ClientAllocations {
 interface ScenarioComparisonCardProps {
   comparison: ScenarioComparison;
   clientAllocations?: ClientAllocations;
+  otherAssetType?: OtherAssetType;
 }
 
 const formatCurrency = (amount: number): string => {
@@ -40,15 +42,26 @@ const formatPercent = (value: number): string => {
   return `${Math.round(value)}%`;
 };
 
-export function ScenarioComparisonCard({ comparison, clientAllocations }: ScenarioComparisonCardProps) {
+const OTHER_ASSET_LABELS: Record<OtherAssetType, string> = {
+  stocks: 'Stock Index',
+  bonds: 'Bond Fund',
+  balanced: '60/40 Balanced',
+  none: 'None'
+};
+
+export function ScenarioComparisonCard({ comparison, clientAllocations, otherAssetType }: ScenarioComparisonCardProps) {
   const [showAssumptions, setShowAssumptions] = useState(false);
-  const { scenario_a, scenario_b, comparison_metrics } = comparison;
+  const { scenario_a, scenario_b, scenario_c, comparison_metrics, comparison_vs_alternative } = comparison;
+  
+  const hasScenarioC = scenario_c && otherAssetType && otherAssetType !== 'none';
+  const gridCols = hasScenarioC ? 'grid-cols-5' : 'grid-cols-4';
   
   const metrics = [
     {
       label: 'Monthly Retirement Income (Net)',
       valueA: formatCurrency(scenario_a.retirement_income_net),
       valueB: formatCurrency(scenario_b.retirement_income_net),
+      valueC: scenario_c ? formatCurrency(scenario_c.retirement_income_net) : undefined,
       improved: scenario_b.retirement_income_net > scenario_a.retirement_income_net,
       difference: formatCurrency(comparison_metrics.income_improvement_monthly),
     },
@@ -56,6 +69,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
       label: 'Lifetime Taxes Paid',
       valueA: formatCurrency(scenario_a.lifetime_taxes_paid),
       valueB: formatCurrency(scenario_b.lifetime_taxes_paid),
+      valueC: scenario_c ? formatCurrency(scenario_c.lifetime_taxes_paid) : undefined,
       improved: scenario_b.lifetime_taxes_paid < scenario_a.lifetime_taxes_paid,
       difference: formatCurrency(comparison_metrics.tax_savings_lifetime),
       lowerIsBetter: true,
@@ -64,6 +78,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
       label: 'Guaranteed Income',
       valueA: scenario_a.has_guaranteed_income ? 'Yes (SS/Pension)' : 'None',
       valueB: scenario_b.has_guaranteed_income ? 'Yes' : 'No',
+      valueC: scenario_c?.has_guaranteed_income ? 'Yes (SS/Pension)' : 'None',
       improved: scenario_b.has_guaranteed_income && !scenario_a.has_guaranteed_income,
       isBoolean: true,
     },
@@ -71,6 +86,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
       label: 'Tax-Free Income',
       valueA: scenario_a.has_tax_free_income ? 'Yes' : 'None',
       valueB: scenario_b.has_tax_free_income ? 'Yes' : 'None',
+      valueC: scenario_c?.has_tax_free_income ? 'Yes' : 'None',
       improved: scenario_b.has_tax_free_income && !scenario_a.has_tax_free_income,
       isBoolean: true,
     },
@@ -78,6 +94,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
       label: 'Money Lasts Until Age',
       valueA: scenario_a.money_runs_out_age ? `${scenario_a.money_runs_out_age}` : '95+',
       valueB: scenario_b.money_runs_out_age ? `${scenario_b.money_runs_out_age}` : '95+',
+      valueC: scenario_c?.money_runs_out_age ? `${scenario_c.money_runs_out_age}` : '95+',
       improved: comparison_metrics.longevity_improvement_years > 0,
       difference: comparison_metrics.longevity_improvement_years > 0 
         ? `+${comparison_metrics.longevity_improvement_years} years` 
@@ -87,6 +104,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
       label: 'Market Risk Exposure',
       valueA: scenario_a.market_risk_exposure,
       valueB: scenario_b.market_risk_exposure,
+      valueC: scenario_c?.market_risk_exposure,
       improved: comparison_metrics.market_risk_reduction,
       isRisk: true,
     },
@@ -94,6 +112,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
       label: 'Legacy Value at Age 90',
       valueA: formatCurrency(scenario_a.legacy_value_at_90),
       valueB: formatCurrency(scenario_b.legacy_value_at_90),
+      valueC: scenario_c ? formatCurrency(scenario_c.legacy_value_at_90) : undefined,
       improved: scenario_b.legacy_value_at_90 > scenario_a.legacy_value_at_90,
       difference: formatCurrency(comparison_metrics.legacy_improvement_amount),
     },
@@ -118,6 +137,12 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
         <CardTitle className="flex items-center gap-2 text-lg">
           <TrendingUp className="h-5 w-5 text-primary" />
           Side-by-Side Comparison
+          {hasScenarioC && (
+            <Badge variant="outline" className="ml-2 bg-orange-50 text-orange-700 border-orange-200">
+              <BarChart3 className="h-3 w-3 mr-1" />
+              vs {OTHER_ASSET_LABELS[otherAssetType!]}
+            </Badge>
+          )}
           <Button 
             variant="ghost" 
             size="sm" 
@@ -131,18 +156,24 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
       </CardHeader>
       <CardContent>
         {/* Header Row */}
-        <div className="grid grid-cols-4 gap-4 mb-4 pb-2 border-b">
-          <div className="font-medium text-muted-foreground text-sm">Metric</div>
-          <div className="font-semibold text-center">
-            <span className="text-muted-foreground text-xs block">Scenario A</span>
-            Current Path
+        <div className={`grid ${gridCols} gap-2 md:gap-4 mb-4 pb-2 border-b`}>
+          <div className="font-medium text-muted-foreground text-xs md:text-sm">Metric</div>
+          <div className="font-semibold text-center text-xs md:text-sm">
+            <span className="text-muted-foreground text-xs block">A</span>
+            Current
           </div>
-          <div className="font-semibold text-center text-primary">
-            <span className="text-muted-foreground text-xs block">Scenario B</span>
-            Optimized Strategy
+          <div className="font-semibold text-center text-primary text-xs md:text-sm">
+            <span className="text-muted-foreground text-xs block">B</span>
+            Optimized
           </div>
-          <div className="font-semibold text-center text-sm">
-            Improvement
+          {hasScenarioC && (
+            <div className="font-semibold text-center text-orange-600 text-xs md:text-sm">
+              <span className="text-muted-foreground text-xs block">C</span>
+              {OTHER_ASSET_LABELS[otherAssetType!]}
+            </div>
+          )}
+          <div className="font-semibold text-center text-xs md:text-sm">
+            B vs A
           </div>
         </div>
         

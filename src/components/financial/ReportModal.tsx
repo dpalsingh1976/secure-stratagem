@@ -29,7 +29,7 @@ import type {
   PlanningReadinessData
 } from '@/types/financial';
 
-import type { RetirementReadinessResult, ScenarioComparison, RetirementPreferencesData, DEFAULT_RETIREMENT_PREFERENCES } from '@/types/retirement';
+import type { RetirementReadinessResult, ScenarioComparison, RetirementPreferencesData, AllocationOverrides, OtherAssetType, DEFAULT_RETIREMENT_PREFERENCES } from '@/types/retirement';
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -79,6 +79,7 @@ export function ReportModal({
   // Client allocation inputs for IUL/Annuity
   const [iulAllocation, setIulAllocation] = useState(0);
   const [annuityAllocation, setAnnuityAllocation] = useState(0);
+  const [otherAssetType, setOtherAssetType] = useState<OtherAssetType>('none');
 
   // Get client email from profile data
   const clientEmail = profileData.email || '';
@@ -140,6 +141,13 @@ export function ReportModal({
         survivor_income_need: undefined
       };
       
+      // Build allocation overrides from user inputs
+      const allocationOverrides: AllocationOverrides = {
+        iul_annual_premium: iulAllocation > 0 ? iulAllocation : undefined,
+        annuity_one_time_premium: annuityAllocation > 0 ? annuityAllocation : undefined,
+        other_asset_type: otherAssetType
+      };
+      
       return computeScenarioComparison(
         profileData,
         incomeData,
@@ -148,13 +156,14 @@ export function ReportModal({
         retirementResult.projection,
         metrics,
         protectionData,
-        planningReadiness
+        planningReadiness,
+        allocationOverrides
       );
     } catch (error) {
       console.error('Error computing scenario comparison:', error);
       return null;
     }
-  }, [retirementResult, profileData, incomeData, assets, metrics, protectionData]);
+  }, [retirementResult, profileData, incomeData, assets, metrics, protectionData, iulAllocation, annuityAllocation, otherAssetType]);
 
   // Helper to get risk level label
   const getRiskLevelLabel = (score: number) => {
@@ -1252,8 +1261,10 @@ export function ReportModal({
                         incomeGapMonthly={retirementResult?.projection.monthly_gap || 0}
                         onIULAllocationChange={setIulAllocation}
                         onAnnuityAllocationChange={setAnnuityAllocation}
+                        onOtherAssetTypeChange={setOtherAssetType}
                         iulAllocation={iulAllocation}
                         annuityAllocation={annuityAllocation}
+                        otherAssetType={otherAssetType}
                         iulEligible={scenarioComparison.iul_eligibility?.is_eligible ?? false}
                         annuityEligible={scenarioComparison.annuity_eligibility?.is_eligible ?? false}
                         iulExclusionReason={scenarioComparison.iul_eligibility?.exclusion_reason}
@@ -1264,6 +1275,7 @@ export function ReportModal({
                       <ScenarioComparisonCard 
                         comparison={scenarioComparison} 
                         clientAllocations={{ iul: iulAllocation, annuity: annuityAllocation }}
+                        otherAssetType={otherAssetType}
                       />
                       
                       {/* Timeline Visualization */}

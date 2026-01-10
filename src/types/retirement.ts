@@ -239,11 +239,23 @@ export interface YearlyProjection {
 }
 
 /**
+ * Allocation overrides from user input
+ */
+export type OtherAssetType = 'stocks' | 'bonds' | 'balanced' | 'none';
+
+export interface AllocationOverrides {
+  iul_annual_premium?: number;
+  annuity_one_time_premium?: number;
+  other_asset_type?: OtherAssetType;
+}
+
+/**
  * Comparison between Current Path and Optimized Strategy
  */
 export interface ScenarioComparison {
   scenario_a: ScenarioProjection;
   scenario_b: ScenarioProjection;
+  scenario_c?: ScenarioProjection; // Alternative investment scenario
   
   // Improvement Metrics
   comparison_metrics: {
@@ -253,6 +265,13 @@ export interface ScenarioComparison {
     longevity_improvement_years: number;
     legacy_improvement_amount: number;
     market_risk_reduction: boolean;
+  };
+  
+  // Improvement over Scenario C (if present)
+  comparison_vs_alternative?: {
+    income_improvement_monthly: number;
+    tax_savings_lifetime: number;
+    legacy_improvement_amount: number;
   };
   
   // Include IUL/Annuity in optimization?
