@@ -182,12 +182,13 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
           {metrics.map((metric, index) => (
             <div 
               key={metric.label} 
-              className={`grid grid-cols-4 gap-4 py-2 ${index % 2 === 0 ? 'bg-muted/30 rounded-lg px-2 -mx-2' : ''}`}
+              className={`grid ${gridCols} gap-2 md:gap-4 py-2 ${index % 2 === 0 ? 'bg-muted/30 rounded-lg px-2 -mx-2' : ''}`}
             >
               <div className="text-sm font-medium flex items-center">
                 {metric.label}
               </div>
               
+              {/* Scenario A Value */}
               <div className="text-center text-sm">
                 {metric.isRisk ? (
                   <Badge variant="outline" className={getRiskBadgeStyle(metric.valueA as string)}>
@@ -202,6 +203,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
                 )}
               </div>
               
+              {/* Scenario B Value */}
               <div className="text-center text-sm font-medium">
                 {metric.isRisk ? (
                   <Badge variant="outline" className={getRiskBadgeStyle(metric.valueB as string)}>
@@ -218,6 +220,26 @@ export function ScenarioComparisonCard({ comparison, clientAllocations, otherAss
                 )}
               </div>
               
+              {/* Scenario C Value (Alternative Investment) */}
+              {hasScenarioC && (
+                <div className="text-center text-sm">
+                  {metric.isRisk ? (
+                    <Badge variant="outline" className={getRiskBadgeStyle(metric.valueC as string)}>
+                      {(metric.valueC as string)?.charAt(0).toUpperCase() + (metric.valueC as string)?.slice(1)}
+                    </Badge>
+                  ) : metric.isBoolean ? (
+                    <span className="text-orange-600">
+                      {metric.valueC || '—'}
+                    </span>
+                  ) : (
+                    <span className="text-orange-600">
+                      {metric.valueC || '—'}
+                    </span>
+                  )}
+                </div>
+              )}
+              
+              {/* B vs A Difference */}
               <div className="text-center">
                 {metric.improved ? (
                   <div className="flex items-center justify-center gap-1">
