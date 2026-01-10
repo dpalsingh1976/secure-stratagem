@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 import { 
   ArrowRight, 
   TrendingUp, 
@@ -10,9 +11,11 @@ import {
   DollarSign,
   CheckCircle,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 import type { ScenarioComparison } from '@/types/retirement';
+import { AssumptionsModal } from './AssumptionsModal';
 
 interface ScenarioComparisonCardProps {
   comparison: ScenarioComparison;
@@ -32,6 +35,7 @@ const formatPercent = (value: number): string => {
 };
 
 export function ScenarioComparisonCard({ comparison }: ScenarioComparisonCardProps) {
+  const [showAssumptions, setShowAssumptions] = useState(false);
   const { scenario_a, scenario_b, comparison_metrics } = comparison;
   
   const metrics = [
@@ -108,6 +112,15 @@ export function ScenarioComparisonCard({ comparison }: ScenarioComparisonCardPro
         <CardTitle className="flex items-center gap-2 text-lg">
           <TrendingUp className="h-5 w-5 text-primary" />
           Side-by-Side Comparison
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowAssumptions(true)}
+            className="text-muted-foreground hover:text-primary ml-auto text-xs"
+          >
+            <Info className="h-4 w-4 mr-1" />
+            View Assumptions
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -238,6 +251,13 @@ export function ScenarioComparisonCard({ comparison }: ScenarioComparisonCardPro
           </div>
         )}
       </CardContent>
+      
+      {/* Assumptions Modal */}
+      <AssumptionsModal 
+        open={showAssumptions} 
+        onClose={() => setShowAssumptions(false)}
+        comparison={comparison}
+      />
     </Card>
   );
 }

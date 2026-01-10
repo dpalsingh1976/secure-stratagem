@@ -274,4 +274,39 @@ export interface ScenarioComparison {
   
   // Compliance
   disclaimer: string;
+  
+  // Eligibility Breakdown (for transparency modal)
+  annuity_eligibility?: {
+    prefers_guaranteed: boolean;
+    has_income_gap: boolean;
+    income_gap_percent: number;
+    near_retirement: boolean;
+    years_to_retirement: number;
+    sequence_risk_high: boolean;
+    guaranteed_coverage_ratio: number;
+    has_minimum_assets: boolean;
+    minimum_required: number;
+    actual_portfolio: number;
+    is_eligible: boolean;
+    exclusion_reason?: string;
+  };
+  
+  iul_eligibility?: {
+    tax_deferred_pct: number;
+    tax_free_pct: number;
+    high_tax_bracket: boolean;
+    wants_tax_free: boolean;
+    has_legacy_priority: boolean;
+    has_protection_gap: boolean;
+    is_eligible: boolean;
+  };
+  
+  calculation_inputs?: {
+    return_rate: number;
+    inflation_rate: number;
+    marginal_tax_rate: number;
+    withdrawal_rate: number;
+    life_expectancy: number;
+    rmd_start_age: number;
+  };
 }
