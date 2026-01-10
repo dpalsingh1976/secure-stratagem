@@ -40,6 +40,10 @@ const FIA_INCOME_RIDER_RATE = 0.055; // 5.5% benefit base growth
 const FIA_PAYOUT_RATE = 0.05; // 5% of benefit base at activation
 const RMD_START_AGE = 73;
 
+// Minimum asset thresholds for annuity allocation
+const MINIMUM_PORTFOLIO_FOR_ANNUITY = 150000; // Need at least $150K for meaningful allocation
+const MINIMUM_ANNUITY_PREMIUM = 22500; // 15% of $150K = $22,500 minimum
+
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
@@ -194,7 +198,35 @@ function simulateScenarioB(
   metrics: ComputedMetrics,
   protectionData: ProtectionHealthData,
   planningReadiness: PlanningReadinessData
-): ScenarioProjection & { includesIUL: boolean; includesAnnuity: boolean; iulReason?: string; annuityReason?: string } {
+): ScenarioProjection & { 
+  includesIUL: boolean; 
+  includesAnnuity: boolean; 
+  iulReason?: string; 
+  annuityReason?: string;
+  annuityEligibility: {
+    prefers_guaranteed: boolean;
+    has_income_gap: boolean;
+    income_gap_percent: number;
+    near_retirement: boolean;
+    years_to_retirement: number;
+    sequence_risk_high: boolean;
+    guaranteed_coverage_ratio: number;
+    has_minimum_assets: boolean;
+    minimum_required: number;
+    actual_portfolio: number;
+    is_eligible: boolean;
+    exclusion_reason?: string;
+  };
+  iulEligibility: {
+    tax_deferred_pct: number;
+    tax_free_pct: number;
+    high_tax_bracket: boolean;
+    wants_tax_free: boolean;
+    has_legacy_priority: boolean;
+    has_protection_gap: boolean;
+    is_eligible: boolean;
+  };
+} {
   const currentAge = getCurrentAge(profileData.dob);
   const retirementAge = profileData.retirement_age || 65;
   const yearsToRetirement = getYearsToRetirement(profileData.dob, retirementAge);
@@ -220,6 +252,17 @@ function simulateScenarioB(
   const hasLegacyPriority = planningReadiness.legacy_priority === 'high';
   const hasProtectionGap = metrics.protection_gap > 50000;
   
+  // Track IUL eligibility
+  const iulEligibility = {
+    tax_deferred_pct: taxDeferredPct,
+    tax_free_pct: taxFreePct,
+    high_tax_bracket: highTaxBracket,
+    wants_tax_free: wantsTaxFree || false,
+    has_legacy_priority: hasLegacyPriority,
+    has_protection_gap: hasProtectionGap,
+    is_eligible: false
+  };
+  
   // IUL inclusion logic
   if (
     (taxDeferredPct > 60 || taxFreePct < 20) ||
@@ -229,6 +272,7 @@ function simulateScenarioB(
     hasProtectionGap
   ) {
     includesIUL = true;
+    iulEligibility.is_eligible = true;
     iulAllocationPercent = 12; // 12% of contributions reallocated
     iulAnnualPremium = preferences.annual_retirement_contribution * (iulAllocationPercent / 100);
     
@@ -262,14 +306,35 @@ function simulateScenarioB(
   const guaranteedCoverageRatio = fixedExpenses > 0 ? guaranteedIncome / fixedExpenses : 1;
   const lowGuaranteedCoverage = guaranteedCoverageRatio < 0.7;
   
-  // Annuity inclusion logic
-  if (
-    prefersGuaranteed ||
+  // Check minimum asset threshold for annuity
+  const hasMinimumAssets = projection.projected_portfolio_at_retirement >= MINIMUM_PORTFOLIO_FOR_ANNUITY;
+  
+  // Track annuity eligibility
+  const annuityEligibility = {
+    prefers_guaranteed: prefersGuaranteed,
+    has_income_gap: hasIncomeGap,
+    income_gap_percent: projection.gap_percentage,
+    near_retirement: nearRetirement,
+    years_to_retirement: yearsToRetirement,
+    sequence_risk_high: sequenceRiskHigh,
+    guaranteed_coverage_ratio: guaranteedCoverageRatio,
+    has_minimum_assets: hasMinimumAssets,
+    minimum_required: MINIMUM_PORTFOLIO_FOR_ANNUITY,
+    actual_portfolio: projection.projected_portfolio_at_retirement,
+    is_eligible: false,
+    exclusion_reason: undefined as string | undefined
+  };
+  
+  // Determine if criteria are met (before asset check)
+  const meetsCriteria = prefersGuaranteed ||
     (hasIncomeGap && nearRetirement) ||
     sequenceRiskHigh ||
-    lowGuaranteedCoverage
-  ) {
+    lowGuaranteedCoverage;
+  
+  // Annuity inclusion logic - now includes minimum asset check
+  if (meetsCriteria && hasMinimumAssets) {
     includesAnnuity = true;
+    annuityEligibility.is_eligible = true;
     annuityAllocationPercent = 15; // 15% of retirement assets to FIA
     annuityPremium = projection.projected_portfolio_at_retirement * (annuityAllocationPercent / 100);
     
@@ -279,7 +344,11 @@ function simulateScenarioB(
     if (sequenceRiskHigh) reasons.push('high sequence risk concern');
     if (lowGuaranteedCoverage) reasons.push('low guaranteed income coverage');
     
-    annuityReason = `Annuity included because: ${reasons.slice(0, 2).join(', ')}`;
+    annuityReason = `Guaranteed income included because: ${reasons.slice(0, 2).join(', ')}`;
+  } else if (meetsCriteria && !hasMinimumAssets) {
+    // Client meets criteria but doesn't have enough assets
+    annuityEligibility.exclusion_reason = `Minimum portfolio of ${formatCurrency(MINIMUM_PORTFOLIO_FOR_ANNUITY)} required for meaningful guaranteed income allocation. Your projected portfolio is ${formatCurrency(projection.projected_portfolio_at_retirement)}. Focus on growing your assets first.`;
+    annuityReason = `Guaranteed income NOT included: Insufficient projected assets (need ${formatCurrency(MINIMUM_PORTFOLIO_FOR_ANNUITY)}, have ${formatCurrency(projection.projected_portfolio_at_retirement)})`;
   }
   
   // ============================================
@@ -448,7 +517,9 @@ function simulateScenarioB(
     includesIUL,
     includesAnnuity,
     iulReason,
-    annuityReason
+    annuityReason,
+    annuityEligibility,
+    iulEligibility
   };
 }
 
@@ -629,7 +700,7 @@ export function computeScenarioComparison(
     planningReadiness
   );
   
-  const { includesIUL, includesAnnuity, iulReason, annuityReason, ...scenarioB } = scenarioBResult;
+  const { includesIUL, includesAnnuity, iulReason, annuityReason, annuityEligibility, iulEligibility, ...scenarioB } = scenarioBResult;
   
   // Calculate comparison metrics
   const incomeImprovementMonthly = scenarioB.retirement_income_net - scenarioA.retirement_income_net;
@@ -670,6 +741,16 @@ export function computeScenarioComparison(
     plain_english_summary: plainEnglishSummary,
     product_positioning: productPositioning,
     advisor_summary: advisorSummary,
+    annuity_eligibility: annuityEligibility,
+    iul_eligibility: iulEligibility,
+    calculation_inputs: {
+      return_rate: RETURN_ASSUMPTIONS.BASE,
+      inflation_rate: INFLATION_ASSUMPTIONS.DEFAULT,
+      marginal_tax_rate: TAX_ASSUMPTIONS.MARGINAL_RATE_DEFAULT,
+      withdrawal_rate: WITHDRAWAL_RATES.SAFE_RATE,
+      life_expectancy: LIFE_EXPECTANCY.CONSERVATIVE,
+      rmd_start_age: RMD_START_AGE
+    },
     disclaimer: "DISCLAIMER: These projections are for educational purposes only and are based on illustrated, " +
       "conservative assumptions. They do not constitute financial, tax, or legal advice. " +
       "IUL cash value and policy loans are subject to policy terms and conditions. " +
