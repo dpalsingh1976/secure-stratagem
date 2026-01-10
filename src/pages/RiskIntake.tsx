@@ -88,7 +88,12 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     social_security_confidence: 'medium',
     expected_part_time_income: 0,
     monthly_retirement_income_goal_net: 0,
-    other_guaranteed_income_monthly: 0
+    other_guaranteed_income_monthly: 0,
+    // Available Cash & Rollover Assets
+    monthly_checking_balance: 0,
+    has_old_401k: false,
+    old_401k_balance: 0,
+    old_401k_employer_name: ''
   });
 
   const [assets, setAssets] = useState<AssetFormData[]>([]);
