@@ -455,6 +455,7 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
             assets={assets}
             liabilities={liabilities}
             protectionData={protectionData}
+            planningReadiness={planningReadiness}
           />
         )}
       </div>

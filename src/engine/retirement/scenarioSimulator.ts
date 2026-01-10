@@ -331,8 +331,27 @@ function simulateScenarioB(
     sequenceRiskHigh ||
     lowGuaranteedCoverage;
   
-  // Annuity inclusion logic - now includes minimum asset check
-  if (meetsCriteria && hasMinimumAssets) {
+  // ============================================
+  // AGE-BASED GUARDRAIL FOR ANNUITY
+  // ============================================
+  const AGE_MINIMUM_FOR_ANNUITY = 45;
+  const AGE_EXCEPTION_YEARS_TO_RETIREMENT = 15;
+  
+  // Check if age disqualifies annuity recommendation
+  const ageQualifiesForAnnuity = 
+    currentAge >= AGE_MINIMUM_FOR_ANNUITY || 
+    yearsToRetirement <= AGE_EXCEPTION_YEARS_TO_RETIREMENT;
+  
+  // Check for extreme indicators that override age constraint
+  const hasExtremeIndicators = 
+    planningReadiness.longevity_concern === 'high' &&
+    planningReadiness.wants_monthly_paycheck_feel === true &&
+    ['panic_sell', 'reduce_risk'].includes(planningReadiness.behavior_in_down_market || '');
+  
+  const ageAllowsAnnuity = ageQualifiesForAnnuity || hasExtremeIndicators;
+  
+  // Annuity inclusion logic - now includes minimum asset check AND age check
+  if (meetsCriteria && hasMinimumAssets && ageAllowsAnnuity) {
     includesAnnuity = true;
     annuityEligibility.is_eligible = true;
     annuityAllocationPercent = 15; // 15% of retirement assets to FIA
@@ -345,6 +364,10 @@ function simulateScenarioB(
     if (lowGuaranteedCoverage) reasons.push('low guaranteed income coverage');
     
     annuityReason = `Guaranteed income included because: ${reasons.slice(0, 2).join(', ')}`;
+  } else if (meetsCriteria && !ageAllowsAnnuity) {
+    // Client meets criteria but is too young
+    annuityEligibility.exclusion_reason = `At age ${currentAge} with ${yearsToRetirement} years to retirement, guaranteed income products are not yet appropriate. Focus on growth strategies and revisit closer to retirement (age 50+ or within 15 years of retirement).`;
+    annuityReason = `Guaranteed income NOT included: Age ${currentAge} with ${yearsToRetirement} years to retirement - focus on growth first`;
   } else if (meetsCriteria && !hasMinimumAssets) {
     // Client meets criteria but doesn't have enough assets
     annuityEligibility.exclusion_reason = `Minimum portfolio of ${formatCurrency(MINIMUM_PORTFOLIO_FOR_ANNUITY)} required for meaningful guaranteed income allocation. Your projected portfolio is ${formatCurrency(projection.projected_portfolio_at_retirement)}. Focus on growing your assets first.`;

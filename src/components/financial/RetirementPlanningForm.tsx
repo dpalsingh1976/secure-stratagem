@@ -456,6 +456,13 @@ export function RetirementPlanningForm({
                 <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-xs">2</span>
                 Goals & Preferences
               </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                readinessStep === 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+              }`}>
+                <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-xs">3</span>
+                Health & Risk Behavior
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -684,7 +691,298 @@ export function RetirementPlanningForm({
                     <ChevronLeft className="h-4 w-4" />
                     Back
                   </Button>
-                  <p className="text-sm text-muted-foreground self-center">See your results below</p>
+                  <Button onClick={() => setReadinessStep(3)} className="gap-2">
+                    Continue to Health & Risk
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Health, Behavior & Goal Ranking */}
+            {readinessStep === 3 && (
+              <div className="space-y-6">
+                {/* Health & Longevity Section */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Health & Longevity</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Self-assessed health */}
+                    <div className="space-y-3">
+                      <Label className="text-base font-medium">How would you rate your current health?</Label>
+                      <Select 
+                        value={planningReadiness.self_assessed_health || 'good'} 
+                        onValueChange={(value: 'excellent' | 'good' | 'fair' | 'poor') => handleReadinessChange('self_assessed_health', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="excellent">Excellent</SelectItem>
+                          <SelectItem value="good">Good</SelectItem>
+                          <SelectItem value="fair">Fair</SelectItem>
+                          <SelectItem value="poor">Poor</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Family longevity history */}
+                    <div className="space-y-3">
+                      <Label className="text-base font-medium">Based on your family history, how long do you expect to live?</Label>
+                      <Select 
+                        value={planningReadiness.family_longevity_history || 'average'} 
+                        onValueChange={(value: 'below_average' | 'average' | 'above_average') => handleReadinessChange('family_longevity_history', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="below_average">Shorter than average</SelectItem>
+                          <SelectItem value="average">Average (mid-80s)</SelectItem>
+                          <SelectItem value="above_average">Longer than average</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Longevity concern */}
+                    <div className="space-y-3">
+                      <Label className="text-base font-medium">How concerned are you about outliving your savings?</Label>
+                      <Select 
+                        value={planningReadiness.longevity_concern || 'medium'} 
+                        onValueChange={(value: 'low' | 'medium' | 'high') => handleReadinessChange('longevity_concern', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Not concerned</SelectItem>
+                          <SelectItem value="medium">Somewhat concerned</SelectItem>
+                          <SelectItem value="high">Very concerned</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Investment Behavior Section */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Investment Experience & Behavior</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Investment experience */}
+                    <div className="space-y-3">
+                      <Label className="text-base font-medium">What is your investment experience level?</Label>
+                      <Select 
+                        value={planningReadiness.investment_experience_level || 'intermediate'} 
+                        onValueChange={(value: 'novice' | 'intermediate' | 'experienced') => handleReadinessChange('investment_experience_level', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="novice">Novice - Limited experience</SelectItem>
+                          <SelectItem value="intermediate">Intermediate - Some experience</SelectItem>
+                          <SelectItem value="experienced">Experienced - Extensive experience</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Behavior in down market */}
+                    <div className="space-y-3">
+                      <Label className="text-base font-medium">If your investments dropped 20% in one year, what would you do?</Label>
+                      <Select 
+                        value={planningReadiness.behavior_in_down_market || 'hold'} 
+                        onValueChange={(value: 'panic_sell' | 'reduce_risk' | 'hold' | 'buy_more' | 'unsure') => handleReadinessChange('behavior_in_down_market', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="panic_sell">Sell everything to stop the losses</SelectItem>
+                          <SelectItem value="reduce_risk">Reduce risk / move to safer investments</SelectItem>
+                          <SelectItem value="hold">Hold steady and wait for recovery</SelectItem>
+                          <SelectItem value="buy_more">Buy more at lower prices</SelectItem>
+                          <SelectItem value="unsure">Not sure</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Comfort with complex products */}
+                    <div className="space-y-3">
+                      <Label className="text-base font-medium">How comfortable are you with complex financial products?</Label>
+                      <Select 
+                        value={planningReadiness.comfort_with_complex_products || 'medium'} 
+                        onValueChange={(value: 'low' | 'medium' | 'high') => handleReadinessChange('comfort_with_complex_products', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low - Prefer simple, straightforward options</SelectItem>
+                          <SelectItem value="medium">Medium - Willing to learn</SelectItem>
+                          <SelectItem value="high">High - Comfortable with complexity</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Willingness to keep funds illiquid */}
+                    <div className="space-y-3">
+                      <Label className="text-base font-medium">How many years can you keep funds locked up?</Label>
+                      <p className="text-sm text-muted-foreground">Some strategies require funds to stay invested for years</p>
+                      <div className="flex items-center space-x-4">
+                        <Slider
+                          value={[planningReadiness.willingness_illiquidity_years || 7]}
+                          onValueChange={(value) => handleReadinessChange('willingness_illiquidity_years', value[0])}
+                          min={0}
+                          max={15}
+                          step={1}
+                          className="flex-1"
+                        />
+                        <span className="font-semibold text-lg w-20 text-right">
+                          {planningReadiness.willingness_illiquidity_years || 7} years
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Goal Priority Ranking Section */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Rank Your Goals (1 = Most Important)</h3>
+                  <p className="text-sm text-muted-foreground">This helps us understand which strategies best align with your priorities</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Guaranteed Income */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <Label className="font-medium">Guaranteed Lifetime Income</Label>
+                        <p className="text-sm text-muted-foreground">Income I can't outlive</p>
+                      </div>
+                      <Select 
+                        value={String(planningReadiness.goal_priorities?.guaranteed_income || 1)} 
+                        onValueChange={(value) => handleGoalPriorityChange('guaranteed_income', parseInt(value))}
+                      >
+                        <SelectTrigger className="w-20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1st</SelectItem>
+                          <SelectItem value="2">2nd</SelectItem>
+                          <SelectItem value="3">3rd</SelectItem>
+                          <SelectItem value="4">4th</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Flexibility / Liquidity */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <Label className="font-medium">Flexibility / Liquidity</Label>
+                        <p className="text-sm text-muted-foreground">Access to funds when needed</p>
+                      </div>
+                      <Select 
+                        value={String(planningReadiness.goal_priorities?.flexibility_liquidity || 2)} 
+                        onValueChange={(value) => handleGoalPriorityChange('flexibility_liquidity', parseInt(value))}
+                      >
+                        <SelectTrigger className="w-20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1st</SelectItem>
+                          <SelectItem value="2">2nd</SelectItem>
+                          <SelectItem value="3">3rd</SelectItem>
+                          <SelectItem value="4">4th</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Legacy / Estate */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <Label className="font-medium">Legacy / Estate Value</Label>
+                        <p className="text-sm text-muted-foreground">Leave money to heirs</p>
+                      </div>
+                      <Select 
+                        value={String(planningReadiness.goal_priorities?.legacy_estate || 3)} 
+                        onValueChange={(value) => handleGoalPriorityChange('legacy_estate', parseInt(value))}
+                      >
+                        <SelectTrigger className="w-20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1st</SelectItem>
+                          <SelectItem value="2">2nd</SelectItem>
+                          <SelectItem value="3">3rd</SelectItem>
+                          <SelectItem value="4">4th</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Inflation Protection */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <Label className="font-medium">Inflation Protection</Label>
+                        <p className="text-sm text-muted-foreground">Keep up with rising costs</p>
+                      </div>
+                      <Select 
+                        value={String(planningReadiness.goal_priorities?.inflation_protection || 4)} 
+                        onValueChange={(value) => handleGoalPriorityChange('inflation_protection', parseInt(value))}
+                      >
+                        <SelectTrigger className="w-20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1st</SelectItem>
+                          <SelectItem value="2">2nd</SelectItem>
+                          <SelectItem value="3">3rd</SelectItem>
+                          <SelectItem value="4">4th</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Peace of Mind */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Peace of Mind</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div 
+                      className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                      onClick={() => handleReadinessChange('wants_monthly_paycheck_feel', !planningReadiness.wants_monthly_paycheck_feel)}
+                    >
+                      <Checkbox
+                        checked={planningReadiness.wants_monthly_paycheck_feel || false}
+                        onCheckedChange={(checked) => handleReadinessChange('wants_monthly_paycheck_feel', checked)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <div>
+                        <Label className="cursor-pointer font-medium">I want my retirement income to feel like a monthly paycheck</Label>
+                        <p className="text-sm text-muted-foreground mt-1">Predictable, steady income I can count on</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label className="text-base font-medium">How important is peace of mind vs. maximizing returns?</Label>
+                      <Select 
+                        value={planningReadiness.sleep_at_night_priority || 'medium'} 
+                        onValueChange={(value: 'low' | 'medium' | 'high') => handleReadinessChange('sleep_at_night_priority', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">I'll take more risk for more returns</SelectItem>
+                          <SelectItem value="medium">Balance of both</SelectItem>
+                          <SelectItem value="high">Peace of mind is most important</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between pt-4">
+                  <Button variant="outline" onClick={() => setReadinessStep(2)} className="gap-2">
+                    <ChevronLeft className="h-4 w-4" />
+                    Back
+                  </Button>
+                  <p className="text-sm text-muted-foreground self-center">✓ Assessment complete - see results below</p>
                 </div>
               </div>
             )}

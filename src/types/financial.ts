@@ -325,24 +325,24 @@ export interface PlanningReadinessData {
   // G) Suitability Guardrails
   debt_pressure_level: ConcernLevel;
   
-  // H) Demographics & Health (NEW)
-  self_assessed_health: HealthStatus;
-  family_longevity_history: LongevityHistory;
-  longevity_concern: ConcernLevel;
+  // H) Demographics & Health (NEW - optional until collected)
+  self_assessed_health?: HealthStatus;
+  family_longevity_history?: LongevityHistory;
+  longevity_concern?: ConcernLevel;
   
-  // I) Goal Hierarchy (Priority Ranking 1-4) (NEW)
-  goal_priorities: GoalPriorityRanking;
+  // I) Goal Hierarchy (Priority Ranking 1-4) (NEW - optional until collected)
+  goal_priorities?: GoalPriorityRanking;
   
-  // J) Risk, Time Horizon & Behavior (NEW)
-  investment_experience_level: InvestmentExperience;
-  comfort_with_complex_products: ProductComfort;
-  willingness_illiquidity_years: number; // Years willing to keep funds locked
-  behavior_in_down_market: DownMarketBehavior;
+  // J) Risk, Time Horizon & Behavior (NEW - optional until collected)
+  investment_experience_level?: InvestmentExperience;
+  comfort_with_complex_products?: ProductComfort;
+  willingness_illiquidity_years?: number; // Years willing to keep funds locked
+  behavior_in_down_market?: DownMarketBehavior;
   
   // K) Income stability preference (neutral wording for guaranteed income)
-  wants_monthly_paycheck_feel: boolean;
-  sleep_at_night_priority: ConcernLevel;
-  survivor_income_need: ConcernLevel;
+  wants_monthly_paycheck_feel?: boolean;
+  sleep_at_night_priority?: ConcernLevel;
+  survivor_income_need?: ConcernLevel;
 }
 
 export interface RiskPreferencesData {
