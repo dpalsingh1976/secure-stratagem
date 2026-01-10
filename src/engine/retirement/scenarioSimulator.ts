@@ -410,9 +410,14 @@ function simulateScenarioB(
     const retirementYears = 20;
     iulTaxFreeIncome = loanableValue / retirementYears / 12; // Monthly
     
-    // Death benefit
-    iulDeathBenefit = iulAnnualPremium * IUL_DEATH_BENEFIT_MULTIPLE * yearsToRetirement / 10;
-    iulDeathBenefit = Math.max(iulDeathBenefit, iulCashValueAtRetirement * 1.5);
+    // Death benefit - use client override if provided, otherwise calculate
+    if (allocationOverrides?.iul_death_benefit && allocationOverrides.iul_death_benefit > 0) {
+      iulDeathBenefit = allocationOverrides.iul_death_benefit;
+    } else {
+      // Default calculation: premium × 8x multiple × years factor
+      iulDeathBenefit = iulAnnualPremium * IUL_DEATH_BENEFIT_MULTIPLE * yearsToRetirement / 10;
+      iulDeathBenefit = Math.max(iulDeathBenefit, iulCashValueAtRetirement * 1.5);
+    }
   }
   
   // Annuity projections
