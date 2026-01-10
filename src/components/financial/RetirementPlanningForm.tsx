@@ -55,8 +55,8 @@ export function RetirementPlanningForm({
   onPlanningReadinessChange,
   hasEmployerMatch = false
 }: RetirementPlanningFormProps) {
-  // 2-step wizard state
-  const [readinessStep, setReadinessStep] = useState<1 | 2>(1);
+  // 3-step wizard state
+  const [readinessStep, setReadinessStep] = useState<1 | 2 | 3>(1);
 
   const handleProfileChange = (field: keyof ProfileGoalsData, value: any) => {
     onProfileChange({ ...profileData, [field]: value });
@@ -72,6 +72,28 @@ export function RetirementPlanningForm({
 
   const handleReadinessChange = (field: keyof PlanningReadinessData, value: any) => {
     onPlanningReadinessChange({ ...planningReadiness, [field]: value });
+  };
+
+  // Handle goal priority changes
+  const handleGoalPriorityChange = (goal: 'guaranteed_income' | 'flexibility_liquidity' | 'legacy_estate' | 'inflation_protection', rank: number) => {
+    const currentPriorities = planningReadiness.goal_priorities || {
+      guaranteed_income: 1,
+      flexibility_liquidity: 2,
+      legacy_estate: 3,
+      inflation_protection: 4
+    };
+    
+    // Find which goal currently has the new rank
+    const otherGoal = Object.entries(currentPriorities).find(([g, r]) => r === rank && g !== goal);
+    
+    // Swap ranks
+    const newPriorities = { ...currentPriorities };
+    if (otherGoal) {
+      newPriorities[otherGoal[0] as keyof typeof currentPriorities] = currentPriorities[goal];
+    }
+    newPriorities[goal] = rank;
+    
+    handleReadinessChange('goal_priorities', newPriorities);
   };
 
   const formatCurrency = (value: number) => {

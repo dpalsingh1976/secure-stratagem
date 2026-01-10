@@ -123,6 +123,10 @@ export interface RetirementReadinessResult {
   recommendations: ProductRecommendation[];
   key_insights: string[];
   action_items: string[];
+  // Education-only mode (when guardrails fail or data incomplete)
+  education_only?: boolean;
+  education_reason?: string;
+  guardrail_warnings?: string[];
 }
 
 // Savings Waterfall Types for Allocation Engine

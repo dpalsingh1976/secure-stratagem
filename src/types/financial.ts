@@ -220,6 +220,9 @@ export interface IncomeExpensesData {
   contribution_growth_rate: number;
   social_security_confidence: 'low' | 'medium' | 'high';
   expected_part_time_income: number;
+  // Additional guaranteed income (NEW)
+  monthly_retirement_income_goal_net: number;
+  other_guaranteed_income_monthly: number; // Beyond SS/pension (e.g., rental, existing annuity)
 }
 
 export interface AssetFormData {
@@ -260,6 +263,10 @@ export interface ProtectionHealthData {
   liquidity_need_next_5yr: 'low' | 'medium' | 'high';
   can_commit_10yr_contributions: boolean;
   open_to_tax_diversification: boolean;
+  // Spouse info (for survivor income calculations)
+  spouse_age?: number;
+  // Existing guaranteed income sources
+  existing_db_pension_monthly: number;
 }
 
 // IUL Suitability - Planning Readiness Data
@@ -270,6 +277,23 @@ export type TaxBracketEstimate = '10-12' | '22' | '24' | '32' | '35+' | 'not_sur
 export type ConcernLevel = 'low' | 'medium' | 'high';
 export type MaxingQualifiedPlans = 'no' | 'some' | 'yes' | 'not_applicable';
 
+// Health & Longevity
+export type HealthStatus = 'excellent' | 'good' | 'fair' | 'poor';
+export type LongevityHistory = 'below_average' | 'average' | 'above_average';
+
+// Investment Experience & Behavior
+export type InvestmentExperience = 'novice' | 'intermediate' | 'experienced';
+export type ProductComfort = 'low' | 'medium' | 'high';
+export type DownMarketBehavior = 'panic_sell' | 'reduce_risk' | 'hold' | 'buy_more' | 'unsure';
+
+// Goal Hierarchy Types
+export interface GoalPriorityRanking {
+  guaranteed_income: number; // 1-4 priority
+  flexibility_liquidity: number;
+  legacy_estate: number;
+  inflation_protection: number;
+}
+
 export interface PlanningReadinessData {
   // A) Cashflow & Commitment
   income_stability: IncomeStability;
@@ -278,6 +302,7 @@ export interface PlanningReadinessData {
   
   // B) Emergency & Liquidity (emergency_fund_months is in ProtectionHealthData)
   near_term_liquidity_need: ConcernLevel;
+  short_term_cash_needs_1_3yr: ConcernLevel; // New: 1-3 year cash needs
   
   // C) Retirement Basics
   contributing_to_401k_match: boolean;
@@ -287,6 +312,8 @@ export interface PlanningReadinessData {
   current_tax_bracket: TaxBracketEstimate;
   tax_concern_level: ConcernLevel;
   wants_tax_free_bucket: boolean;
+  expects_higher_future_taxes: boolean; // New
+  rmd_concern: ConcernLevel; // New
   
   // E) Volatility / Sequence Risk
   sequence_risk_concern: ConcernLevel;
@@ -297,6 +324,25 @@ export interface PlanningReadinessData {
   
   // G) Suitability Guardrails
   debt_pressure_level: ConcernLevel;
+  
+  // H) Demographics & Health (NEW)
+  self_assessed_health: HealthStatus;
+  family_longevity_history: LongevityHistory;
+  longevity_concern: ConcernLevel;
+  
+  // I) Goal Hierarchy (Priority Ranking 1-4) (NEW)
+  goal_priorities: GoalPriorityRanking;
+  
+  // J) Risk, Time Horizon & Behavior (NEW)
+  investment_experience_level: InvestmentExperience;
+  comfort_with_complex_products: ProductComfort;
+  willingness_illiquidity_years: number; // Years willing to keep funds locked
+  behavior_in_down_market: DownMarketBehavior;
+  
+  // K) Income stability preference (neutral wording for guaranteed income)
+  wants_monthly_paycheck_feel: boolean;
+  sleep_at_night_priority: ConcernLevel;
+  survivor_income_need: ConcernLevel;
 }
 
 export interface RiskPreferencesData {
