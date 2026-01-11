@@ -52,14 +52,22 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
   const iulAnnualPremium = scenario_b.iul_annual_premium || 0;
   const deathBenefitLeverage = iulAnnualPremium > 0 ? Math.round(iulDeathBenefit / iulAnnualPremium) : 0;
 
+  // Calculate total retirement accumulation for each scenario
+  const totalAccumulationA = scenario_a.portfolio_at_retirement;
+  const totalAccumulationB = 
+    scenario_b.portfolio_at_retirement + 
+    (scenario_b.iul_projected_cash_value || 0) + 
+    (scenario_b.annuity_premium || 0);
+  const accumulationDifference = totalAccumulationB - totalAccumulationA;
+
   const metrics = [
     {
-      label: 'Monthly Retirement Income (Net)',
-      tooltip: 'Current (A): Social Security + Pension + Portfolio Withdrawals − Taxes at 22%. Optimized (B): Same base income, plus tax-free IUL loans and annuity payments, which reduce taxable withdrawals needed.',
-      valueA: formatCurrency(scenario_a.retirement_income_net),
-      valueB: formatCurrency(scenario_b.retirement_income_net),
-      improved: scenario_b.retirement_income_net > scenario_a.retirement_income_net,
-      difference: formatCurrency(comparison_metrics.income_improvement_monthly),
+      label: 'Total Retirement Accumulation',
+      tooltip: 'Current (A): Your portfolio value at retirement age based on current investments and growth. Optimized (B): IUL cash value + Annuity account value + remaining portfolio — all based on your entered allocations from today until retirement.',
+      valueA: formatCurrency(totalAccumulationA),
+      valueB: formatCurrency(totalAccumulationB),
+      improved: totalAccumulationB > totalAccumulationA,
+      difference: accumulationDifference !== 0 ? formatCurrency(Math.abs(accumulationDifference)) : undefined,
     },
     {
       label: 'Death Benefit (Tax-Free)',
@@ -290,13 +298,13 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
             <div>
               <h4 className="font-semibold text-sm mb-1">Optimization Summary</h4>
               <p className="text-sm text-muted-foreground">
-                {comparison_metrics.income_improvement_percent > 0 && (
+                {accumulationDifference !== 0 && (
                   <>
-                    The optimized strategy could increase your net retirement income by{' '}
-                    <span className="font-medium text-green-600">
-                      {formatPercent(comparison_metrics.income_improvement_percent)}
+                    At retirement, your total accumulation is{' '}
+                    <span className={`font-medium ${accumulationDifference > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatCurrency(Math.abs(accumulationDifference))}
                     </span>
-                    {' '}({formatCurrency(comparison_metrics.income_improvement_monthly)}/month).{' '}
+                    {accumulationDifference > 0 ? ' higher' : ' lower'} with the optimized strategy.{' '}
                   </>
                 )}
                 {comparison_metrics.tax_savings_lifetime > 50000 && (
