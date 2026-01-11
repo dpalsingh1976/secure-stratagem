@@ -270,6 +270,7 @@ function simulateScenarioB(
     has_legacy_priority: hasLegacyPriority,
     has_protection_gap: hasProtectionGap,
     is_eligible: false,
+    exclusion_reason: undefined as string | undefined,
   };
 
   // IUL inclusion logic
