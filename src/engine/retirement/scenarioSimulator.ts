@@ -283,10 +283,10 @@ function simulateScenarioB(
     iulEligibility.is_eligible = true;
     iulAllocationPercent = 12; // 12% of contributions reallocated
     
-    // Use client override if provided, otherwise calculate default
-    iulAnnualPremium = allocationOverrides?.iul_annual_premium !== undefined && allocationOverrides.iul_annual_premium > 0
+    // ONLY use client-specified premium - no automatic calculation
+    iulAnnualPremium = allocationOverrides?.iul_annual_premium && allocationOverrides.iul_annual_premium > 0
       ? allocationOverrides.iul_annual_premium
-      : preferences.annual_retirement_contribution * (iulAllocationPercent / 100);
+      : 0;
     
     // Build reason
     const reasons: string[] = [];
@@ -410,14 +410,10 @@ function simulateScenarioB(
     const retirementYears = 20;
     iulTaxFreeIncome = loanableValue / retirementYears / 12; // Monthly
     
-    // Death benefit - use client override if provided, otherwise calculate
-    if (allocationOverrides?.iul_death_benefit && allocationOverrides.iul_death_benefit > 0) {
-      iulDeathBenefit = allocationOverrides.iul_death_benefit;
-    } else {
-      // Default calculation: premium × 8x multiple × years factor
-      iulDeathBenefit = iulAnnualPremium * IUL_DEATH_BENEFIT_MULTIPLE * yearsToRetirement / 10;
-      iulDeathBenefit = Math.max(iulDeathBenefit, iulCashValueAtRetirement * 1.5);
-    }
+    // Death benefit - ONLY use client-specified value, no automatic calculation
+    iulDeathBenefit = allocationOverrides?.iul_death_benefit && allocationOverrides.iul_death_benefit > 0
+      ? allocationOverrides.iul_death_benefit
+      : 0;
   }
   
   // Annuity projections
