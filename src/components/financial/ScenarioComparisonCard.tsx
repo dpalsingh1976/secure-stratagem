@@ -15,7 +15,9 @@ import {
   CheckCircle,
   Info,
   Heart,
-  HelpCircle
+  HelpCircle,
+  Calendar,
+  ArrowRight
 } from 'lucide-react';
 import type { ScenarioComparison } from '@/types/retirement';
 import { AssumptionsModal } from './AssumptionsModal';
@@ -46,6 +48,23 @@ const formatPercent = (value: number): string => {
 export function ScenarioComparisonCard({ comparison, clientAllocations }: ScenarioComparisonCardProps) {
   const [showAssumptions, setShowAssumptions] = useState(false);
   const { scenario_a, scenario_b, comparison_metrics } = comparison;
+  
+  // Extract investment period data
+  const { 
+    investment_start_date, 
+    retirement_date, 
+    current_age, 
+    retirement_age, 
+    years_to_retirement 
+  } = comparison;
+
+  // Format dates for display
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', { 
+      month: 'short', 
+      year: 'numeric' 
+    });
+  };
   
   // Calculate death benefit leverage if IUL is included
   const iulDeathBenefit = scenario_b.iul_death_benefit || 0;
@@ -167,6 +186,23 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Investment Period Header */}
+        <div className="bg-muted/50 rounded-lg p-3 mb-4 flex flex-col sm:flex-row justify-between gap-2">
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Investment Period:</span>
+            <span className="font-medium flex items-center gap-1">
+              {formatDate(investment_start_date)} 
+              <ArrowRight className="h-3 w-3 text-muted-foreground" />
+              {formatDate(retirement_date)}
+            </span>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{years_to_retirement} years</span>
+            {' '}(Age {current_age} → {retirement_age})
+          </div>
+        </div>
+
         {/* Header Row */}
         <div className="grid grid-cols-4 gap-2 md:gap-4 mb-4 pb-2 border-b">
           <div className="font-medium text-muted-foreground text-xs md:text-sm">Metric</div>

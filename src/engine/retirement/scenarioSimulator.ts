@@ -908,7 +908,22 @@ export function computeScenarioComparison(
   const productPositioning = generateProductPositioning(includesIUL, includesAnnuity, scenarioB);
   const advisorSummary = generateAdvisorSummary(includesIUL, includesAnnuity, iulReason, annuityReason, metrics);
 
+  // Calculate investment period dates
+  const today = new Date();
+  const currentAge = getCurrentAge(profileData.dob);
+  const retirementAge = profileData.retirement_age || 65;
+  const yearsToRetirement = getYearsToRetirement(profileData.dob, retirementAge);
+  const retirementDate = new Date(today);
+  retirementDate.setFullYear(retirementDate.getFullYear() + yearsToRetirement);
+
   return {
+    // Investment period metadata
+    investment_start_date: today.toISOString().split('T')[0],
+    retirement_date: retirementDate.toISOString().split('T')[0],
+    current_age: currentAge,
+    retirement_age: retirementAge,
+    years_to_retirement: yearsToRetirement,
+    
     scenario_a: scenarioA,
     scenario_b: scenarioB,
     scenario_c: scenarioC,
