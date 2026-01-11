@@ -274,15 +274,18 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
               
               {/* B vs A Difference */}
               <div className="text-center">
-                {metric.improved ? (
+                {metric.difference ? (
                   <div className="flex items-center justify-center gap-1">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    {metric.difference && (
-                      <span className="text-xs text-green-600 font-medium">
-                        {metric.lowerIsBetter ? `-${metric.difference.replace('-', '')}` : `+${metric.difference.replace('+', '')}`}
-                      </span>
-                    )}
+                    {metric.improved && <CheckCircle className="h-4 w-4 text-green-500" />}
+                    <span className={`text-xs font-medium ${metric.improved ? 'text-green-600' : 'text-muted-foreground'}`}>
+                      {metric.lowerIsBetter 
+                        ? (metric.improved ? `-${metric.difference.replace('-', '')}` : `+${metric.difference.replace('+', '')}`)
+                        : (metric.improved ? `+${metric.difference.replace('+', '')}` : metric.difference)
+                      }
+                    </span>
                   </div>
+                ) : metric.improved ? (
+                  <CheckCircle className="h-4 w-4 text-green-500 mx-auto" />
                 ) : (
                   <span className="text-muted-foreground text-xs">—</span>
                 )}
