@@ -4,11 +4,18 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { 
   TrendingUp, 
   Shield, 
   CheckCircle,
   Info,
-  Heart
+  Heart,
+  HelpCircle
 } from 'lucide-react';
 import type { ScenarioComparison } from '@/types/retirement';
 import { AssumptionsModal } from './AssumptionsModal';
@@ -48,6 +55,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
   const metrics = [
     {
       label: 'Monthly Retirement Income (Net)',
+      tooltip: 'Current (A): Social Security + Pension + Portfolio Withdrawals − Taxes at 22%. Optimized (B): Same base income, plus tax-free IUL loans and annuity payments, which reduce taxable withdrawals needed.',
       valueA: formatCurrency(scenario_a.retirement_income_net),
       valueB: formatCurrency(scenario_b.retirement_income_net),
       improved: scenario_b.retirement_income_net > scenario_a.retirement_income_net,
@@ -55,6 +63,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
     },
     {
       label: 'Death Benefit (Tax-Free)',
+      tooltip: 'The tax-free death benefit amount you entered in the IUL Allocation section. Your beneficiaries receive this amount immediately upon your passing, outside of probate.',
       valueA: '$0',
       valueB: formatCurrency(iulDeathBenefit),
       improved: iulDeathBenefit > 0,
@@ -63,6 +72,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
     },
     {
       label: 'Lifetime Taxes Paid',
+      tooltip: 'Current (A): All portfolio withdrawals are taxable at 22% marginal rate over 30 years. Optimized (B): IUL policy loans are tax-free, reducing the amount of taxable withdrawals needed.',
       valueA: formatCurrency(scenario_a.lifetime_taxes_paid),
       valueB: formatCurrency(scenario_b.lifetime_taxes_paid),
       improved: scenario_b.lifetime_taxes_paid < scenario_a.lifetime_taxes_paid,
@@ -71,6 +81,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
     },
     {
       label: 'Guaranteed Income',
+      tooltip: 'Current (A): Only Social Security and Pension provide guaranteed income. Optimized (B): Adds FIA annuity payments (5% of benefit base annually) that continue regardless of market conditions.',
       valueA: scenario_a.has_guaranteed_income ? 'Yes (SS/Pension)' : 'None',
       valueB: scenario_b.has_guaranteed_income ? 'Yes' : 'No',
       improved: scenario_b.has_guaranteed_income && !scenario_a.has_guaranteed_income,
@@ -78,6 +89,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
     },
     {
       label: 'Tax-Free Income',
+      tooltip: 'Current (A): None unless you have Roth accounts. Optimized (B): IUL policy loans provide tax-free income − calculated as 80% of cash value distributed over 20 years of retirement.',
       valueA: scenario_a.has_tax_free_income ? 'Yes' : 'None',
       valueB: scenario_b.has_tax_free_income ? 'Yes' : 'None',
       improved: scenario_b.has_tax_free_income && !scenario_a.has_tax_free_income,
@@ -85,6 +97,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
     },
     {
       label: 'Money Lasts Until Age',
+      tooltip: 'Year-by-year simulation of withdrawals assuming 6% portfolio returns. Shows the age when your portfolio + income sources can no longer cover your expenses. 95+ means money lasts through the entire planning horizon.',
       valueA: scenario_a.money_runs_out_age ? `${scenario_a.money_runs_out_age}` : '95+',
       valueB: scenario_b.money_runs_out_age ? `${scenario_b.money_runs_out_age}` : '95+',
       improved: comparison_metrics.longevity_improvement_years > 0,
@@ -94,6 +107,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
     },
     {
       label: 'Market Risk Exposure',
+      tooltip: 'High = 100% portfolio dependent on market performance. Moderate = IUL or Annuity provides some downside protection. Low = Both IUL (0% floor) and Annuity reduce dependency on market returns.',
       valueA: scenario_a.market_risk_exposure,
       valueB: scenario_b.market_risk_exposure,
       improved: comparison_metrics.market_risk_reduction,
@@ -101,6 +115,7 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
     },
     {
       label: 'Legacy Value at Age 90',
+      tooltip: 'Current (A): Remaining portfolio balance at age 90 after withdrawals. Optimized (B): Portfolio balance PLUS IUL death benefit (if included), providing enhanced legacy value to heirs.',
       valueA: formatCurrency(scenario_a.legacy_value_at_90),
       valueB: formatCurrency(scenario_b.legacy_value_at_90),
       improved: scenario_b.legacy_value_at_90 > scenario_a.legacy_value_at_90,
@@ -162,9 +177,19 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
               key={metric.label} 
               className={`grid grid-cols-4 gap-2 md:gap-4 py-2 ${metric.highlight ? 'bg-blue-50 dark:bg-blue-950/30 rounded-lg px-2 -mx-2 border border-blue-200 dark:border-blue-800' : index % 2 === 0 ? 'bg-muted/30 rounded-lg px-2 -mx-2' : ''}`}
             >
-              <div className="text-sm font-medium flex items-center">
-                {metric.highlight && <Heart className="h-4 w-4 text-blue-600 mr-1.5" />}
-                {metric.label}
+              <div className="text-sm font-medium flex items-center gap-1.5">
+                {metric.highlight && <Heart className="h-4 w-4 text-blue-600 mr-1" />}
+                <span className="truncate">{metric.label}</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-primary cursor-help flex-shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      <p className="text-sm">{metric.tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               
               {/* Scenario A Value */}
