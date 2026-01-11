@@ -49,17 +49,16 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
   const [showAssumptions, setShowAssumptions] = useState(false);
   const { scenario_a, scenario_b, comparison_metrics } = comparison;
   
-  // Extract investment period data
-  const { 
-    investment_start_date, 
-    retirement_date, 
-    current_age, 
-    retirement_age, 
-    years_to_retirement 
-  } = comparison;
+  // Extract investment period data with defaults
+  const investment_start_date = comparison.investment_start_date || new Date().toISOString().split('T')[0];
+  const retirement_date = comparison.retirement_date || '';
+  const current_age = comparison.current_age || 0;
+  const retirement_age = comparison.retirement_age || 65;
+  const years_to_retirement = comparison.years_to_retirement || 0;
 
   // Format dates for display
   const formatDate = (dateStr: string) => {
+    if (!dateStr) return 'N/A';
     return new Date(dateStr).toLocaleDateString('en-US', { 
       month: 'short', 
       year: 'numeric' 
