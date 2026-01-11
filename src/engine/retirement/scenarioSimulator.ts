@@ -433,11 +433,8 @@ function simulateScenarioB(
   
   // Recalculate portfolio with reduced 401k contributions
   let portfolioAtRetirement = projection.projected_portfolio_at_retirement;
-  if (includesIUL) {
-    // Reduce future portfolio by redirected IUL premiums growth
-    const iulRedirection = iulAnnualPremium * ((Math.pow(1 + returnRate, yearsToRetirement) - 1) / returnRate);
-    portfolioAtRetirement = portfolioAtRetirement - iulRedirection;
-  }
+  // IUL is treated as ADDITIONAL investment, not redirected from portfolio
+  // Portfolio stays the same as Scenario A - IUL cash value is added on top
   
   // Reduce portfolio by FIA allocation at retirement
   if (includesAnnuity) {
