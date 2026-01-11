@@ -53,29 +53,34 @@ export function ScenarioComparisonCard({ comparison, clientAllocations }: Scenar
   const deathBenefitLeverage = iulAnnualPremium > 0 ? Math.round(iulDeathBenefit / iulAnnualPremium) : 0;
 
   // Calculate total retirement accumulation for each scenario
+  // Column A: Current investments only
+  // Column B: Current investments + IUL cash value (IUL is ADDITIONAL investment)
   const totalAccumulationA = scenario_a.portfolio_at_retirement;
-  const totalAccumulationB = 
-    scenario_b.portfolio_at_retirement + 
-    (scenario_b.iul_projected_cash_value || 0) + 
-    (scenario_b.annuity_premium || 0);
+  const iulCashValue = scenario_b.iul_projected_cash_value || 0;
+  const totalAccumulationB = scenario_b.portfolio_at_retirement + iulCashValue;
   const accumulationDifference = totalAccumulationB - totalAccumulationA;
+
+  // Death benefit shows Cash Value + Death Benefit combined
+  const totalDeathBenefitValue = iulCashValue + iulDeathBenefit;
 
   const metrics = [
     {
       label: 'Total Retirement Accumulation',
-      tooltip: 'Current (A): Your portfolio value at retirement age based on current investments and growth. Optimized (B): IUL cash value + Annuity account value + remaining portfolio — all based on your entered allocations from today until retirement.',
+      tooltip: 'Current (A): Your portfolio value at retirement age based on current investments and growth. Optimized (B): Your portfolio + IUL cash value — IUL is treated as additional investment on top of your existing contributions.',
       valueA: formatCurrency(totalAccumulationA),
       valueB: formatCurrency(totalAccumulationB),
       improved: totalAccumulationB > totalAccumulationA,
       difference: accumulationDifference !== 0 ? formatCurrency(Math.abs(accumulationDifference)) : undefined,
+      subtext: iulCashValue > 0 ? `Portfolio: ${formatCurrency(scenario_b.portfolio_at_retirement)} + IUL Cash: ${formatCurrency(iulCashValue)}` : undefined,
     },
     {
       label: 'Death Benefit (Tax-Free)',
-      tooltip: 'The tax-free death benefit amount you entered in the IUL Allocation section. Your beneficiaries receive this amount immediately upon your passing, outside of probate.',
+      tooltip: 'Total value passed to beneficiaries: IUL Cash Value + Death Benefit. This amount transfers immediately upon passing, outside of probate and income tax-free.',
       valueA: '$0',
-      valueB: formatCurrency(iulDeathBenefit),
-      improved: iulDeathBenefit > 0,
-      difference: iulDeathBenefit > 0 ? formatCurrency(iulDeathBenefit) : undefined,
+      valueB: formatCurrency(totalDeathBenefitValue),
+      improved: totalDeathBenefitValue > 0,
+      difference: totalDeathBenefitValue > 0 ? formatCurrency(totalDeathBenefitValue) : undefined,
+      subtext: totalDeathBenefitValue > 0 ? `Cash Value: ${formatCurrency(iulCashValue)} + Death Benefit: ${formatCurrency(iulDeathBenefit)}` : undefined,
       highlight: true,
     },
     {
