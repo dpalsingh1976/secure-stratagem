@@ -254,6 +254,13 @@ export interface AllocationOverrides {
  * Comparison between Current Path and Optimized Strategy
  */
 export interface ScenarioComparison {
+  // Investment period metadata
+  investment_start_date: string;    // Today's date (ISO format)
+  retirement_date: string;          // Calculated retirement date
+  current_age: number;
+  retirement_age: number;
+  years_to_retirement: number;
+  
   scenario_a: ScenarioProjection;
   scenario_b: ScenarioProjection;
   scenario_c?: ScenarioProjection; // Alternative investment scenario
