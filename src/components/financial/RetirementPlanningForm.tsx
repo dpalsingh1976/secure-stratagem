@@ -1,33 +1,27 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
-
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
-  InfoIcon, 
   Target, 
-  TrendingUp, 
-  DollarSign, 
+  Clock, 
   Shield, 
-  Compass,
-  CheckCircle,
+  TrendingUp,
   AlertTriangle,
+  CheckCircle,
   XCircle,
-  ChevronRight,
-  ChevronLeft,
-  ArrowRight
+  Compass,
+  Calendar,
+  Info
 } from 'lucide-react';
 import type { 
   ProfileGoalsData, 
   IncomeExpensesData, 
   ProtectionHealthData, 
-  PlanningReadinessData 
+  PlanningReadinessData,
+  SimplifiedRetirementAnswers
 } from '@/types/financial';
 
 interface RetirementPlanningFormProps {
@@ -44,6 +38,137 @@ interface RetirementPlanningFormProps {
 
 type FitLevel = 'strong' | 'moderate' | 'explore' | 'not_recommended';
 
+// Helper to calculate age from DOB
+function calculateAge(dob: string): number {
+  if (!dob) return 0;
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+// Derive full backend signals from simplified answers
+function deriveBackendSignals(
+  answers: SimplifiedRetirementAnswers,
+  currentPlanningReadiness: PlanningReadinessData,
+  currentProtectionData: ProtectionHealthData
+): { planningReadiness: Partial<PlanningReadinessData>; protectionData: Partial<ProtectionHealthData> } {
+  
+  // Map primary priority to multiple backend signals
+  const prioritySignals = {
+    predictable_income: {
+      prefers_guaranteed_income: true,
+      wants_monthly_paycheck_feel: true,
+      sequence_risk_concern: 'high' as const,
+      legacy_priority: 'medium' as const,
+      wants_tax_free_bucket: false,
+    },
+    tax_efficient: {
+      wants_tax_free_bucket: true,
+      tax_concern_level: 'high' as const,
+      prefers_guaranteed_income: false,
+      legacy_priority: 'medium' as const,
+      sequence_risk_concern: 'medium' as const,
+    },
+    growth_protection: {
+      sequence_risk_concern: 'high' as const,
+      prefers_guaranteed_income: false,
+      wants_tax_free_bucket: false,
+      legacy_priority: 'medium' as const,
+    },
+    legacy: {
+      legacy_priority: 'high' as const,
+      permanent_coverage_need: true,
+      prefers_guaranteed_income: false,
+      wants_tax_free_bucket: true,
+      sequence_risk_concern: 'medium' as const,
+    },
+    flexibility: {
+      near_term_liquidity_need: 'low' as const,
+      prefers_guaranteed_income: false,
+      wants_tax_free_bucket: false,
+      legacy_priority: 'low' as const,
+      sequence_risk_concern: 'low' as const,
+    },
+  };
+
+  // Map lock-up tolerance to funding commitment
+  const lockupMap = {
+    less_than_5: { funding_commitment_years: '3-5' as const, willingness_illiquidity_years: 4 },
+    '5_to_7': { funding_commitment_years: '5-10' as const, willingness_illiquidity_years: 6 },
+    '7_plus': { funding_commitment_years: '10-20' as const, willingness_illiquidity_years: 10 },
+  };
+
+  // Map market behavior
+  const behaviorMap = {
+    panic: 'panic_sell' as const,
+    uneasy: 'hold' as const,
+    calm: 'hold' as const,
+  };
+
+  // Map contribution status
+  const contributionMap = {
+    not_contributing: { maxing_qualified_plans: 'no' as const, contributing_to_401k_match: false },
+    contributing_not_maxing: { maxing_qualified_plans: 'some' as const, contributing_to_401k_match: true },
+    maxing: { maxing_qualified_plans: 'yes' as const, contributing_to_401k_match: true },
+  };
+
+  // Map major expenses to liquidity need
+  const expenseMap = {
+    none: 'low' as const,
+    possibly: 'medium' as const,
+    yes: 'high' as const,
+  };
+
+  // Map income stability
+  const stabilityMap = {
+    very_stable: 'stable' as const,
+    mostly_stable: 'somewhat_stable' as const,
+    variable: 'unstable' as const,
+  };
+
+  // Map longevity
+  const longevityMap = {
+    below_average: 'below_average' as const,
+    average: 'average' as const,
+    above_average: 'above_average' as const,
+  };
+
+  // Map emergency fund to months
+  const emergencyMap = {
+    less_than_3: 2,
+    '3_to_6': 4,
+    '6_plus': 8,
+  };
+
+  const priorityDerived = answers.primaryPriority ? prioritySignals[answers.primaryPriority] : {};
+  const lockupDerived = answers.lockupTolerance ? lockupMap[answers.lockupTolerance] : {};
+  const contributionDerived = answers.contributionStatus ? contributionMap[answers.contributionStatus] : {};
+
+  return {
+    planningReadiness: {
+      ...priorityDerived,
+      ...lockupDerived,
+      ...contributionDerived,
+      behavior_in_down_market: answers.marketBehavior ? behaviorMap[answers.marketBehavior] : undefined,
+      near_term_liquidity_need: answers.majorExpenses ? expenseMap[answers.majorExpenses] : currentPlanningReadiness.near_term_liquidity_need,
+      income_stability: answers.incomeStability ? stabilityMap[answers.incomeStability] : currentPlanningReadiness.income_stability,
+      family_longevity_history: answers.longevity ? longevityMap[answers.longevity] : currentPlanningReadiness.family_longevity_history,
+      // Defaults for fields not asked
+      funding_discipline: 'medium',
+      debt_pressure_level: currentPlanningReadiness.debt_pressure_level || 'low',
+    },
+    protectionData: {
+      emergency_fund_months: answers.emergencyFund ? emergencyMap[answers.emergencyFund] : currentProtectionData.emergency_fund_months,
+      prefers_guaranteed_income: answers.primaryPriority === 'predictable_income',
+    },
+  };
+}
+
 export function RetirementPlanningForm({
   profileData,
   incomeData,
@@ -55,941 +180,568 @@ export function RetirementPlanningForm({
   onPlanningReadinessChange,
   hasEmployerMatch = false
 }: RetirementPlanningFormProps) {
-  // 3-step wizard state
-  const [readinessStep, setReadinessStep] = useState<1 | 2 | 3>(1);
 
-  const handleProfileChange = (field: keyof ProfileGoalsData, value: any) => {
-    onProfileChange({ ...profileData, [field]: value });
-  };
+  // Calculate time horizon from existing profile data
+  const currentAge = calculateAge(profileData.dob);
+  const retirementAge = profileData.retirement_age || 65;
+  const yearsToRetirement = Math.max(0, retirementAge - currentAge);
 
-  const handleIncomeChange = (field: keyof IncomeExpensesData, value: any) => {
-    onIncomeChange({ ...incomeData, [field]: value });
-  };
+  // Track simplified answers for UI state
+  const simplifiedAnswers: SimplifiedRetirementAnswers = useMemo(() => ({
+    emergencyFund: protectionData.emergency_fund_months >= 6 ? '6_plus' : 
+                   protectionData.emergency_fund_months >= 3 ? '3_to_6' : 'less_than_3',
+    contributionStatus: planningReadiness.maxing_qualified_plans === 'yes' ? 'maxing' :
+                        planningReadiness.maxing_qualified_plans === 'some' || planningReadiness.contributing_to_401k_match ? 'contributing_not_maxing' : 'not_contributing',
+    primaryPriority: protectionData.prefers_guaranteed_income ? 'predictable_income' :
+                     planningReadiness.wants_tax_free_bucket ? 'tax_efficient' :
+                     planningReadiness.legacy_priority === 'high' ? 'legacy' :
+                     planningReadiness.sequence_risk_concern === 'high' ? 'growth_protection' : undefined,
+    marketBehavior: planningReadiness.behavior_in_down_market === 'panic_sell' ? 'panic' :
+                    planningReadiness.behavior_in_down_market === 'hold' ? 'calm' : 'uneasy',
+    lockupTolerance: (planningReadiness.willingness_illiquidity_years || 0) >= 7 ? '7_plus' :
+                     (planningReadiness.willingness_illiquidity_years || 0) >= 5 ? '5_to_7' : 'less_than_5',
+    longevity: planningReadiness.family_longevity_history,
+    majorExpenses: planningReadiness.near_term_liquidity_need === 'high' ? 'yes' :
+                   planningReadiness.near_term_liquidity_need === 'medium' ? 'possibly' : 'none',
+    incomeStability: planningReadiness.income_stability === 'stable' ? 'very_stable' :
+                     planningReadiness.income_stability === 'somewhat_stable' ? 'mostly_stable' : 'variable',
+  }), [protectionData, planningReadiness]);
 
-  const handleProtectionChange = (field: keyof ProtectionHealthData, value: any) => {
-    onProtectionChange({ ...protectionData, [field]: value });
-  };
-
-  const handleReadinessChange = (field: keyof PlanningReadinessData, value: any) => {
-    onPlanningReadinessChange({ ...planningReadiness, [field]: value });
-  };
-
-  // Handle goal priority changes
-  const handleGoalPriorityChange = (goal: 'guaranteed_income' | 'flexibility_liquidity' | 'legacy_estate' | 'inflation_protection', rank: number) => {
-    const currentPriorities = planningReadiness.goal_priorities || {
-      guaranteed_income: 1,
-      flexibility_liquidity: 2,
-      legacy_estate: 3,
-      inflation_protection: 4
-    };
+  // Handle changes and derive backend signals
+  const handleSimplifiedChange = (field: keyof SimplifiedRetirementAnswers, value: string) => {
+    const updatedAnswers = { ...simplifiedAnswers, [field]: value };
+    const derived = deriveBackendSignals(updatedAnswers, planningReadiness, protectionData);
     
-    // Find which goal currently has the new rank
-    const otherGoal = Object.entries(currentPriorities).find(([g, r]) => r === rank && g !== goal);
-    
-    // Swap ranks
-    const newPriorities = { ...currentPriorities };
-    if (otherGoal) {
-      newPriorities[otherGoal[0] as keyof typeof currentPriorities] = currentPriorities[goal];
-    }
-    newPriorities[goal] = rank;
-    
-    handleReadinessChange('goal_priorities', newPriorities);
+    onPlanningReadinessChange({ ...planningReadiness, ...derived.planningReadiness });
+    onProtectionChange({ ...protectionData, ...derived.protectionData });
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  // Check if liquidity warning should show
+  const showLiquidityWarning = simplifiedAnswers.emergencyFund === 'less_than_3';
 
-  // NEW: 3 Gates + Fit Signals Model
+  // Suitability preview calculation
   const suitabilityPreview = useMemo(() => {
     const emergencyFundMonths = protectionData.emergency_fund_months || 0;
     
-    // === SHARED READINESS GATES ===
+    // Hard gate: emergency fund < 3 months
     const emergencyOk = emergencyFundMonths >= 3;
     const liquidityOk = planningReadiness.near_term_liquidity_need !== 'high';
     const incomeOk = planningReadiness.income_stability !== 'unstable';
-    const debtOk = !(planningReadiness.debt_pressure_level === 'high' && emergencyFundMonths < 6);
     
-    const gateFailures = [!emergencyOk, !liquidityOk, !incomeOk, !debtOk].filter(Boolean).length;
-    const isBlocked = gateFailures >= 2;
-    
-    // Build fix-first items from gate failures
-    const sharedFixFirst: string[] = [];
-    if (!emergencyOk) sharedFixFirst.push('Build 3+ months emergency fund');
-    if (!liquidityOk) sharedFixFirst.push('Address near-term liquidity needs');
-    if (!incomeOk) sharedFixFirst.push('Stabilize income first');
-    if (!debtOk) sharedFixFirst.push('Reduce debt pressure or build reserves');
+    const isBlocked = !emergencyOk;
 
-    // === IUL FIT SIGNALS (score-based, max 6) ===
+    // IUL scoring
     let iulScore = 0;
     const iulPositives: string[] = [];
-    const iulNegatives: string[] = [...sharedFixFirst];
     
-    // +1 Stable income
     if (planningReadiness.income_stability === 'stable') {
       iulScore++;
       iulPositives.push('Stable income');
     }
-    
-    // +1 Long-term commitment
-    const hasLongTermCommitment = 
-      ['10-20', '20+'].includes(planningReadiness.funding_commitment_years || '') || 
-      protectionData.can_commit_10yr_contributions;
-    if (hasLongTermCommitment) {
+    if (['10-20', '20+'].includes(planningReadiness.funding_commitment_years || '')) {
       iulScore++;
-      iulPositives.push('Long-term funding commitment');
+      iulPositives.push('Long-term commitment');
     }
-    
-    // +1 Tax intent
-    const hasTaxIntent = 
-      planningReadiness.tax_concern_level === 'high' || 
-      planningReadiness.wants_tax_free_bucket || 
-      protectionData.open_to_tax_diversification;
-    if (hasTaxIntent) {
+    if (planningReadiness.wants_tax_free_bucket || planningReadiness.tax_concern_level === 'high') {
       iulScore++;
       iulPositives.push('Tax diversification interest');
     }
-    
-    // +1 Legacy/permanent need
-    const hasLegacyNeed = 
-      planningReadiness.legacy_priority === 'high' || 
-      planningReadiness.permanent_coverage_need;
-    if (hasLegacyNeed) {
+    if (planningReadiness.legacy_priority === 'high' || planningReadiness.permanent_coverage_need) {
       iulScore++;
-      iulPositives.push('Legacy or permanent coverage goals');
+      iulPositives.push('Legacy goals');
     }
-    
-    // +1 Strong emergency fund
     if (emergencyFundMonths >= 6) {
       iulScore++;
-      iulPositives.push('Strong emergency reserves');
+      iulPositives.push('Strong reserves');
     }
-    
-    // +1 Qualified plan foundation
-    const hasQualifiedFoundation = ['some', 'yes', 'not_applicable'].includes(planningReadiness.maxing_qualified_plans || '');
-    if (hasQualifiedFoundation) {
+    if (['some', 'yes'].includes(planningReadiness.maxing_qualified_plans || '')) {
       iulScore++;
       iulPositives.push('Solid retirement foundation');
     }
 
-    // Determine IUL fit
-    let iulFit: FitLevel;
-    if (isBlocked) {
-      iulFit = 'not_recommended';
-    } else if (iulScore >= 4) {
-      iulFit = 'strong';
-    } else if (iulScore >= 2) {
-      iulFit = 'moderate';
-    } else {
-      iulFit = 'explore';
-    }
+    let iulFit: FitLevel = isBlocked ? 'not_recommended' : 
+                          iulScore >= 4 ? 'strong' : 
+                          iulScore >= 2 ? 'moderate' : 'explore';
 
-    // === ANNUITY FIT SIGNALS (using new engine logic) ===
+    // Annuity scoring
     let annuityScore = 0;
     const annuityPositives: string[] = [];
-    const annuityNegatives: string[] = [];
-    const annuityFixFirst: string[] = [];
     
-    // Annuity-specific gates
-    const annuityEmergencyIssue = emergencyFundMonths < 3;
-    const annuityLiquidityIssue = planningReadiness.near_term_liquidity_need === 'high';
-    
-    // Build fix-first items
-    if (annuityEmergencyIssue) {
-      annuityNegatives.push('Build 3+ months emergency fund');
-      annuityFixFirst.push(`Build emergency fund from ${emergencyFundMonths} to 3-6 months before considering annuity`);
-    }
-    if (annuityLiquidityIssue) {
-      annuityNegatives.push('Address near-term liquidity needs');
-      annuityFixFirst.push('Address expected major expenses first—annuity surrender charges apply for 5-10 years');
-    }
-    
-    const annuityBlocked = annuityEmergencyIssue && annuityLiquidityIssue;
-    
-    // +2 Prefers guaranteed income
     if (protectionData.prefers_guaranteed_income) {
       annuityScore += 2;
-      annuityPositives.push('Prefers guaranteed income');
+      annuityPositives.push('Prefers predictable income');
     }
-    
-    // +1 Sequence risk concern
     if (planningReadiness.sequence_risk_concern === 'high') {
       annuityScore++;
-      annuityPositives.push('Concerned about market timing');
+      annuityPositives.push('Values downside protection');
     }
-    
-    // +1 Strong emergency fund
     if (emergencyFundMonths >= 6) {
       annuityScore++;
-      annuityPositives.push('Strong emergency reserves');
+      annuityPositives.push('Strong reserves');
     }
 
-    // Determine Annuity fit
-    let annuityFit: FitLevel;
-    if (annuityBlocked) {
-      annuityFit = 'not_recommended';
-    } else if (annuityScore >= 3) {
-      annuityFit = 'strong';
-    } else if (annuityScore >= 1) {
-      annuityFit = 'moderate';
-    } else {
-      annuityFit = 'explore';
-    }
-
-    // Build reason strings
-    const iulReason = isBlocked
-      ? `Fix first: ${iulNegatives.slice(0, 2).join(', ')}`
-      : iulPositives.length > 0
-        ? `Good fit signals: ${iulPositives.slice(0, 2).join(', ')}`
-        : 'Answer more questions to refine your assessment';
-
-    const annuityReason = annuityBlocked
-      ? `Fix first: ${annuityFixFirst.slice(0, 1).join('')}`
-      : annuityPositives.length > 0
-        ? `Good fit signals: ${annuityPositives.slice(0, 2).join(', ')}`
-        : 'May benefit from guaranteed income analysis';
+    let annuityFit: FitLevel = isBlocked ? 'not_recommended' :
+                              annuityScore >= 3 ? 'strong' :
+                              annuityScore >= 1 ? 'moderate' : 'explore';
 
     return {
-      iul: {
-        fit: iulFit,
-        positives: iulPositives.slice(0, 3),
-        negatives: iulNegatives.slice(0, 2),
-        reason: iulReason
-      },
-      annuity: {
-        fit: annuityFit,
-        positives: annuityPositives.slice(0, 3),
-        negatives: annuityNegatives.slice(0, 2),
-        fixFirst: annuityFixFirst.slice(0, 2),
-        reason: annuityReason
-      }
+      iul: { fit: iulFit, positives: iulPositives.slice(0, 3) },
+      annuity: { fit: annuityFit, positives: annuityPositives.slice(0, 3) },
+      isBlocked,
     };
-  }, [profileData, protectionData, planningReadiness]);
+  }, [protectionData, planningReadiness]);
 
-  const getFitBadgeColor = (fit: string) => {
+  const getFitBadgeColor = (fit: FitLevel) => {
     switch (fit) {
       case 'strong': return 'bg-green-100 text-green-800 border-green-300';
       case 'moderate': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
       case 'explore': return 'bg-blue-100 text-blue-800 border-blue-300';
       case 'not_recommended': return 'bg-red-100 text-red-800 border-red-300';
-      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
-  const getFitIcon = (fit: string) => {
+  const getFitIcon = (fit: FitLevel) => {
     switch (fit) {
       case 'strong': return <CheckCircle className="h-4 w-4 text-green-600" />;
       case 'moderate': return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
       case 'explore': return <Compass className="h-4 w-4 text-blue-600" />;
       case 'not_recommended': return <XCircle className="h-4 w-4 text-red-600" />;
-      default: return <Compass className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
-  const getFitLabel = (fit: string) => {
+  const getFitLabel = (fit: FitLevel) => {
     switch (fit) {
       case 'strong': return 'Strong Fit';
       case 'moderate': return 'Moderate Fit';
       case 'explore': return 'Explore';
-      case 'not_recommended': return 'Not a fit yet';
-      default: return 'Explore';
+      case 'not_recommended': return 'Focus on basics first';
     }
   };
 
-  const getBackgroundColor = (fit: string) => {
-    switch (fit) {
-      case 'strong': return 'bg-green-50 border-green-200';
-      case 'moderate': return 'bg-yellow-50 border-yellow-200';
-      case 'explore': return 'bg-blue-50 border-blue-200';
-      case 'not_recommended': return 'bg-red-50 border-red-200';
-      default: return 'bg-muted border-border';
-    }
-  };
+  // Count answered questions for progress
+  const answeredCount = [
+    simplifiedAnswers.emergencyFund,
+    simplifiedAnswers.contributionStatus,
+    simplifiedAnswers.primaryPriority,
+    simplifiedAnswers.marketBehavior,
+    simplifiedAnswers.lockupTolerance,
+    simplifiedAnswers.longevity,
+    simplifiedAnswers.majorExpenses,
+    simplifiedAnswers.incomeStability,
+  ].filter(Boolean).length;
 
   return (
-    <TooltipProvider>
-      <div className="space-y-8">
-        {/* Section 1: Retirement Savings & Contributions */}
+    <div className="space-y-6">
+      {/* Time Horizon Display (read-only from existing data) */}
+      <Card className="bg-muted/30 border-dashed">
+        <CardContent className="pt-4">
+          <div className="flex items-center gap-4">
+            <Calendar className="h-5 w-5 text-muted-foreground" />
+            <div className="flex-1">
+              <p className="text-sm text-muted-foreground">Based on your profile</p>
+              <p className="font-medium">
+                Age {currentAge || '—'} → Retire at {retirementAge} ({yearsToRetirement} years)
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Progress</p>
+              <p className="font-medium text-primary">{answeredCount}/8 answered</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Liquidity Warning */}
+      {showLiquidityWarning && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Focus on liquidity first.</strong> Building a 3-6 month emergency fund should be your priority before exploring long-term retirement strategies.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" />
+            Retirement Planning
+          </CardTitle>
+          <CardDescription>
+            8 quick questions to find the best strategies for you (~2 min)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          
+          {/* Question 1: Emergency Fund */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">1</span>
+              <div className="flex-1">
+                <Label className="text-base font-medium">How much do you have set aside for emergencies?</Label>
+                <p className="text-sm text-muted-foreground mt-1">This helps ensure you're ready for long-term planning</p>
+              </div>
+            </div>
+            <RadioGroup
+              value={simplifiedAnswers.emergencyFund}
+              onValueChange={(value) => handleSimplifiedChange('emergencyFund', value)}
+              className="grid grid-cols-1 md:grid-cols-3 gap-3 ml-8"
+            >
+              {[
+                { value: 'less_than_3', label: 'Less than 3 months', description: 'of expenses' },
+                { value: '3_to_6', label: '3-6 months', description: 'of expenses' },
+                { value: '6_plus', label: '6+ months', description: 'of expenses' },
+              ].map((option) => (
+                <Label
+                  key={option.value}
+                  htmlFor={`emergency-${option.value}`}
+                  className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
+                    simplifiedAnswers.emergencyFund === option.value ? 'border-primary bg-primary/5' : ''
+                  }`}
+                >
+                  <RadioGroupItem value={option.value} id={`emergency-${option.value}`} />
+                  <div>
+                    <p className="font-medium">{option.label}</p>
+                    <p className="text-xs text-muted-foreground">{option.description}</p>
+                  </div>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
+          {/* Question 2: Contribution Status */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">2</span>
+              <div className="flex-1">
+                <Label className="text-base font-medium">Are you contributing to retirement accounts?</Label>
+                <p className="text-sm text-muted-foreground mt-1">Your foundation for retirement savings</p>
+              </div>
+            </div>
+            <RadioGroup
+              value={simplifiedAnswers.contributionStatus}
+              onValueChange={(value) => handleSimplifiedChange('contributionStatus', value)}
+              className="grid grid-cols-1 md:grid-cols-3 gap-3 ml-8"
+            >
+              {[
+                { value: 'not_contributing', label: 'Not contributing', description: 'No 401(k)/IRA contributions' },
+                { value: 'contributing_not_maxing', label: 'Contributing', description: 'But not maxing out' },
+                { value: 'maxing', label: 'Maxing out', description: 'Employer plans & IRAs' },
+              ].map((option) => (
+                <Label
+                  key={option.value}
+                  htmlFor={`contribution-${option.value}`}
+                  className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
+                    simplifiedAnswers.contributionStatus === option.value ? 'border-primary bg-primary/5' : ''
+                  }`}
+                >
+                  <RadioGroupItem value={option.value} id={`contribution-${option.value}`} />
+                  <div>
+                    <p className="font-medium">{option.label}</p>
+                    <p className="text-xs text-muted-foreground">{option.description}</p>
+                  </div>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
+          {/* Question 3: Primary Priority */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">3</span>
+              <div className="flex-1">
+                <Label className="text-base font-medium">What matters MOST to you in retirement?</Label>
+                <p className="text-sm text-muted-foreground mt-1">This shapes which strategies we'll explore</p>
+              </div>
+            </div>
+            <RadioGroup
+              value={simplifiedAnswers.primaryPriority}
+              onValueChange={(value) => handleSimplifiedChange('primaryPriority', value)}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 ml-8"
+            >
+              {[
+                { value: 'predictable_income', label: 'Predictable lifetime income', icon: Shield },
+                { value: 'tax_efficient', label: 'Tax-efficient access to money', icon: TrendingUp },
+                { value: 'growth_protection', label: 'Growth with downside protection', icon: TrendingUp },
+                { value: 'legacy', label: 'Leaving money to family', icon: Target },
+                { value: 'flexibility', label: 'Flexibility and access', icon: Clock },
+              ].map((option) => (
+                <Label
+                  key={option.value}
+                  htmlFor={`priority-${option.value}`}
+                  className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
+                    simplifiedAnswers.primaryPriority === option.value ? 'border-primary bg-primary/5' : ''
+                  }`}
+                >
+                  <RadioGroupItem value={option.value} id={`priority-${option.value}`} />
+                  <option.icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <p className="font-medium text-sm">{option.label}</p>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
+          {/* Question 4: Market Behavior */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">4</span>
+              <div className="flex-1">
+                <Label className="text-base font-medium">If markets dropped 20%, what would you most likely do?</Label>
+                <p className="text-sm text-muted-foreground mt-1">Understanding your comfort with volatility</p>
+              </div>
+            </div>
+            <RadioGroup
+              value={simplifiedAnswers.marketBehavior}
+              onValueChange={(value) => handleSimplifiedChange('marketBehavior', value)}
+              className="grid grid-cols-1 md:grid-cols-3 gap-3 ml-8"
+            >
+              {[
+                { value: 'panic', label: 'Panic and sell', description: 'Protect what\'s left' },
+                { value: 'uneasy', label: 'Feel uneasy but hold', description: 'Wait it out nervously' },
+                { value: 'calm', label: 'Stay calm and wait', description: 'Markets recover' },
+              ].map((option) => (
+                <Label
+                  key={option.value}
+                  htmlFor={`market-${option.value}`}
+                  className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
+                    simplifiedAnswers.marketBehavior === option.value ? 'border-primary bg-primary/5' : ''
+                  }`}
+                >
+                  <RadioGroupItem value={option.value} id={`market-${option.value}`} />
+                  <div>
+                    <p className="font-medium">{option.label}</p>
+                    <p className="text-xs text-muted-foreground">{option.description}</p>
+                  </div>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
+          {/* Question 5: Lock-up Tolerance */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">5</span>
+              <div className="flex-1">
+                <Label className="text-base font-medium">How long could you leave money invested without needing it?</Label>
+                <p className="text-sm text-muted-foreground mt-1">Some strategies require funds to stay invested longer</p>
+              </div>
+            </div>
+            <RadioGroup
+              value={simplifiedAnswers.lockupTolerance}
+              onValueChange={(value) => handleSimplifiedChange('lockupTolerance', value)}
+              className="grid grid-cols-1 md:grid-cols-3 gap-3 ml-8"
+            >
+              {[
+                { value: 'less_than_5', label: 'Less than 5 years', description: 'Need flexibility' },
+                { value: '5_to_7', label: '5-7 years', description: 'Moderate horizon' },
+                { value: '7_plus', label: '7+ years', description: 'Long-term focus' },
+              ].map((option) => (
+                <Label
+                  key={option.value}
+                  htmlFor={`lockup-${option.value}`}
+                  className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
+                    simplifiedAnswers.lockupTolerance === option.value ? 'border-primary bg-primary/5' : ''
+                  }`}
+                >
+                  <RadioGroupItem value={option.value} id={`lockup-${option.value}`} />
+                  <div>
+                    <p className="font-medium">{option.label}</p>
+                    <p className="text-xs text-muted-foreground">{option.description}</p>
+                  </div>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
+          {/* Question 6: Longevity */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">6</span>
+              <div className="flex-1">
+                <Label className="text-base font-medium">Compared to average, how long do you expect to live?</Label>
+                <p className="text-sm text-muted-foreground mt-1">Based on your health and family history</p>
+              </div>
+            </div>
+            <RadioGroup
+              value={simplifiedAnswers.longevity}
+              onValueChange={(value) => handleSimplifiedChange('longevity', value)}
+              className="grid grid-cols-1 md:grid-cols-3 gap-3 ml-8"
+            >
+              {[
+                { value: 'below_average', label: 'Below average', description: 'Health concerns or family history' },
+                { value: 'average', label: 'About average', description: 'Typical life expectancy' },
+                { value: 'above_average', label: 'Above average', description: 'Good health, longevity in family' },
+              ].map((option) => (
+                <Label
+                  key={option.value}
+                  htmlFor={`longevity-${option.value}`}
+                  className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
+                    simplifiedAnswers.longevity === option.value ? 'border-primary bg-primary/5' : ''
+                  }`}
+                >
+                  <RadioGroupItem value={option.value} id={`longevity-${option.value}`} />
+                  <div>
+                    <p className="font-medium">{option.label}</p>
+                    <p className="text-xs text-muted-foreground">{option.description}</p>
+                  </div>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
+          {/* Question 7: Major Expenses */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">7</span>
+              <div className="flex-1">
+                <Label className="text-base font-medium">Do you expect any major expenses in the next 3-5 years?</Label>
+                <p className="text-sm text-muted-foreground mt-1">Home, education, medical, business investments</p>
+              </div>
+            </div>
+            <RadioGroup
+              value={simplifiedAnswers.majorExpenses}
+              onValueChange={(value) => handleSimplifiedChange('majorExpenses', value)}
+              className="grid grid-cols-1 md:grid-cols-3 gap-3 ml-8"
+            >
+              {[
+                { value: 'none', label: 'No major expenses', description: 'Nothing significant planned' },
+                { value: 'possibly', label: 'Possibly', description: 'Planning for something' },
+                { value: 'yes', label: 'Yes, significant', description: 'Expense expected' },
+              ].map((option) => (
+                <Label
+                  key={option.value}
+                  htmlFor={`expenses-${option.value}`}
+                  className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
+                    simplifiedAnswers.majorExpenses === option.value ? 'border-primary bg-primary/5' : ''
+                  }`}
+                >
+                  <RadioGroupItem value={option.value} id={`expenses-${option.value}`} />
+                  <div>
+                    <p className="font-medium">{option.label}</p>
+                    <p className="text-xs text-muted-foreground">{option.description}</p>
+                  </div>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
+          {/* Question 8: Income Stability */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">8</span>
+              <div className="flex-1">
+                <Label className="text-base font-medium">How stable is your household income?</Label>
+                <p className="text-sm text-muted-foreground mt-1">Job security, income consistency</p>
+              </div>
+            </div>
+            <RadioGroup
+              value={simplifiedAnswers.incomeStability}
+              onValueChange={(value) => handleSimplifiedChange('incomeStability', value)}
+              className="grid grid-cols-1 md:grid-cols-3 gap-3 ml-8"
+            >
+              {[
+                { value: 'very_stable', label: 'Very stable', description: 'Predictable income' },
+                { value: 'mostly_stable', label: 'Mostly stable', description: 'Minor fluctuations' },
+                { value: 'variable', label: 'Variable or uncertain', description: 'Income varies' },
+              ].map((option) => (
+                <Label
+                  key={option.value}
+                  htmlFor={`stability-${option.value}`}
+                  className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
+                    simplifiedAnswers.incomeStability === option.value ? 'border-primary bg-primary/5' : ''
+                  }`}
+                >
+                  <RadioGroupItem value={option.value} id={`stability-${option.value}`} />
+                  <div>
+                    <p className="font-medium">{option.label}</p>
+                    <p className="text-xs text-muted-foreground">{option.description}</p>
+                  </div>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
+        </CardContent>
+      </Card>
+
+      {/* Suitability Preview (only show when enough answers) */}
+      {answeredCount >= 4 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <span>Retirement Savings</span>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Info className="h-4 w-4 text-primary" />
+              Strategy Preview
             </CardTitle>
             <CardDescription>
-              Your current retirement contributions and expected income sources
+              Based on your answers, here's how protected strategies might fit your situation
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Label htmlFor="annualContribution">Annual Retirement Contribution</Label>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <InfoIcon className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Total annual amount you contribute to 401(k), IRA, etc.</p>
-                    </TooltipContent>
-                  </Tooltip>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Protected Growth Strategy */}
+              <div className={`p-4 rounded-lg border-2 ${
+                suitabilityPreview.iul.fit === 'strong' ? 'bg-green-50 border-green-200' :
+                suitabilityPreview.iul.fit === 'moderate' ? 'bg-yellow-50 border-yellow-200' :
+                suitabilityPreview.iul.fit === 'not_recommended' ? 'bg-red-50 border-red-200' :
+                'bg-blue-50 border-blue-200'
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium">Tax-Free Growth Strategy</span>
+                  <Badge className={getFitBadgeColor(suitabilityPreview.iul.fit)}>
+                    {getFitIcon(suitabilityPreview.iul.fit)}
+                    <span className="ml-1">{getFitLabel(suitabilityPreview.iul.fit)}</span>
+                  </Badge>
                 </div>
-                <Input
-                  id="annualContribution"
-                  type="number"
-                  min="0"
-                  value={incomeData.annual_retirement_contribution || 0}
-                  onChange={(e) => handleIncomeChange('annual_retirement_contribution', parseFloat(e.target.value) || 0)}
-                  placeholder="Annual 401k/IRA contributions"
-                />
-                {incomeData.annual_retirement_contribution > 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    Monthly: {formatCurrency(incomeData.annual_retirement_contribution / 12)}
-                  </p>
+                {suitabilityPreview.iul.positives.length > 0 && !suitabilityPreview.isBlocked && (
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    {suitabilityPreview.iul.positives.map((p, i) => (
+                      <li key={i} className="flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Label>Expected Contribution Growth</Label>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <InfoIcon className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Annual increase in your retirement contributions (e.g., with raises)</p>
-                    </TooltipContent>
-                  </Tooltip>
+              {/* Guaranteed Income Strategy */}
+              <div className={`p-4 rounded-lg border-2 ${
+                suitabilityPreview.annuity.fit === 'strong' ? 'bg-green-50 border-green-200' :
+                suitabilityPreview.annuity.fit === 'moderate' ? 'bg-yellow-50 border-yellow-200' :
+                suitabilityPreview.annuity.fit === 'not_recommended' ? 'bg-red-50 border-red-200' :
+                'bg-blue-50 border-blue-200'
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium">Guaranteed Income Strategy</span>
+                  <Badge className={getFitBadgeColor(suitabilityPreview.annuity.fit)}>
+                    {getFitIcon(suitabilityPreview.annuity.fit)}
+                    <span className="ml-1">{getFitLabel(suitabilityPreview.annuity.fit)}</span>
+                  </Badge>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <Slider
-                    value={[incomeData.contribution_growth_rate || 2]}
-                    onValueChange={(value) => handleIncomeChange('contribution_growth_rate', value[0])}
-                    min={0}
-                    max={10}
-                    step={0.5}
-                    className="flex-1"
-                  />
-                  <span className="font-semibold text-lg w-16 text-right">{incomeData.contribution_growth_rate || 2}%</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Label>Social Security Confidence</Label>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <InfoIcon className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>How confident are you in your Social Security benefit estimate?</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <Select 
-                  value={incomeData.social_security_confidence || 'medium'} 
-                  onValueChange={(value: 'low' | 'medium' | 'high') => handleIncomeChange('social_security_confidence', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select confidence level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low - Haven't checked SSA.gov</SelectItem>
-                    <SelectItem value="medium">Medium - Have an estimate</SelectItem>
-                    <SelectItem value="high">High - Reviewed SSA statement</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Label htmlFor="partTimeIncome">Expected Part-Time Retirement Income</Label>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <InfoIcon className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Monthly income from part-time work in retirement (optional)</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <Input
-                  id="partTimeIncome"
-                  type="number"
-                  min="0"
-                  value={incomeData.expected_part_time_income || 0}
-                  onChange={(e) => handleIncomeChange('expected_part_time_income', parseFloat(e.target.value) || 0)}
-                  placeholder="Optional part-time income"
-                />
+                {suitabilityPreview.annuity.positives.length > 0 && !suitabilityPreview.isBlocked && (
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    {suitabilityPreview.annuity.positives.map((p, i) => (
+                      <li key={i} className="flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Section 3: Planning Readiness - NEW 2-Step Wizard */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Target className="h-5 w-5 text-primary" />
-              <span>Planning Readiness</span>
-            </CardTitle>
-            <CardDescription>
-              Quick questions to find the best strategies for you
-            </CardDescription>
-            {/* Step indicator */}
-            <div className="flex items-center gap-2 mt-4">
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                readinessStep === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}>
-                <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-xs">1</span>
-                Readiness Basics
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                readinessStep === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}>
-                <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-xs">2</span>
-                Goals & Preferences
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                readinessStep === 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}>
-                <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-xs">3</span>
-                Health & Risk Behavior
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Step 1: Readiness Basics */}
-            {readinessStep === 1 && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Emergency Fund */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-medium">Emergency Fund</Label>
-                    <p className="text-sm text-muted-foreground">Months of expenses you could cover</p>
-                    <div className="flex items-center space-x-4">
-                      <Slider
-                        value={[protectionData.emergency_fund_months || 0]}
-                        onValueChange={(value) => handleProtectionChange('emergency_fund_months', value[0])}
-                        min={0}
-                        max={12}
-                        step={1}
-                        className="flex-1"
-                      />
-                      <span className="font-semibold text-lg w-20 text-right">
-                        {protectionData.emergency_fund_months || 0} mo
-                      </span>
-                    </div>
-                    {(protectionData.emergency_fund_months || 0) < 3 && (
-                      <p className="text-xs text-amber-600">Aim for at least 3 months</p>
-                    )}
-                  </div>
-
-                  {/* Near-term liquidity need */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-medium">Major Expenses Coming?</Label>
-                    <p className="text-sm text-muted-foreground">Big purchases in the next 3-5 years</p>
-                    <Select 
-                      value={planningReadiness.near_term_liquidity_need || 'low'} 
-                      onValueChange={(value: 'low' | 'medium' | 'high') => handleReadinessChange('near_term_liquidity_need', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">No major expenses planned</SelectItem>
-                        <SelectItem value="medium">Some planned expenses</SelectItem>
-                        <SelectItem value="high">Major purchase coming soon</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Income stability */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-medium">Income Stability</Label>
-                    <p className="text-sm text-muted-foreground">How predictable is your income?</p>
-                    <Select 
-                      value={planningReadiness.income_stability || 'stable'} 
-                      onValueChange={(value: 'stable' | 'somewhat_stable' | 'unstable') => handleReadinessChange('income_stability', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="stable">Stable & predictable</SelectItem>
-                        <SelectItem value="somewhat_stable">Mostly stable, minor fluctuations</SelectItem>
-                        <SelectItem value="unstable">Variable or uncertain</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Debt pressure */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-medium">Debt Pressure</Label>
-                    <p className="text-sm text-muted-foreground">Do debt payments feel burdensome?</p>
-                    <Select 
-                      value={planningReadiness.debt_pressure_level || 'low'} 
-                      onValueChange={(value: 'low' | 'medium' | 'high') => handleReadinessChange('debt_pressure_level', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Manageable, no pressure</SelectItem>
-                        <SelectItem value="medium">Some pressure</SelectItem>
-                        <SelectItem value="high">Significant pressure</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="flex justify-end pt-4">
-                  <Button onClick={() => setReadinessStep(2)} className="gap-2">
-                    Continue to Goals
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Goals & Preferences */}
-            {readinessStep === 2 && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Tax-free bucket checkbox */}
-                  <div 
-                    className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => handleReadinessChange('wants_tax_free_bucket', !planningReadiness.wants_tax_free_bucket)}
-                  >
-                    <Checkbox
-                      checked={planningReadiness.wants_tax_free_bucket || false}
-                      onCheckedChange={(checked) => handleReadinessChange('wants_tax_free_bucket', checked)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <div>
-                      <Label className="cursor-pointer font-medium">I want a tax-free income option</Label>
-                      <p className="text-sm text-muted-foreground mt-1">Access retirement funds without paying taxes</p>
-                    </div>
-                  </div>
-
-                  {/* Permanent coverage checkbox */}
-                  <div 
-                    className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => handleReadinessChange('permanent_coverage_need', !planningReadiness.permanent_coverage_need)}
-                  >
-                    <Checkbox
-                      checked={planningReadiness.permanent_coverage_need || false}
-                      onCheckedChange={(checked) => handleReadinessChange('permanent_coverage_need', checked)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <div>
-                      <Label className="cursor-pointer font-medium">I want lifelong life insurance</Label>
-                      <p className="text-sm text-muted-foreground mt-1">Coverage that never expires</p>
-                    </div>
-                  </div>
-
-                  {/* Guaranteed income checkbox */}
-                  <div 
-                    className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => handleProtectionChange('prefers_guaranteed_income', !protectionData.prefers_guaranteed_income)}
-                  >
-                    <Checkbox
-                      checked={protectionData.prefers_guaranteed_income || false}
-                      onCheckedChange={(checked) => handleProtectionChange('prefers_guaranteed_income', checked)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <div>
-                      <Label className="cursor-pointer font-medium">I prefer guaranteed lifetime income</Label>
-                      <p className="text-sm text-muted-foreground mt-1">Income I can't outlive</p>
-                    </div>
-                  </div>
-
-                  {/* 10+ year commitment checkbox */}
-                  <div 
-                    className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => handleProtectionChange('can_commit_10yr_contributions', !protectionData.can_commit_10yr_contributions)}
-                  >
-                    <Checkbox
-                      checked={protectionData.can_commit_10yr_contributions || false}
-                      onCheckedChange={(checked) => handleProtectionChange('can_commit_10yr_contributions', checked)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <div>
-                      <Label className="cursor-pointer font-medium">I can commit to 10+ years of contributions</Label>
-                      <p className="text-sm text-muted-foreground mt-1">Consistent funding over time</p>
-                    </div>
-                  </div>
-
-                  {/* Legacy priority */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-medium">Leaving an Inheritance</Label>
-                    <p className="text-sm text-muted-foreground">How important is this to you?</p>
-                    <Select 
-                      value={planningReadiness.legacy_priority || 'medium'} 
-                      onValueChange={(value: 'low' | 'medium' | 'high') => handleReadinessChange('legacy_priority', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Not a priority</SelectItem>
-                        <SelectItem value="medium">Would be nice</SelectItem>
-                        <SelectItem value="high">Very important to me</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Sequence risk concern */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-medium">Market Timing Worry</Label>
-                    <p className="text-sm text-muted-foreground">Worried about retiring during a downturn?</p>
-                    <Select 
-                      value={planningReadiness.sequence_risk_concern || 'medium'} 
-                      onValueChange={(value: 'low' | 'medium' | 'high') => handleReadinessChange('sequence_risk_concern', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Not concerned</SelectItem>
-                        <SelectItem value="medium">Somewhat concerned</SelectItem>
-                        <SelectItem value="high">Very concerned</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Maxing qualified plans */}
-                  <div className="space-y-3 md:col-span-2">
-                    <Label className="text-base font-medium">Retirement Account Contributions</Label>
-                    <p className="text-sm text-muted-foreground">Are you maxing out 401(k), IRA, or Roth accounts?</p>
-                    <Select 
-                      value={planningReadiness.maxing_qualified_plans || 'no'} 
-                      onValueChange={(value: 'no' | 'some' | 'yes' | 'not_applicable') => handleReadinessChange('maxing_qualified_plans', value)}
-                    >
-                      <SelectTrigger className="max-w-md">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="no">Not maxing any accounts</SelectItem>
-                        <SelectItem value="some">Maxing 1-2 accounts</SelectItem>
-                        <SelectItem value="yes">Maxing all available</SelectItem>
-                        <SelectItem value="not_applicable">Self-employed / no employer plan</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="flex justify-between pt-4">
-                  <Button variant="outline" onClick={() => setReadinessStep(1)} className="gap-2">
-                    <ChevronLeft className="h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button onClick={() => setReadinessStep(3)} className="gap-2">
-                    Continue to Health & Risk
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Health, Behavior & Goal Ranking */}
-            {readinessStep === 3 && (
-              <div className="space-y-6">
-                {/* Health & Longevity Section */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Health & Longevity</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Self-assessed health */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-medium">How would you rate your current health?</Label>
-                      <Select 
-                        value={planningReadiness.self_assessed_health || 'good'} 
-                        onValueChange={(value: 'excellent' | 'good' | 'fair' | 'poor') => handleReadinessChange('self_assessed_health', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="excellent">Excellent</SelectItem>
-                          <SelectItem value="good">Good</SelectItem>
-                          <SelectItem value="fair">Fair</SelectItem>
-                          <SelectItem value="poor">Poor</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Family longevity history */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-medium">Based on your family history, how long do you expect to live?</Label>
-                      <Select 
-                        value={planningReadiness.family_longevity_history || 'average'} 
-                        onValueChange={(value: 'below_average' | 'average' | 'above_average') => handleReadinessChange('family_longevity_history', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="below_average">Shorter than average</SelectItem>
-                          <SelectItem value="average">Average (mid-80s)</SelectItem>
-                          <SelectItem value="above_average">Longer than average</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Longevity concern */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-medium">How concerned are you about outliving your savings?</Label>
-                      <Select 
-                        value={planningReadiness.longevity_concern || 'medium'} 
-                        onValueChange={(value: 'low' | 'medium' | 'high') => handleReadinessChange('longevity_concern', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Not concerned</SelectItem>
-                          <SelectItem value="medium">Somewhat concerned</SelectItem>
-                          <SelectItem value="high">Very concerned</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Investment Behavior Section */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Investment Experience & Behavior</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Investment experience */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-medium">What is your investment experience level?</Label>
-                      <Select 
-                        value={planningReadiness.investment_experience_level || 'intermediate'} 
-                        onValueChange={(value: 'novice' | 'intermediate' | 'experienced') => handleReadinessChange('investment_experience_level', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="novice">Novice - Limited experience</SelectItem>
-                          <SelectItem value="intermediate">Intermediate - Some experience</SelectItem>
-                          <SelectItem value="experienced">Experienced - Extensive experience</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Behavior in down market */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-medium">If your investments dropped 20% in one year, what would you do?</Label>
-                      <Select 
-                        value={planningReadiness.behavior_in_down_market || 'hold'} 
-                        onValueChange={(value: 'panic_sell' | 'reduce_risk' | 'hold' | 'buy_more' | 'unsure') => handleReadinessChange('behavior_in_down_market', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="panic_sell">Sell everything to stop the losses</SelectItem>
-                          <SelectItem value="reduce_risk">Reduce risk / move to safer investments</SelectItem>
-                          <SelectItem value="hold">Hold steady and wait for recovery</SelectItem>
-                          <SelectItem value="buy_more">Buy more at lower prices</SelectItem>
-                          <SelectItem value="unsure">Not sure</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Comfort with complex products */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-medium">How comfortable are you with complex financial products?</Label>
-                      <Select 
-                        value={planningReadiness.comfort_with_complex_products || 'medium'} 
-                        onValueChange={(value: 'low' | 'medium' | 'high') => handleReadinessChange('comfort_with_complex_products', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low - Prefer simple, straightforward options</SelectItem>
-                          <SelectItem value="medium">Medium - Willing to learn</SelectItem>
-                          <SelectItem value="high">High - Comfortable with complexity</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Willingness to keep funds illiquid */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-medium">How many years can you keep funds locked up?</Label>
-                      <p className="text-sm text-muted-foreground">Some strategies require funds to stay invested for years</p>
-                      <div className="flex items-center space-x-4">
-                        <Slider
-                          value={[planningReadiness.willingness_illiquidity_years || 7]}
-                          onValueChange={(value) => handleReadinessChange('willingness_illiquidity_years', value[0])}
-                          min={0}
-                          max={15}
-                          step={1}
-                          className="flex-1"
-                        />
-                        <span className="font-semibold text-lg w-20 text-right">
-                          {planningReadiness.willingness_illiquidity_years || 7} years
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Goal Priority Ranking Section */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Rank Your Goals (1 = Most Important)</h3>
-                  <p className="text-sm text-muted-foreground">This helps us understand which strategies best align with your priorities</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Guaranteed Income */}
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <Label className="font-medium">Guaranteed Lifetime Income</Label>
-                        <p className="text-sm text-muted-foreground">Income I can't outlive</p>
-                      </div>
-                      <Select 
-                        value={String(planningReadiness.goal_priorities?.guaranteed_income || 1)} 
-                        onValueChange={(value) => handleGoalPriorityChange('guaranteed_income', parseInt(value))}
-                      >
-                        <SelectTrigger className="w-20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1st</SelectItem>
-                          <SelectItem value="2">2nd</SelectItem>
-                          <SelectItem value="3">3rd</SelectItem>
-                          <SelectItem value="4">4th</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Flexibility / Liquidity */}
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <Label className="font-medium">Flexibility / Liquidity</Label>
-                        <p className="text-sm text-muted-foreground">Access to funds when needed</p>
-                      </div>
-                      <Select 
-                        value={String(planningReadiness.goal_priorities?.flexibility_liquidity || 2)} 
-                        onValueChange={(value) => handleGoalPriorityChange('flexibility_liquidity', parseInt(value))}
-                      >
-                        <SelectTrigger className="w-20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1st</SelectItem>
-                          <SelectItem value="2">2nd</SelectItem>
-                          <SelectItem value="3">3rd</SelectItem>
-                          <SelectItem value="4">4th</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Legacy / Estate */}
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <Label className="font-medium">Legacy / Estate Value</Label>
-                        <p className="text-sm text-muted-foreground">Leave money to heirs</p>
-                      </div>
-                      <Select 
-                        value={String(planningReadiness.goal_priorities?.legacy_estate || 3)} 
-                        onValueChange={(value) => handleGoalPriorityChange('legacy_estate', parseInt(value))}
-                      >
-                        <SelectTrigger className="w-20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1st</SelectItem>
-                          <SelectItem value="2">2nd</SelectItem>
-                          <SelectItem value="3">3rd</SelectItem>
-                          <SelectItem value="4">4th</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Inflation Protection */}
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <Label className="font-medium">Inflation Protection</Label>
-                        <p className="text-sm text-muted-foreground">Keep up with rising costs</p>
-                      </div>
-                      <Select 
-                        value={String(planningReadiness.goal_priorities?.inflation_protection || 4)} 
-                        onValueChange={(value) => handleGoalPriorityChange('inflation_protection', parseInt(value))}
-                      >
-                        <SelectTrigger className="w-20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1st</SelectItem>
-                          <SelectItem value="2">2nd</SelectItem>
-                          <SelectItem value="3">3rd</SelectItem>
-                          <SelectItem value="4">4th</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Peace of Mind */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Peace of Mind</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div 
-                      className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                      onClick={() => handleReadinessChange('wants_monthly_paycheck_feel', !planningReadiness.wants_monthly_paycheck_feel)}
-                    >
-                      <Checkbox
-                        checked={planningReadiness.wants_monthly_paycheck_feel || false}
-                        onCheckedChange={(checked) => handleReadinessChange('wants_monthly_paycheck_feel', checked)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <div>
-                        <Label className="cursor-pointer font-medium">I want my retirement income to feel like a monthly paycheck</Label>
-                        <p className="text-sm text-muted-foreground mt-1">Predictable, steady income I can count on</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label className="text-base font-medium">How important is peace of mind vs. maximizing returns?</Label>
-                      <Select 
-                        value={planningReadiness.sleep_at_night_priority || 'medium'} 
-                        onValueChange={(value: 'low' | 'medium' | 'high') => handleReadinessChange('sleep_at_night_priority', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">I'll take more risk for more returns</SelectItem>
-                          <SelectItem value="medium">Balance of both</SelectItem>
-                          <SelectItem value="high">Peace of mind is most important</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between pt-4">
-                  <Button variant="outline" onClick={() => setReadinessStep(2)} className="gap-2">
-                    <ChevronLeft className="h-4 w-4" />
-                    Back
-                  </Button>
-                  <p className="text-sm text-muted-foreground self-center">✓ Assessment complete - see results below</p>
-                </div>
-              </div>
+            {suitabilityPreview.isBlocked && (
+              <Alert className="mt-4" variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Build your emergency fund to 3+ months before exploring these strategies. This ensures you have a safety net for unexpected expenses.
+                </AlertDescription>
+              </Alert>
             )}
           </CardContent>
         </Card>
-
-      </div>
-    </TooltipProvider>
+      )}
+    </div>
   );
 }

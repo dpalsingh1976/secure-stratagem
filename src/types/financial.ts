@@ -350,6 +350,18 @@ export interface PlanningReadinessData {
   survivor_income_need?: ConcernLevel;
 }
 
+// Simplified retirement answers for streamlined 8-question form
+export interface SimplifiedRetirementAnswers {
+  emergencyFund?: 'less_than_3' | '3_to_6' | '6_plus';
+  contributionStatus?: 'not_contributing' | 'contributing_not_maxing' | 'maxing';
+  primaryPriority?: 'predictable_income' | 'tax_efficient' | 'growth_protection' | 'legacy' | 'flexibility';
+  marketBehavior?: 'panic' | 'uneasy' | 'calm';
+  lockupTolerance?: 'less_than_5' | '5_to_7' | '7_plus';
+  longevity?: 'below_average' | 'average' | 'above_average';
+  majorExpenses?: 'none' | 'possibly' | 'yes';
+  incomeStability?: 'very_stable' | 'mostly_stable' | 'variable';
+}
+
 export interface RiskPreferencesData {
   risk_tolerance: number;
   loss_aversion: number;
