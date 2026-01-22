@@ -121,16 +121,16 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="filingStatus">Filing Status</Label>
+                <Label htmlFor="maritalStatus">Marital Status</Label>
                 <Select value={data.filing_status} onValueChange={(value: FilingStatus) => handleInputChange('filing_status', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select filing status" />
+                    <SelectValue placeholder="Select marital status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="single">Single</SelectItem>
-                    <SelectItem value="married_joint">Married Filing Jointly</SelectItem>
-                    <SelectItem value="married_separate">Married Filing Separately</SelectItem>
-                    <SelectItem value="head_household">Head of Household</SelectItem>
+                    <SelectItem value="married_joint">Married</SelectItem>
+                    <SelectItem value="married_separate">Separated / Divorced</SelectItem>
+                    <SelectItem value="head_household">Widowed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

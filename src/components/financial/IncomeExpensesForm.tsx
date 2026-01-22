@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { IncomeExpensesData } from '@/types/financial';
 
 interface IncomeExpensesFormProps {
@@ -17,6 +17,25 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
     const newData = { ...data, [field]: value };
     onChange(newData);
     onValidationChange(true);
+  };
+
+  // Calculate idle cash (surplus)
+  const cashFlowSummary = useMemo(() => {
+    const totalIncome = (data.w2_income || 0) + (data.business_income || 0) + (data.rental_income || 0) + (data.social_security || 0);
+    const totalExpenses = (data.fixed_expenses || 0) + (data.variable_expenses || 0);
+    const idleCash = Math.max(0, totalIncome - totalExpenses);
+    return { totalIncome, totalExpenses, idleCash };
+  }, [data.w2_income, data.business_income, data.rental_income, data.social_security, data.fixed_expenses, data.variable_expenses]);
+
+  // Auto-update monthly_checking_balance with idle cash
+  useEffect(() => {
+    if (data.monthly_checking_balance !== cashFlowSummary.idleCash) {
+      onChange({ ...data, monthly_checking_balance: cashFlowSummary.idleCash });
+    }
+  }, [cashFlowSummary.idleCash]);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
   };
 
   return (
@@ -110,6 +129,37 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
               <p className="text-xs text-muted-foreground">
                 Spending you can reduce if needed
               </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Cash Flow Summary */}
+        <Card className="bg-muted/30 border-dashed">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Monthly Cash Flow Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Total Income</p>
+                <p className="text-lg font-semibold text-green-600">{formatCurrency(cashFlowSummary.totalIncome)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Total Expenses</p>
+                <p className="text-lg font-semibold text-red-600">{formatCurrency(cashFlowSummary.totalExpenses)}</p>
+              </div>
+              <div className="bg-primary/5 rounded-lg p-2 -m-2">
+                <p className="text-xs text-muted-foreground mb-1">Available for Savings</p>
+                <p className={`text-xl font-bold ${cashFlowSummary.idleCash > 0 ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {formatCurrency(cashFlowSummary.idleCash)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {cashFlowSummary.idleCash > 0 ? 'Monthly surplus for investments' : 'No surplus available'}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
