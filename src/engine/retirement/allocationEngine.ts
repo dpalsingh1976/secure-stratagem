@@ -52,28 +52,35 @@ function calculateAge(dob: string): number {
 }
 
 /**
- * Calculate total annual income
+ * Calculate total MONTHLY income (all income fields are monthly)
  */
-function calculateAnnualIncome(incomeData: IncomeExpensesData): number {
+function calculateMonthlyIncome(incomeData: IncomeExpensesData): number {
   return (
     (incomeData.w2_income || 0) +
     (incomeData.business_income || 0) +
-    (incomeData.rental_income || 0)
+    (incomeData.rental_income || 0) +
+    (incomeData.social_security || 0)
   );
 }
 
 /**
- * Calculate monthly savings capacity
+ * Calculate total annual income (convert monthly to annual)
+ */
+function calculateAnnualIncome(incomeData: IncomeExpensesData): number {
+  return calculateMonthlyIncome(incomeData) * 12;
+}
+
+/**
+ * Calculate monthly savings capacity (income - expenses, all monthly)
  */
 function calculateMonthlySavingsCapacity(incomeData: IncomeExpensesData): number {
-  const totalIncome = calculateAnnualIncome(incomeData);
-  const totalExpenses = (
+  const totalMonthlyIncome = calculateMonthlyIncome(incomeData);
+  const totalMonthlyExpenses = (
     (incomeData.fixed_expenses || 0) +
     (incomeData.variable_expenses || 0) +
     (incomeData.debt_service || 0)
-  ) * 12; // Convert monthly expenses to annual
-  const annualSavings = Math.max(0, totalIncome - totalExpenses);
-  return Math.round(annualSavings / 12);
+  );
+  return Math.max(0, totalMonthlyIncome - totalMonthlyExpenses);
 }
 
 /**
