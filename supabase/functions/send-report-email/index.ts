@@ -28,10 +28,14 @@ interface ReportEmailRequest {
     fiaStrategy?: string;
     fiaPositives: string[];
     fiaReason?: string;
-    // Tax Buckets
+    // Tax Buckets - percentages and values
     taxNowPct: number;
     taxLaterPct: number;
     taxNeverPct: number;
+    taxNowValue?: number;
+    taxLaterValue?: number;
+    taxNeverValue?: number;
+    totalAssets?: number;
   };
   pdfBase64: string;
 }
@@ -191,16 +195,20 @@ const handler = async (req: Request): Promise<Response> => {
               <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
                 <tr>
                   <td style="padding: 6px 0; color: #4b5563;">Tax Now (Taxable)</td>
-                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #1f2937;">${summary.taxNowPct}%</td>
+                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #1f2937;">${summary.taxNowValue !== undefined ? formatCurrency(summary.taxNowValue) : formatCurrency(0)} <span style="color: #6b7280; font-weight: normal;">(${summary.taxNowPct}%)</span></td>
                 </tr>
                 <tr>
                   <td style="padding: 6px 0; color: #4b5563;">Tax Later (Tax-Deferred)</td>
-                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #1f2937;">${summary.taxLaterPct}%</td>
+                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #1f2937;">${summary.taxLaterValue !== undefined ? formatCurrency(summary.taxLaterValue) : formatCurrency(0)} <span style="color: #6b7280; font-weight: normal;">(${summary.taxLaterPct}%)</span></td>
                 </tr>
                 <tr>
                   <td style="padding: 6px 0; color: #4b5563;">Tax Never (Tax-Free)</td>
-                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: ${summary.taxNeverPct >= 20 ? '#16a34a' : '#f59e0b'};">${summary.taxNeverPct}%</td>
+                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: ${summary.taxNeverPct >= 20 ? '#16a34a' : '#f59e0b'};">${summary.taxNeverValue !== undefined ? formatCurrency(summary.taxNeverValue) : formatCurrency(0)} <span style="color: #6b7280; font-weight: normal;">(${summary.taxNeverPct}%)</span></td>
                 </tr>
+                ${summary.totalAssets ? `<tr style="border-top: 1px solid #e5e7eb;">
+                  <td style="padding: 8px 0 6px 0; color: #1f2937; font-weight: 600;">Total Assets</td>
+                  <td style="padding: 8px 0 6px 0; text-align: right; font-weight: 700; color: #1f2937;">${formatCurrency(summary.totalAssets)}</td>
+                </tr>` : ''}
               </table>
               
               <p style="margin: 0; font-size: 13px; color: #6b7280; font-style: italic;">

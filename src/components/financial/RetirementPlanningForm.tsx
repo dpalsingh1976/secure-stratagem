@@ -332,16 +332,39 @@ export function RetirementPlanningForm({
 
   return (
     <div className="space-y-6">
-      {/* Time Horizon Display (read-only from existing data) */}
+      {/* Time Horizon with Editable Retirement Age */}
       <Card className="bg-muted/30 border-dashed">
         <CardContent className="pt-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <Calendar className="h-5 w-5 text-muted-foreground" />
-            <div className="flex-1">
-              <p className="text-sm text-muted-foreground">Based on your profile</p>
-              <p className="font-medium">
-                Age {currentAge || '—'} → Retire at {retirementAge} ({yearsToRetirement} years)
-              </p>
+            <div className="flex-1 min-w-[200px]">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div>
+                  <p className="text-xs text-muted-foreground">Current Age</p>
+                  <p className="font-medium text-lg">{currentAge || '—'}</p>
+                </div>
+                <div className="text-muted-foreground">→</div>
+                <div>
+                  <label htmlFor="retirement-age" className="text-xs text-muted-foreground block">Planned Retirement Age</label>
+                  <input
+                    id="retirement-age"
+                    type="number"
+                    min={Math.max(50, currentAge + 1)}
+                    max={80}
+                    value={retirementAge}
+                    onChange={(e) => {
+                      const newAge = parseInt(e.target.value) || 65;
+                      onProfileChange({ ...profileData, retirement_age: newAge });
+                    }}
+                    className="w-16 text-lg font-medium border rounded px-2 py-1 text-center bg-background"
+                  />
+                </div>
+                <div className="text-muted-foreground">=</div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Years to Retirement</p>
+                  <p className="font-medium text-lg text-primary">{yearsToRetirement}</p>
+                </div>
+              </div>
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground">Progress</p>
