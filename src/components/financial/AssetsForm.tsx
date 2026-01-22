@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
@@ -7,20 +7,23 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Trash2, DollarSign, TrendingUp } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Plus, Trash2, DollarSign, TrendingUp, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ASSET_TYPE_CONFIG, TAX_WRAPPER_CONFIG } from '@/types/financial';
-import type { AssetFormData, AssetType, TaxWrapperType } from '@/types/financial';
+import type { AssetFormData, AssetType, TaxWrapperType, IncomeExpensesData } from '@/types/financial';
 
 interface AssetsFormProps {
   data: AssetFormData[];
   onChange: (data: AssetFormData[]) => void;
   clientId: string | null;
   onValidationChange: (isValid: boolean) => void;
+  incomeData?: IncomeExpensesData;
+  onIncomeChange?: (data: IncomeExpensesData) => void;
 }
 
-export function AssetsForm({ data, onChange, clientId, onValidationChange }: AssetsFormProps) {
+export function AssetsForm({ data, onChange, clientId, onValidationChange, incomeData, onIncomeChange }: AssetsFormProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const addAsset = () => {
@@ -109,10 +112,68 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange }: Ass
     return ASSET_TYPE_CONFIG[assetType]?.defaultTaxWrapper || 'TAX_NOW';
   };
 
-  const totalValue = data.reduce((sum, asset) => sum + asset.current_value, 0);
+  // Fix: Use defensive handling for NaN/undefined values
+  const totalValue = data.reduce((sum, asset) => sum + (Number(asset.current_value) || 0), 0);
+
+  const handleIncomeChange = (field: keyof IncomeExpensesData, value: any) => {
+    if (incomeData && onIncomeChange) {
+      onIncomeChange({ ...incomeData, [field]: value });
+    }
+  };
 
   return (
     <div className="space-y-6">
+      {/* Previous 401(k) Rollover Section */}
+      {incomeData && onIncomeChange && (
+        <Card className="border-primary/20">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 text-primary" />
+              <CardTitle>Previous 401(k) Rollover</CardTitle>
+            </div>
+            <CardDescription>
+              Old 401(k)s may be candidates for rollover optimization
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div>
+                <Label className="text-base">Do you have a 401(k) from a previous employer?</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Unused retirement accounts may benefit from consolidation
+                </p>
+              </div>
+              <Switch
+                checked={incomeData.has_old_401k || false}
+                onCheckedChange={(checked) => handleIncomeChange('has_old_401k', checked)}
+              />
+            </div>
+
+            {incomeData.has_old_401k && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-4 border-l-2 border-primary/30 ml-2">
+                <div className="space-y-2">
+                  <Label>Approximate Balance</Label>
+                  <Input
+                    type="number"
+                    value={incomeData.old_401k_balance || 0}
+                    onChange={(e) => handleIncomeChange('old_401k_balance', parseFloat(e.target.value) || 0)}
+                    placeholder="e.g., 125000"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Previous Employer (optional)</Label>
+                  <Input
+                    value={incomeData.old_401k_employer_name || ''}
+                    onChange={(e) => handleIncomeChange('old_401k_employer_name', e.target.value)}
+                    placeholder="Company name"
+                  />
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex justify-between items-center">
         <div>
           <h3 className="text-lg font-semibold">Asset Portfolio</h3>
@@ -305,7 +366,7 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange }: Ass
               <div className="text-center">
                 <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-green-600">
-                  {formatCurrency(data.filter(a => a.tax_wrapper === 'TAX_NEVER').reduce((sum, a) => sum + a.current_value, 0))}
+                  {formatCurrency(data.filter(a => a.tax_wrapper === 'TAX_NEVER').reduce((sum, a) => sum + (Number(a.current_value) || 0), 0))}
                 </div>
                 <div className="text-sm text-gray-600">Tax-Free Assets</div>
               </div>
@@ -317,7 +378,7 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange }: Ass
               <div className="text-center">
                 <DollarSign className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-yellow-600">
-                  {formatCurrency(data.filter(a => a.tax_wrapper === 'TAX_LATER').reduce((sum, a) => sum + a.current_value, 0))}
+                  {formatCurrency(data.filter(a => a.tax_wrapper === 'TAX_LATER').reduce((sum, a) => sum + (Number(a.current_value) || 0), 0))}
                 </div>
                 <div className="text-sm text-gray-600">Tax-Deferred Assets</div>
               </div>
@@ -329,7 +390,7 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange }: Ass
               <div className="text-center">
                 <TrendingUp className="h-8 w-8 text-red-600 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-red-600">
-                  {formatCurrency(data.filter(a => a.tax_wrapper === 'TAX_NOW').reduce((sum, a) => sum + a.current_value, 0))}
+                  {formatCurrency(data.filter(a => a.tax_wrapper === 'TAX_NOW').reduce((sum, a) => sum + (Number(a.current_value) || 0), 0))}
                 </div>
                 <div className="text-sm text-gray-600">Taxable Assets</div>
               </div>

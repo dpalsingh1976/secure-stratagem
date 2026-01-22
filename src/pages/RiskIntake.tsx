@@ -285,7 +285,9 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
             data={assets} 
             onChange={setAssets}
             clientId={clientId}
-            onValidationChange={() => {}} 
+            onValidationChange={() => {}}
+            incomeData={incomeData}
+            onIncomeChange={setIncomeData}
           />
         );
       case 3:
