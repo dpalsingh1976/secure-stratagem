@@ -975,120 +975,120 @@ export function ReportModal({
       // =====================
       // SECTION 2: PRODUCT FIT ANALYSIS
       // =====================
-      //  drawSectionHeader("Product Fit Analysis", [5, 150, 105]);
+      // drawSectionHeader("Product Fit Analysis", [5, 150, 105]);
 
       // IUL Section
-      // pdf.setFontSize(12);
-      // pdf.setFont("helvetica", "bold");
-      // pdf.text("Indexed Universal Life (IUL)", margin, yPos);
-      // drawFitBadge(productRecs.iul.fit, pageWidth - margin - 35, yPos);
-      // yPos += 10;
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Indexed Universal Life (IUL)", margin, yPos);
+      drawFitBadge(productRecs.iul.fit, pageWidth - margin - 35, yPos);
+      yPos += 10;
 
-      // pdf.setFontSize(10);
-      // pdf.setFont("helvetica", "normal");
-      // pdf.text(`Score: ${productRecs.iul.score}/100`, margin, yPos);
-      // yPos += 8;
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Score: ${productRecs.iul.score}/100`, margin, yPos);
+      yPos += 8;
 
-      // if (productRecs.iul.positives.length > 0) {
-      //   pdf.setFont("helvetica", "bold");
-      //   pdf.text("Why It Fits:", margin, yPos);
-      //   yPos += 6;
-      //   pdf.setFont("helvetica", "normal");
-      //   productRecs.iul.positives.slice(0, 3).forEach((pos) => {
-      //     checkPageBreak(6);
-      //     const lines = pdf.splitTextToSize(`✓ ${pos}`, pageWidth - 2 * margin - 10);
-      //     lines.forEach((line: string) => {
-      //       pdf.text(line, margin + 5, yPos);
-      //       yPos += 5;
-      //     });
-      //   });
-      // }
+      if (productRecs.iul.positives.length > 0) {
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Why It Fits:", margin, yPos);
+        yPos += 6;
+        pdf.setFont("helvetica", "normal");
+        productRecs.iul.positives.slice(0, 3).forEach((pos) => {
+          checkPageBreak(6);
+          const lines = pdf.splitTextToSize(`✓ ${pos}`, pageWidth - 2 * margin - 10);
+          lines.forEach((line: string) => {
+            pdf.text(line, margin + 5, yPos);
+            yPos += 5;
+          });
+        });
+      }
 
-      // if (productRecs.iul.negatives.length > 0) {
-      //   yPos += 3;
-      //   pdf.setFont("helvetica", "bold");
-      //   pdf.text("Considerations:", margin, yPos);
-      //   yPos += 6;
-      //   pdf.setFont("helvetica", "normal");
-      //   productRecs.iul.negatives.slice(0, 2).forEach((neg) => {
-      //     checkPageBreak(6);
-      //     const lines = pdf.splitTextToSize(`• ${neg}`, pageWidth - 2 * margin - 10);
-      //     lines.forEach((line: string) => {
-      //       pdf.text(line, margin + 5, yPos);
-      //       yPos += 5;
-      //     });
-      //   });
-      // }
+      if (productRecs.iul.negatives.length > 0) {
+        yPos += 3;
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Considerations:", margin, yPos);
+        yPos += 6;
+        pdf.setFont("helvetica", "normal");
+        productRecs.iul.negatives.slice(0, 2).forEach((neg) => {
+          checkPageBreak(6);
+          const lines = pdf.splitTextToSize(`• ${neg}`, pageWidth - 2 * margin - 10);
+          lines.forEach((line: string) => {
+            pdf.text(line, margin + 5, yPos);
+            yPos += 5;
+          });
+        });
+      }
 
-      // yPos += 10;
+      yPos += 10;
 
-      // // FIA Section
-      // checkPageBreak(40);
-      // pdf.setFontSize(12);
-      // pdf.setFont("helvetica", "bold");
-      // pdf.text("Fixed Indexed Annuity (FIA)", margin, yPos);
-      // drawFitBadge(productRecs.fia.fit, pageWidth - margin - 35, yPos);
-      // yPos += 10;
+      // FIA Section
+      checkPageBreak(40);
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Fixed Indexed Annuity (FIA)", margin, yPos);
+      drawFitBadge(productRecs.fia.fit, pageWidth - margin - 35, yPos);
+      yPos += 10;
 
-      // pdf.setFontSize(10);
-      // pdf.setFont("helvetica", "normal");
-      // pdf.text(`Score: ${productRecs.fia.score}/100`, margin, yPos);
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Score: ${productRecs.fia.score}/100`, margin, yPos);
 
-      // if (productRecs.fia.strategy) {
-      //   const strategyLabels: Record<string, string> = {
-      //     FIA_BUFFER_REDZONE: "Buffer Zone Strategy",
-      //     FIA_INCOME_FLOOR: "Income Floor Strategy",
-      //     FIA_GROWTH_PROTECTION: "Growth Protection",
-      //     FIA_OPTIONAL: "Optional Enhancement",
-      //     FIA_NOT_FIT_YET: "Build Foundation First",
-      //   };
-      //   const strategyLabel = strategyLabels[productRecs.fia.strategy] || productRecs.fia.strategy;
-      //   pdf.text(`  |  Strategy: ${strategyLabel}`, margin + 35, yPos);
-      // }
-      // yPos += 8;
+      if (productRecs.fia.strategy) {
+        const strategyLabels: Record<string, string> = {
+          FIA_BUFFER_REDZONE: "Buffer Zone Strategy",
+          FIA_INCOME_FLOOR: "Income Floor Strategy",
+          FIA_GROWTH_PROTECTION: "Growth Protection",
+          FIA_OPTIONAL: "Optional Enhancement",
+          FIA_NOT_FIT_YET: "Build Foundation First",
+        };
+        const strategyLabel = strategyLabels[productRecs.fia.strategy] || productRecs.fia.strategy;
+        pdf.text(`  |  Strategy: ${strategyLabel}`, margin + 35, yPos);
+      }
+      yPos += 8;
 
-      // if (productRecs.fia.positives.length > 0) {
-      //   pdf.setFont("helvetica", "bold");
-      //   pdf.text("Why It Fits:", margin, yPos);
-      //   yPos += 6;
-      //   pdf.setFont("helvetica", "normal");
-      //   productRecs.fia.positives.slice(0, 3).forEach((pos) => {
-      //     checkPageBreak(6);
-      //     const lines = pdf.splitTextToSize(`✓ ${pos}`, pageWidth - 2 * margin - 10);
-      //     lines.forEach((line: string) => {
-      //       pdf.text(line, margin + 5, yPos);
-      //       yPos += 5;
-      //     });
-      //   });
-      // }
+      if (productRecs.fia.positives.length > 0) {
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Why It Fits:", margin, yPos);
+        yPos += 6;
+        pdf.setFont("helvetica", "normal");
+        productRecs.fia.positives.slice(0, 3).forEach((pos) => {
+          checkPageBreak(6);
+          const lines = pdf.splitTextToSize(`✓ ${pos}`, pageWidth - 2 * margin - 10);
+          lines.forEach((line: string) => {
+            pdf.text(line, margin + 5, yPos);
+            yPos += 5;
+          });
+        });
+      }
 
-      // if (productRecs.fia.negatives.length > 0) {
-      //   yPos += 3;
-      //   pdf.setFont("helvetica", "bold");
-      //   pdf.text("Considerations:", margin, yPos);
-      //   yPos += 6;
-      //   pdf.setFont("helvetica", "normal");
-      //   productRecs.fia.negatives.slice(0, 2).forEach((neg) => {
-      //     checkPageBreak(6);
-      //     const lines = pdf.splitTextToSize(`• ${neg}`, pageWidth - 2 * margin - 10);
-      //     lines.forEach((line: string) => {
-      //       pdf.text(line, margin + 5, yPos);
-      //       yPos += 5;
-      //     });
-      //   });
-      // }
+      if (productRecs.fia.negatives.length > 0) {
+        yPos += 3;
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Considerations:", margin, yPos);
+        yPos += 6;
+        pdf.setFont("helvetica", "normal");
+        productRecs.fia.negatives.slice(0, 2).forEach((neg) => {
+          checkPageBreak(6);
+          const lines = pdf.splitTextToSize(`• ${neg}`, pageWidth - 2 * margin - 10);
+          lines.forEach((line: string) => {
+            pdf.text(line, margin + 5, yPos);
+            yPos += 5;
+          });
+        });
+      }
 
-      // if (productRecs.fia.reason) {
-      //   yPos += 5;
-      //   pdf.setFont("helvetica", "italic");
-      //   const reasonLines = pdf.splitTextToSize(productRecs.fia.reason, pageWidth - 2 * margin);
-      //   reasonLines.forEach((line: string) => {
-      //     pdf.text(line, margin, yPos);
-      //     yPos += 5;
-      //   });
-      // }
+      if (productRecs.fia.reason) {
+        yPos += 5;
+        pdf.setFont("helvetica", "italic");
+        const reasonLines = pdf.splitTextToSize(productRecs.fia.reason, pageWidth - 2 * margin);
+        reasonLines.forEach((line: string) => {
+          pdf.text(line, margin, yPos);
+          yPos += 5;
+        });
+      }
 
-      // yPos += 5;
+      yPos += 5;
 
       // =====================
       // SECTION 3: TAX BUCKET ANALYSIS
