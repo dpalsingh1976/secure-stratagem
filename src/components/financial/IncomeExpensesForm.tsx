@@ -2,9 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { HelpCircle, Wallet, RefreshCw } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import type { IncomeExpensesData } from '@/types/financial';
 
 interface IncomeExpensesFormProps {
@@ -111,92 +110,6 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
               <p className="text-xs text-muted-foreground">
                 Spending you can reduce if needed
               </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* NEW: Available Cash & Rollover Assets Section */}
-        <Card className="border-primary/20">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Wallet className="h-5 w-5 text-primary" />
-              <CardTitle>Available Cash & Rollover Assets</CardTitle>
-            </div>
-            <CardDescription>
-              Identify funds that may be available for optimized allocation strategies
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Idle Cash in Checking */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label>Idle Cash in Checking (after monthly spending)</Label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p className="font-medium mb-1">Unused cash sitting in your checking account:</p>
-                    <p className="text-xs">After paying all bills, investments, and spending, how much typically sits unused month-to-month? This could be redirected to wealth-building strategies.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <Input
-                type="number"
-                value={data.monthly_checking_balance || 0}
-                onChange={(e) => handleInputChange('monthly_checking_balance', parseFloat(e.target.value) || 0)}
-                placeholder="e.g., 5000"
-              />
-              <p className="text-xs text-muted-foreground">
-                Excess cash not needed for emergency fund or near-term expenses
-              </p>
-            </div>
-
-            {/* Old 401(k) Rollover */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                <div className="flex items-center gap-3">
-                  <RefreshCw className="h-5 w-5 text-primary" />
-                  <div>
-                    <Label className="text-base">Do you have a 401(k) from a previous employer?</Label>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Old 401(k)s may be candidates for rollover optimization
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={data.has_old_401k || false}
-                  onCheckedChange={(checked) => handleInputChange('has_old_401k', checked)}
-                />
-              </div>
-
-              {data.has_old_401k && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-4 border-l-2 border-primary/30 ml-2">
-                  <div className="space-y-2">
-                    <Label>Approximate Balance</Label>
-                    <Input
-                      type="number"
-                      value={data.old_401k_balance || 0}
-                      onChange={(e) => handleInputChange('old_401k_balance', parseFloat(e.target.value) || 0)}
-                      placeholder="e.g., 125000"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Total value of your old 401(k)
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Previous Employer (optional)</Label>
-                    <Input
-                      value={data.old_401k_employer_name || ''}
-                      onChange={(e) => handleInputChange('old_401k_employer_name', e.target.value)}
-                      placeholder="Company name"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      For your records
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
