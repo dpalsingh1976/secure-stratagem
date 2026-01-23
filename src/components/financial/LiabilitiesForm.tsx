@@ -65,43 +65,13 @@ export function LiabilitiesForm({ data, onChange, clientId, onValidationChange }
   };
 
   const saveLiability = async (index: number) => {
-    // Skip database save if no client ID or temporary ID (unauthenticated user)
-    if (!clientId || clientId.startsWith('temp-')) {
-      setEditingIndex(null);
-      return;
-    }
-
-    try {
-      const liability = data[index];
-      const { error } = await supabase
-        .from('liabilities')
-        .upsert({
-          client_id: clientId,
-          type: liability.type,
-          balance: liability.balance,
-          rate: liability.rate,
-          term_months: liability.term_months || null,
-          payment_monthly: liability.payment_monthly,
-          variable: liability.variable,
-          deductible: liability.deductible,
-          notes: liability.notes
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Liability saved",
-        description: "Liability information has been saved successfully."
-      });
-      setEditingIndex(null);
-    } catch (error) {
-      console.error('Error saving liability:', error);
-      toast({
-        title: "Save failed",
-        description: "There was an error saving the liability.",
-        variant: "destructive"
-      });
-    }
+    // For all users during intake flow, defer DB persistence to bulk RPC save at form completion
+    // This avoids RLS violations since guest users can't write directly to the liabilities table
+    setEditingIndex(null);
+    toast({
+      title: "Liability updated",
+      description: "Liability will be saved when you complete the assessment."
+    });
   };
 
   const formatCurrency = (value: number) => {
