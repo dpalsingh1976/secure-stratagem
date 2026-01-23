@@ -581,8 +581,10 @@ export function ReportModal({
       .filter((l) => l.type === "mortgage_primary" || l.type === "mortgage_rental")
       .reduce((sum, l) => sum + (l.balance || 0), 0);
 
-    const annualIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
-    const incomeReplacement = annualIncome * INCOME_YEARS * REPLACEMENT_RT; // annual
+    // Income fields are MONTHLY - multiply by 12 to get annual
+    const monthlyIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
+    const annualIncome = monthlyIncome * 12;
+    const incomeReplacement = annualIncome * INCOME_YEARS * REPLACEMENT_RT;
 
     const education = (profileData.dependents || 0) * EDU_PER_CHILD;
 
