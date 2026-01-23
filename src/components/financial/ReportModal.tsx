@@ -387,14 +387,9 @@ export function ReportModal({
     taxBuckets.forEach((bucket) => {
       checkPageBreak(16);
 
-      // Label and percentage
+      // Label and target range
       pdf.setFont("helvetica", "bold");
       pdf.text(bucket.label, margin, yPos);
-
-      const pctColor = bucket.label.includes("Never") && bucket.pct < 20 ? [245, 158, 11] : [0, 0, 0];
-      pdf.setTextColor(pctColor[0], pctColor[1], pctColor[2]);
-      pdf.text(`${bucket.pct}%`, margin + 90, yPos);
-      pdf.setTextColor(0, 0, 0);
 
       pdf.setFont("helvetica", "normal");
       pdf.text(bucket.target, pageWidth - margin, yPos, { align: "right" });
