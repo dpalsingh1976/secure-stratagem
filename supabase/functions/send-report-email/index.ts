@@ -195,15 +195,15 @@ const handler = async (req: Request): Promise<Response> => {
               <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
                 <tr>
                   <td style="padding: 6px 0; color: #4b5563;">Tax Now (Taxable)</td>
-                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #1f2937;">${summary.taxNowValue !== undefined ? formatCurrency(summary.taxNowValue) : formatCurrency(0)} <span style="color: #6b7280; font-weight: normal;">(${summary.taxNowPct}%)</span></td>
+                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #1f2937;">${summary.taxNowValue !== undefined ? formatCurrency(summary.taxNowValue) : formatCurrency(0)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 6px 0; color: #4b5563;">Tax Later (Tax-Deferred)</td>
-                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #1f2937;">${summary.taxLaterValue !== undefined ? formatCurrency(summary.taxLaterValue) : formatCurrency(0)} <span style="color: #6b7280; font-weight: normal;">(${summary.taxLaterPct}%)</span></td>
+                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #1f2937;">${summary.taxLaterValue !== undefined ? formatCurrency(summary.taxLaterValue) : formatCurrency(0)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 6px 0; color: #4b5563;">Tax Never (Tax-Free)</td>
-                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: ${summary.taxNeverPct >= 20 ? '#16a34a' : '#f59e0b'};">${summary.taxNeverValue !== undefined ? formatCurrency(summary.taxNeverValue) : formatCurrency(0)} <span style="color: #6b7280; font-weight: normal;">(${summary.taxNeverPct}%)</span></td>
+                  <td style="padding: 6px 0; text-align: right; font-weight: 600; color: ${summary.taxNeverPct >= 20 ? '#16a34a' : '#f59e0b'};">${summary.taxNeverValue !== undefined ? formatCurrency(summary.taxNeverValue) : formatCurrency(0)}</td>
                 </tr>
                 ${summary.totalAssets ? `<tr style="border-top: 1px solid #e5e7eb;">
                   <td style="padding: 8px 0 6px 0; color: #1f2937; font-weight: 600;">Total Assets</td>
@@ -297,9 +297,9 @@ const handler = async (req: Request): Promise<Response> => {
         
         <h3>Tax Buckets</h3>
         <ul>
-          <li>Tax Now: ${summary.taxNowPct}%</li>
-          <li>Tax Later: ${summary.taxLaterPct}%</li>
-          <li>Tax Never: ${summary.taxNeverPct}%</li>
+          <li>Tax Now: ${summary.taxNowValue !== undefined ? formatCurrency(summary.taxNowValue) : formatCurrency(0)}</li>
+          <li>Tax Later: ${summary.taxLaterValue !== undefined ? formatCurrency(summary.taxLaterValue) : formatCurrency(0)}</li>
+          <li>Tax Never: ${summary.taxNeverValue !== undefined ? formatCurrency(summary.taxNeverValue) : formatCurrency(0)}</li>
         </ul>
         
         <p>Full report attached.</p>
