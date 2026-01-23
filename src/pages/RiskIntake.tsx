@@ -162,30 +162,25 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     }
 
     try {
-      // Create client record in database
-      const { data, error } = await supabase
-        .from('clients')
-        .insert({
-          advisor_id: '12345678-1234-1234-1234-123456789abc', // Default advisor for guest clients
-          name_first: profileData.name_first,
-          name_last: profileData.name_last || '',
-          email: profileData.email || null,
-          dob: profileData.dob,
-          state: profileData.state,
-          filing_status: profileData.filing_status || 'single',
-          household_jsonb: {
-            dependents: profileData.dependents || 0,
-            retirement_age: profileData.retirement_age,
-            desired_monthly_income: profileData.desired_monthly_income,
-            primary_retirement_goal: profileData.primary_retirement_goal,
-            retirement_lifestyle: profileData.retirement_lifestyle,
-            spending_target_method: profileData.spending_target_method,
-            spending_percent_of_income: profileData.spending_percent_of_income,
-            planned_retirement_state: profileData.planned_retirement_state
-          }
-        })
-        .select('id')
-        .single();
+      // Use security definer RPC function to create guest client
+      const { data, error } = await supabase.rpc('create_guest_client', {
+        p_name_first: profileData.name_first,
+        p_name_last: profileData.name_last || '',
+        p_email: profileData.email || null,
+        p_dob: profileData.dob,
+        p_state: profileData.state,
+        p_filing_status: profileData.filing_status || 'single',
+        p_household_jsonb: {
+          dependents: profileData.dependents || 0,
+          retirement_age: profileData.retirement_age,
+          desired_monthly_income: profileData.desired_monthly_income,
+          primary_retirement_goal: profileData.primary_retirement_goal,
+          retirement_lifestyle: profileData.retirement_lifestyle,
+          spending_target_method: profileData.spending_target_method,
+          spending_percent_of_income: profileData.spending_percent_of_income,
+          planned_retirement_state: profileData.planned_retirement_state
+        }
+      });
 
       if (error) throw error;
 
@@ -194,7 +189,7 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
         description: `Profile saved for ${profileData.name_first} ${profileData.name_last}.`
       });
 
-      return data.id;
+      return data; // Returns the new client UUID
     } catch (error) {
       console.error('Error creating client record:', error);
       toast({
@@ -208,106 +203,109 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
 
   const saveAllFormData = async (id: string) => {
     try {
-      // Save financial profile - first check if one exists
-      const { data: existingProfile } = await supabase
-        .from('financial_profile')
-        .select('id')
-        .eq('client_id', id)
-        .maybeSingle();
-
-      const profilePayload = {
-        client_id: id,
-        income_jsonb: JSON.parse(JSON.stringify(incomeData)),
-        expenses_jsonb: JSON.parse(JSON.stringify({
+      // Use RPC functions to bypass RLS for guest data saving
+      
+      // Save financial profile via RPC
+      const { error: profileError } = await supabase.rpc('save_guest_financial_profile', {
+        p_client_id: id,
+        p_income_jsonb: JSON.parse(JSON.stringify(incomeData)),
+        p_expenses_jsonb: JSON.parse(JSON.stringify({
           fixed_expenses: incomeData.fixed_expenses,
           variable_expenses: incomeData.variable_expenses,
           debt_service: incomeData.debt_service
         })),
-        goals_jsonb: JSON.parse(JSON.stringify({
+        p_goals_jsonb: JSON.parse(JSON.stringify({
           retirement_age: profileData.retirement_age,
           desired_monthly_income: profileData.desired_monthly_income,
           insurance_priorities: profileData.insurance_priorities,
           primary_retirement_goal: profileData.primary_retirement_goal
         })),
-        preferences_jsonb: JSON.parse(JSON.stringify({
+        p_preferences_jsonb: JSON.parse(JSON.stringify({
           liquidity_need_next_5yr: protectionData.liquidity_need_next_5yr,
           prefers_guaranteed_income: protectionData.prefers_guaranteed_income,
           can_commit_10yr_contributions: protectionData.can_commit_10yr_contributions,
           open_to_tax_diversification: protectionData.open_to_tax_diversification
         }))
-      };
-
-      if (existingProfile) {
-        await supabase
-          .from('financial_profile')
-          .update(profilePayload)
-          .eq('client_id', id);
-      } else {
-        await supabase.from('financial_profile').insert(profilePayload);
+      });
+      
+      if (profileError) {
+        console.error('Error saving financial profile:', profileError);
       }
 
-      // Save assets
+      // Save assets via RPC if any exist
       if (assets.length > 0) {
-        const assetsToInsert = assets.map(asset => ({
-          client_id: id,
+        const assetsToSave = assets.map(asset => ({
           asset_type: asset.asset_type,
-          tax_wrapper: asset.tax_wrapper,
-          title: asset.title,
+          description: asset.title || asset.notes || '',
           current_value: asset.current_value,
-          cost_basis: asset.cost_basis || 0,
-          fee_bps: asset.fee_bps || 0,
-          expected_return_base: asset.expected_return_base || 0,
-          expected_return_low: asset.expected_return_low || 0,
-          expected_return_high: asset.expected_return_high || 0,
-          liquidity_score: asset.liquidity_score || 5,
-          notes: asset.notes || '',
-          meta_jsonb: {}
+          tax_wrapper: asset.tax_wrapper,
+          owner: 'primary'
         }));
         
-        await supabase.from('assets').insert(assetsToInsert);
+        const { error: assetsError } = await supabase.rpc('save_guest_assets', {
+          p_client_id: id,
+          p_assets: assetsToSave
+        });
+        
+        if (assetsError) {
+          console.error('Error saving assets:', assetsError);
+        }
       }
 
-      // Save liabilities
+      // Save liabilities via RPC if any exist
       if (liabilities.length > 0) {
-        const liabilitiesToInsert = liabilities.map(l => ({
-          client_id: id,
-          type: l.type,
+        const liabilitiesToSave = liabilities.map(l => ({
+          liability_type: l.type,
+          description: l.notes || '',
           balance: l.balance,
-          rate: l.rate,
-          term_months: l.term_months || null,
-          payment_monthly: l.payment_monthly,
-          variable: l.variable || false,
-          deductible: l.deductible || false,
-          notes: l.notes || ''
+          interest_rate: l.rate,
+          monthly_payment: l.payment_monthly
         }));
         
-        await supabase.from('liabilities').insert(liabilitiesToInsert);
+        const { error: liabilitiesError } = await supabase.rpc('save_guest_liabilities', {
+          p_client_id: id,
+          p_liabilities: liabilitiesToSave
+        });
+        
+        if (liabilitiesError) {
+          console.error('Error saving liabilities:', liabilitiesError);
+        }
       }
 
-      // Save insurance/protection data
+      // Save insurances via RPC
+      const insurancesToSave = [];
+      
       if (protectionData.term_life_coverage > 0) {
-        await supabase.from('insurances').insert({
-          client_id: id,
-          policy_type: 'life_term',
-          face_amount: protectionData.term_life_coverage,
-          expiry_year: new Date().getFullYear() + protectionData.term_life_years,
-          premium: 0,
-          cash_value: 0,
-          loan_balance: 0,
-          riders_jsonb: {}
+        insurancesToSave.push({
+          insurance_type: 'life_term',
+          provider: '',
+          policy_number: '',
+          coverage_amount: protectionData.term_life_coverage,
+          premium_annual: 0,
+          beneficiary: ''
         });
       }
 
       if (protectionData.permanent_life_db > 0) {
-        await supabase.from('insurances').insert({
-          client_id: id,
-          policy_type: 'life_iul',
-          face_amount: protectionData.permanent_life_db,
-          cash_value: protectionData.permanent_life_cv,
-          premium: 0,
-          loan_balance: 0,
-          riders_jsonb: {}
+        insurancesToSave.push({
+          insurance_type: 'life_whole',
+          provider: '',
+          policy_number: '',
+          coverage_amount: protectionData.permanent_life_db,
+          premium_annual: 0,
+          beneficiary: ''
         });
+      }
+
+      if (insurancesToSave.length > 0) {
+        const { error: insurancesError } = await supabase.rpc('save_guest_insurances', {
+          p_client_id: id,
+          p_insurances: insurancesToSave
+        });
+        
+        if (insurancesError) {
+          console.error('Error saving insurances:', insurancesError);
+        }
       }
 
       console.log('All form data saved successfully for client:', id);

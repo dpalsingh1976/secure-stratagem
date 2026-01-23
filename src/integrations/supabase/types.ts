@@ -1217,6 +1217,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_guest_client: {
+        Args: {
+          p_dob: string
+          p_email: string
+          p_filing_status: string
+          p_household_jsonb: Json
+          p_name_first: string
+          p_name_last: string
+          p_state: string
+        }
+        Returns: string
+      }
       get_document_by_access_token: {
         Args: { p_access_token: string }
         Returns: {
@@ -1261,6 +1273,28 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      save_guest_assets: {
+        Args: { p_assets: Json; p_client_id: string }
+        Returns: undefined
+      }
+      save_guest_financial_profile: {
+        Args: {
+          p_client_id: string
+          p_expenses_jsonb: Json
+          p_goals_jsonb: Json
+          p_income_jsonb: Json
+          p_preferences_jsonb: Json
+        }
+        Returns: string
+      }
+      save_guest_insurances: {
+        Args: { p_client_id: string; p_insurances: Json }
+        Returns: undefined
+      }
+      save_guest_liabilities: {
+        Args: { p_client_id: string; p_liabilities: Json }
+        Returns: undefined
       }
       search_documents: {
         Args: {
