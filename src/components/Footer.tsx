@@ -49,6 +49,12 @@ const Footer = () => {
                 >
                   Annuities
                 </Link>
+                <Link
+                  to="/estate-planning"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Estate Planning
+                </Link>
               </div>
             </div>
 
