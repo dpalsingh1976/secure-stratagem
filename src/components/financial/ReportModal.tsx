@@ -480,6 +480,18 @@ export function ReportModal({
       const pdfBase64 = await generatePDFBase64();
       const productRecs = getProductRecommendations();
 
+      // Calculate tax bucket dollar amounts
+      const totalAssets = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
+      const taxNowAmount = assets
+        .filter((a) => a.tax_wrapper === "TAX_NOW")
+        .reduce((sum, a) => sum + (a.current_value || 0), 0);
+      const taxLaterAmount = assets
+        .filter((a) => a.tax_wrapper === "TAX_LATER")
+        .reduce((sum, a) => sum + (a.current_value || 0), 0);
+      const taxNeverAmount = assets
+        .filter((a) => a.tax_wrapper === "TAX_NEVER")
+        .reduce((sum, a) => sum + (a.current_value || 0), 0);
+
       const summary = {
         // Coverage Analysis
         dimeNeed: DIME.dime_need,
@@ -495,10 +507,14 @@ export function ReportModal({
         fiaStrategy: productRecs.fia.strategy,
         fiaPositives: productRecs.fia.positives.slice(0, 3),
         fiaReason: productRecs.fia.reason,
-        // Tax Buckets
+        // Tax Buckets - percentages AND dollar values
         taxNowPct: metrics.tax_bucket_now_pct,
         taxLaterPct: metrics.tax_bucket_later_pct,
         taxNeverPct: metrics.tax_bucket_never_pct,
+        taxNowValue: taxNowAmount,
+        taxLaterValue: taxLaterAmount,
+        taxNeverValue: taxNeverAmount,
+        totalAssets: totalAssets,
       };
 
       const { error } = await supabase.functions.invoke("send-report-email", {
