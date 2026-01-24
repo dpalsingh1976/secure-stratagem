@@ -394,9 +394,10 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
 
       // Only save to database if not a temporary ID
       if (!clientId.startsWith('temp-')) {
-        const { error: metricsError } = await supabase
-          .from('computed_metrics')
-          .upsert({ ...metrics, client_id: clientId });
+        const { error: metricsError } = await supabase.rpc('save_guest_computed_metrics', {
+          p_client_id: clientId,
+          p_metrics: JSON.parse(JSON.stringify(metrics))
+        });
 
         if (metricsError) throw metricsError;
       }

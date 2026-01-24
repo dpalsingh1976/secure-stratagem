@@ -363,7 +363,7 @@ export type Database = {
           {
             foreignKeyName: "computed_metrics_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -552,7 +552,7 @@ export type Database = {
           {
             foreignKeyName: "financial_profile_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -1277,6 +1277,10 @@ export type Database = {
       save_guest_assets: {
         Args: { p_assets: Json; p_client_id: string }
         Returns: undefined
+      }
+      save_guest_computed_metrics: {
+        Args: { p_client_id: string; p_metrics: Json }
+        Returns: string
       }
       save_guest_financial_profile: {
         Args: {
