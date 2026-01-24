@@ -1219,13 +1219,13 @@ export type Database = {
     Functions: {
       create_guest_client: {
         Args: {
-          p_dob: string
-          p_email: string
-          p_filing_status: string
-          p_household_jsonb: Json
+          p_dob?: string
+          p_email?: string
+          p_filing_status?: string
+          p_household_jsonb?: Json
           p_name_first: string
-          p_name_last: string
-          p_state: string
+          p_name_last?: string
+          p_state?: string
         }
         Returns: string
       }
