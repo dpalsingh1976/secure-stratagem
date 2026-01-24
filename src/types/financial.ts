@@ -272,6 +272,10 @@ export interface ProtectionHealthData {
   spouse_age?: number;
   // Existing guaranteed income sources
   existing_db_pension_monthly: number;
+  // DIME Survivor Protection Needs (user inputs)
+  final_expenses_estimate: number;         // Default: $15,000 (funeral, medical, legal)
+  education_per_child_estimate: number;    // Default: $100,000 per child
+  income_replacement_years: number;        // Default: 10 years
 }
 
 // IUL Suitability - Planning Readiness Data

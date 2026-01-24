@@ -110,7 +110,11 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     liquidity_need_next_5yr: 'medium',
     can_commit_10yr_contributions: false,
     open_to_tax_diversification: false,
-    existing_db_pension_monthly: 0
+    existing_db_pension_monthly: 0,
+    // DIME Survivor Protection Needs - sensible defaults
+    final_expenses_estimate: 15000,
+    education_per_child_estimate: 100000,
+    income_replacement_years: 10
   });
   
   const [planningReadiness, setPlanningReadiness] = useState<PlanningReadinessData>(

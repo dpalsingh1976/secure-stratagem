@@ -9,10 +9,24 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+interface DimeBreakdown {
+  debts: number;
+  finalExpenses: number;
+  incomeReplacement: number;
+  annualIncome: number;
+  incomeYears: number;
+  mortgageBalance: number;
+  education: number;
+  eduPerChild: number;
+  numChildren: number;
+}
+
 interface ReportEmailRequest {
   clientEmail: string;
   clientName: string;
   summary: {
+    // DIME Breakdown (NEW - full details)
+    dimeBreakdown?: DimeBreakdown;
     // Coverage Analysis
     dimeNeed: number;
     currentCoverage: number;
@@ -107,6 +121,80 @@ const handler = async (req: Request): Promise<Response> => {
       ? { color: '#dc2626', icon: '⚠️', label: 'Gap Identified' }
       : { color: '#16a34a', icon: '✓', label: 'Covered' };
 
+    // Build DIME breakdown HTML if available
+    const dimeBreakdownHtml = summary.dimeBreakdown ? `
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
+        <tr>
+          <td style="padding: 8px 0; color: #4b5563; font-weight: 600;">D - Debts & Final Expenses</td>
+          <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1f2937;">${formatCurrency(summary.dimeBreakdown.debts + summary.dimeBreakdown.finalExpenses)}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding: 0 0 8px 16px; font-size: 12px; color: #6b7280;">
+            Non-mortgage debts (${formatCurrency(summary.dimeBreakdown.debts)}) + Final expenses (${formatCurrency(summary.dimeBreakdown.finalExpenses)})
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #4b5563; font-weight: 600;">I - Income Replacement (${summary.dimeBreakdown.incomeYears} years)</td>
+          <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1f2937;">${formatCurrency(summary.dimeBreakdown.incomeReplacement)}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding: 0 0 8px 16px; font-size: 12px; color: #6b7280;">
+            ${formatCurrency(summary.dimeBreakdown.annualIncome)}/year × ${summary.dimeBreakdown.incomeYears} years
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #4b5563; font-weight: 600;">M - Mortgage Balance</td>
+          <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1f2937;">${formatCurrency(summary.dimeBreakdown.mortgageBalance)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #4b5563; font-weight: 600;">E - Education Expenses</td>
+          <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1f2937;">${formatCurrency(summary.dimeBreakdown.education)}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding: 0 0 8px 16px; font-size: 12px; color: #6b7280;">
+            ${summary.dimeBreakdown.numChildren > 0 
+              ? `${summary.dimeBreakdown.numChildren} ${summary.dimeBreakdown.numChildren === 1 ? 'child' : 'children'} × ${formatCurrency(summary.dimeBreakdown.eduPerChild)} each`
+              : 'No dependents entered'}
+          </td>
+        </tr>
+        <tr style="border-top: 2px solid #e5e7eb;">
+          <td style="padding: 12px 0 8px 0; color: #1f2937; font-weight: 700;">Total Protection Need (DIME)</td>
+          <td style="padding: 12px 0 8px 0; text-align: right; font-weight: 700; font-size: 16px; color: #1f2937;">${formatCurrency(summary.dimeNeed)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #4b5563;">Current Coverage</td>
+          <td style="padding: 4px 0; text-align: right; font-weight: 600; color: #1f2937;">${formatCurrency(summary.currentCoverage)}</td>
+        </tr>
+        <tr style="border-top: 1px solid #e5e7eb;">
+          <td style="padding: 12px 0 8px 0; color: #1f2937; font-weight: 600;">
+            ${protectionStatus.icon} Protection Gap
+          </td>
+          <td style="padding: 12px 0 8px 0; text-align: right; font-weight: 700; font-size: 18px; color: ${protectionStatus.color};">
+            ${formatCurrency(summary.protectionGap)}
+          </td>
+        </tr>
+      </table>
+    ` : `
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px 0; color: #4b5563;">Total Protection Need (DIME)</td>
+          <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1f2937;">${formatCurrency(summary.dimeNeed)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #4b5563;">Current Coverage</td>
+          <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1f2937;">${formatCurrency(summary.currentCoverage)}</td>
+        </tr>
+        <tr style="border-top: 2px solid #e5e7eb;">
+          <td style="padding: 12px 0 8px 0; color: #1f2937; font-weight: 600;">
+            ${protectionStatus.icon} Protection Gap
+          </td>
+          <td style="padding: 12px 0 8px 0; text-align: right; font-weight: 700; font-size: 18px; color: ${protectionStatus.color};">
+            ${formatCurrency(summary.protectionGap)}
+          </td>
+        </tr>
+      </table>
+    `;
+
     const emailHtml = `
       <!DOCTYPE html>
       <html>
@@ -128,32 +216,15 @@ const handler = async (req: Request): Promise<Response> => {
             
             <p style="font-size: 16px; margin-bottom: 20px; color: #1f2937;">Dear ${clientName},</p>
             
-            <p style="margin-bottom: 25px; color: #4b5563;">Thank you for completing your financial assessment. Below is a summary of your key findings.</p>
+            <p style="margin-bottom: 25px; color: #4b5563;">Thank you for completing your financial assessment. Below is a detailed breakdown of your life insurance coverage analysis.</p>
             
-            <!-- Section 1: Life Insurance Coverage -->
+            <!-- Section 1: Life Insurance Coverage (DIME) -->
             <div style="background: #f8fafc; border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid #1e40af;">
               <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 16px; font-weight: 600;">
-                🛡️ Life Insurance Coverage Analysis
+                🛡️ Life Insurance Coverage Analysis (DIME)
               </h2>
               
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563;">Total Protection Need (DIME)</td>
-                  <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1f2937;">${formatCurrency(summary.dimeNeed)}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563;">Current Coverage</td>
-                  <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1f2937;">${formatCurrency(summary.currentCoverage)}</td>
-                </tr>
-                <tr style="border-top: 2px solid #e5e7eb;">
-                  <td style="padding: 12px 0 8px 0; color: #1f2937; font-weight: 600;">
-                    ${protectionStatus.icon} Protection Gap
-                  </td>
-                  <td style="padding: 12px 0 8px 0; text-align: right; font-weight: 700; font-size: 18px; color: ${protectionStatus.color};">
-                    ${formatCurrency(summary.protectionGap)}
-                  </td>
-                </tr>
-              </table>
+              ${dimeBreakdownHtml}
             </div>
             
             <!-- Section 2: Product Suitability -->
@@ -270,11 +341,35 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Client email sent successfully:", clientEmailResponse);
 
+    // Build DIME breakdown for advisor email
+    const advisorDimeHtml = summary.dimeBreakdown ? `
+      <h3>DIME Breakdown</h3>
+      <table style="border-collapse: collapse; width: 100%; max-width: 500px;">
+        <tr><td style="padding: 4px 8px;">D - Debts & Final Expenses</td><td style="text-align: right; padding: 4px 8px;">${formatCurrency(summary.dimeBreakdown.debts + summary.dimeBreakdown.finalExpenses)}</td></tr>
+        <tr><td style="padding: 4px 8px 4px 24px; font-size: 12px; color: #666;">Non-mortgage: ${formatCurrency(summary.dimeBreakdown.debts)} + Final: ${formatCurrency(summary.dimeBreakdown.finalExpenses)}</td><td></td></tr>
+        <tr><td style="padding: 4px 8px;">I - Income Replacement (${summary.dimeBreakdown.incomeYears}yr)</td><td style="text-align: right; padding: 4px 8px;">${formatCurrency(summary.dimeBreakdown.incomeReplacement)}</td></tr>
+        <tr><td style="padding: 4px 8px 4px 24px; font-size: 12px; color: #666;">${formatCurrency(summary.dimeBreakdown.annualIncome)}/yr × ${summary.dimeBreakdown.incomeYears} years</td><td></td></tr>
+        <tr><td style="padding: 4px 8px;">M - Mortgage Balance</td><td style="text-align: right; padding: 4px 8px;">${formatCurrency(summary.dimeBreakdown.mortgageBalance)}</td></tr>
+        <tr><td style="padding: 4px 8px;">E - Education</td><td style="text-align: right; padding: 4px 8px;">${formatCurrency(summary.dimeBreakdown.education)}</td></tr>
+        <tr><td style="padding: 4px 8px 4px 24px; font-size: 12px; color: #666;">${summary.dimeBreakdown.numChildren} children × ${formatCurrency(summary.dimeBreakdown.eduPerChild)} each</td><td></td></tr>
+        <tr style="border-top: 2px solid #333;"><td style="padding: 8px; font-weight: bold;">Total DIME Need</td><td style="text-align: right; padding: 8px; font-weight: bold;">${formatCurrency(summary.dimeNeed)}</td></tr>
+        <tr><td style="padding: 4px 8px;">Current Coverage</td><td style="text-align: right; padding: 4px 8px;">${formatCurrency(summary.currentCoverage)}</td></tr>
+        <tr style="border-top: 1px solid #333;"><td style="padding: 8px; font-weight: bold;">Protection Gap</td><td style="text-align: right; padding: 8px; font-weight: bold; color: ${hasProtectionGap ? '#dc2626' : '#16a34a'};">${formatCurrency(summary.protectionGap)}</td></tr>
+      </table>
+    ` : `
+      <h3>Coverage Analysis</h3>
+      <ul>
+        <li><strong>DIME Need:</strong> ${formatCurrency(summary.dimeNeed)}</li>
+        <li><strong>Current Coverage:</strong> ${formatCurrency(summary.currentCoverage)}</li>
+        <li><strong>Protection Gap:</strong> <span style="color: ${hasProtectionGap ? '#dc2626' : '#16a34a'}; font-weight: bold;">${formatCurrency(summary.protectionGap)}</span></li>
+      </ul>
+    `;
+
     // Send copy to advisor
     const advisorEmailResponse = await resend.emails.send({
       from: "The Prosperity Financial <reports@theprosperityfinancial.com>",
       to: ["davindes@theprosperityfinancial.com"],
-      subject: `[New Assessment] ${clientName} - ${hasProtectionGap ? 'Protection Gap' : 'Coverage OK'}`,
+      subject: `[New Assessment] ${clientName} - ${hasProtectionGap ? 'Protection Gap: ' + formatCurrency(summary.protectionGap) : 'Coverage OK'}`,
       html: `
         <h2>New Financial Needs Assessment</h2>
         <p><strong>Client:</strong> ${clientName}</p>
@@ -282,12 +377,7 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
         <hr>
         
-        <h3>Coverage Analysis</h3>
-        <ul>
-          <li><strong>DIME Need:</strong> ${formatCurrency(summary.dimeNeed)}</li>
-          <li><strong>Current Coverage:</strong> ${formatCurrency(summary.currentCoverage)}</li>
-          <li><strong>Protection Gap:</strong> <span style="color: ${hasProtectionGap ? '#dc2626' : '#16a34a'}; font-weight: bold;">${formatCurrency(summary.protectionGap)}</span></li>
-        </ul>
+        ${advisorDimeHtml}
         
         <h3>Product Fit</h3>
         <ul>
