@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Heart, Activity } from 'lucide-react';
+import { Shield, Heart, Activity, Users } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { InfoIcon } from 'lucide-react';
 import type { ProtectionHealthData, PlanningReadinessData } from '@/types/financial';
@@ -180,6 +180,118 @@ export function ProtectionHealthForm({
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Survivor Protection Needs */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Users className="h-5 w-5 text-primary" />
+              <span>Survivor Protection Needs</span>
+            </CardTitle>
+            <CardDescription>
+              These values are used in your DIME life insurance calculation to determine coverage needs.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="finalExpenses">Final Expenses Estimate</Label>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Funeral costs, medical bills, legal fees, estate settlement</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input
+                  id="finalExpenses"
+                  type="number"
+                  min="0"
+                  value={data.final_expenses_estimate}
+                  onChange={(e) => handleInputChange('final_expenses_estimate', parseFloat(e.target.value) || 0)}
+                  placeholder="15000"
+                />
+                <p className="text-xs text-muted-foreground">Typical range: $10,000 - $25,000</p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="educationPerChild">Education Fund Per Child</Label>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>College or vocational training costs per dependent child</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input
+                  id="educationPerChild"
+                  type="number"
+                  min="0"
+                  value={data.education_per_child_estimate}
+                  onChange={(e) => handleInputChange('education_per_child_estimate', parseFloat(e.target.value) || 0)}
+                  placeholder="100000"
+                />
+                <p className="text-xs text-muted-foreground">4-year public: ~$100K | Private: ~$200K+</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="incomeReplacementYears">Income Replacement Period</Label>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>How many years of income should life insurance replace for your family?</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <Select 
+                value={data.income_replacement_years?.toString() || '10'} 
+                onValueChange={(value) => handleInputChange('income_replacement_years', parseInt(value))}
+              >
+                <SelectTrigger className="w-full md:w-1/2">
+                  <SelectValue placeholder="Select years" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5 Years</SelectItem>
+                  <SelectItem value="7">7 Years</SelectItem>
+                  <SelectItem value="10">10 Years (Standard)</SelectItem>
+                  <SelectItem value="15">15 Years</SelectItem>
+                  <SelectItem value="20">20 Years</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Standard recommendation is 10 years. Consider longer if you have young children.
+              </p>
+            </div>
+
+            {/* DIME Preview Calculator */}
+            <div className="bg-primary/5 p-4 rounded-lg border border-primary/10">
+              <h4 className="font-semibold text-primary mb-2">DIME Calculation Preview</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <span className="text-muted-foreground">D - Debts & Final Expenses:</span>
+                <span className="font-medium">{formatCurrency(data.final_expenses_estimate || 15000)}</span>
+                
+                <span className="text-muted-foreground">I - Income Replacement:</span>
+                <span className="font-medium">{data.income_replacement_years || 10} years</span>
+                
+                <span className="text-muted-foreground">E - Education Per Child:</span>
+                <span className="font-medium">{formatCurrency(data.education_per_child_estimate || 100000)}</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2 italic">
+                M (Mortgage) is calculated from your liabilities. Full DIME will be shown in the report.
+              </p>
+            </div>
           </CardContent>
         </Card>
 

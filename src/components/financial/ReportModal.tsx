@@ -275,25 +275,52 @@ export function ReportModal({
     pdf.setTextColor(0, 0, 0);
 
     // =====================
-    // SECTION 1: DIME COVERAGE ANALYSIS
+    // SECTION 1: DIME COVERAGE ANALYSIS (Enhanced with breakdown)
     // =====================
     drawSectionHeader("Life Insurance Coverage Analysis (DIME)", [30, 64, 175]);
 
     pdf.setFontSize(10);
     pdf.setFont("helvetica", "normal");
 
-    // DIME breakdown
+    // DIME breakdown with sub-details
     const dimeItems = [
-      { label: "D - Debts & Final Expenses", value: DIME.nonMortgageDebt + DIME.FINAL_EXPENSES },
-      { label: "I - Income Replacement (10 years)", value: DIME.incomeReplacement },
-      { label: "M - Mortgage Balance", value: DIME.mortgageBalance },
-      { label: "E - Education Expenses", value: DIME.education },
+      { 
+        label: "D - Debts & Final Expenses", 
+        value: DIME.nonMortgageDebt + DIME.FINAL_EXPENSES,
+        subtext: `Non-mortgage debts (${formatCurrency(DIME.nonMortgageDebt)}) + Final expenses (${formatCurrency(DIME.FINAL_EXPENSES)})`
+      },
+      { 
+        label: `I - Income Replacement (${DIME.INCOME_YEARS} years)`, 
+        value: DIME.incomeReplacement,
+        subtext: `${formatCurrency(DIME.annualIncome)}/year × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%`
+      },
+      { 
+        label: "M - Mortgage Balance", 
+        value: DIME.mortgageBalance,
+        subtext: "Primary residence and/or rental mortgages"
+      },
+      { 
+        label: "E - Education Expenses", 
+        value: DIME.education,
+        subtext: DIME.numDependents > 0 
+          ? `${DIME.numDependents} ${DIME.numDependents === 1 ? 'child' : 'children'} × ${formatCurrency(DIME.EDU_PER_CHILD)} each`
+          : "No dependents entered"
+      },
     ];
 
     dimeItems.forEach((item) => {
-      pdf.setFont("helvetica", "normal");
+      pdf.setFont("helvetica", "bold");
       pdf.text(item.label, margin, yPos);
       pdf.text(formatCurrency(item.value), pageWidth - margin, yPos, { align: "right" });
+      yPos += 5;
+      
+      // Sub-text explanation
+      pdf.setFontSize(8);
+      pdf.setFont("helvetica", "italic");
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(item.subtext, margin + 5, yPos);
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(10);
       yPos += 7;
     });
 
@@ -488,7 +515,18 @@ export function ReportModal({
         .reduce((sum, a) => sum + (a.current_value || 0), 0);
 
       const summary = {
-        // Coverage Analysis
+        // Coverage Analysis - DIME Breakdown (NEW)
+        dimeBreakdown: {
+          debts: DIME.nonMortgageDebt,
+          finalExpenses: DIME.FINAL_EXPENSES,
+          incomeReplacement: DIME.incomeReplacement,
+          annualIncome: DIME.annualIncome,
+          incomeYears: DIME.INCOME_YEARS,
+          mortgageBalance: DIME.mortgageBalance,
+          education: DIME.education,
+          eduPerChild: DIME.EDU_PER_CHILD,
+          numChildren: DIME.numDependents,
+        },
         dimeNeed: DIME.dime_need,
         currentCoverage: DIME.currentCoverage,
         protectionGap: DIME.protection_gap,
@@ -565,13 +603,14 @@ export function ReportModal({
   }, [isOpen]);
 
   // ----------------------------
-  // ONE SOURCE OF TRUTH: DIME
+  // ONE SOURCE OF TRUTH: DIME (using user inputs)
   // ----------------------------
   const DIME = useMemo(() => {
-    const FINAL_EXPENSES = 15000; // keep final expenses in D
-    const INCOME_YEARS = 10; // standard DIME
-    const REPLACEMENT_RT = 1.0; // 100% replacement (set to 0.8 if desired)
-    const EDU_PER_CHILD = 100000; // pick a number and be consistent
+    // Use user inputs with sensible defaults
+    const FINAL_EXPENSES = protectionData.final_expenses_estimate || 15000;
+    const INCOME_YEARS = protectionData.income_replacement_years || 10;
+    const REPLACEMENT_RT = 1.0; // 100% replacement
+    const EDU_PER_CHILD = protectionData.education_per_child_estimate || 100000;
 
     const nonMortgageDebt = liabilities
       .filter((l) => l.type !== "mortgage_primary" && l.type !== "mortgage_rental")
@@ -586,7 +625,8 @@ export function ReportModal({
     const annualIncome = monthlyIncome * 12;
     const incomeReplacement = annualIncome * INCOME_YEARS * REPLACEMENT_RT;
 
-    const education = (profileData.dependents || 0) * EDU_PER_CHILD;
+    const numDependents = profileData.dependents || 0;
+    const education = numDependents * EDU_PER_CHILD;
 
     const dime_need = nonMortgageDebt + FINAL_EXPENSES + incomeReplacement + mortgageBalance + education;
 
@@ -597,9 +637,13 @@ export function ReportModal({
     return {
       FINAL_EXPENSES,
       EDU_PER_CHILD,
+      INCOME_YEARS,
+      REPLACEMENT_RT,
       nonMortgageDebt,
       mortgageBalance,
+      annualIncome,
       incomeReplacement,
+      numDependents,
       education,
       dime_need,
       currentCoverage,
@@ -782,24 +826,52 @@ export function ReportModal({
       pdf.setTextColor(0, 0, 0);
 
       // =====================
-      // SECTION 1: DIME COVERAGE ANALYSIS
+      // SECTION 1: DIME COVERAGE ANALYSIS (Enhanced with breakdown)
       // =====================
       drawSectionHeader("Life Insurance Coverage Analysis (DIME)", [30, 64, 175]);
 
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "normal");
 
+      // DIME breakdown with sub-details
       const dimeItems = [
-        { label: "D - Debts & Final Expenses", value: DIME.nonMortgageDebt + DIME.FINAL_EXPENSES },
-        { label: "I - Income Replacement (10 years)", value: DIME.incomeReplacement },
-        { label: "M - Mortgage Balance", value: DIME.mortgageBalance },
-        { label: "E - Education Expenses", value: DIME.education },
+        { 
+          label: "D - Debts & Final Expenses", 
+          value: DIME.nonMortgageDebt + DIME.FINAL_EXPENSES,
+          subtext: `Non-mortgage debts (${formatCurrency(DIME.nonMortgageDebt)}) + Final expenses (${formatCurrency(DIME.FINAL_EXPENSES)})`
+        },
+        { 
+          label: `I - Income Replacement (${DIME.INCOME_YEARS} years)`, 
+          value: DIME.incomeReplacement,
+          subtext: `${formatCurrency(DIME.annualIncome)}/year × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%`
+        },
+        { 
+          label: "M - Mortgage Balance", 
+          value: DIME.mortgageBalance,
+          subtext: "Primary residence and/or rental mortgages"
+        },
+        { 
+          label: "E - Education Expenses", 
+          value: DIME.education,
+          subtext: DIME.numDependents > 0 
+            ? `${DIME.numDependents} ${DIME.numDependents === 1 ? 'child' : 'children'} × ${formatCurrency(DIME.EDU_PER_CHILD)} each`
+            : "No dependents entered"
+        },
       ];
 
       dimeItems.forEach((item) => {
-        pdf.setFont("helvetica", "normal");
+        pdf.setFont("helvetica", "bold");
         pdf.text(item.label, margin, yPos);
         pdf.text(formatCurrency(item.value), pageWidth - margin, yPos, { align: "right" });
+        yPos += 5;
+        
+        // Sub-text explanation
+        pdf.setFontSize(8);
+        pdf.setFont("helvetica", "italic");
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(item.subtext, margin + 5, yPos);
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFontSize(10);
         yPos += 7;
       });
 
@@ -822,8 +894,8 @@ export function ReportModal({
 
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(12);
-      const gapColor = DIME.protection_gap > 0 ? [220, 38, 38] : [22, 163, 74];
-      pdf.setTextColor(gapColor[0], gapColor[1], gapColor[2]);
+      const downloadGapColor = DIME.protection_gap > 0 ? [220, 38, 38] : [22, 163, 74];
+      pdf.setTextColor(downloadGapColor[0], downloadGapColor[1], downloadGapColor[2]);
       pdf.text("Protection Gap", margin, yPos);
       pdf.text(formatCurrency(DIME.protection_gap), pageWidth - margin, yPos, { align: "right" });
       pdf.setTextColor(0, 0, 0);
@@ -831,11 +903,11 @@ export function ReportModal({
 
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "italic");
-      const assessmentText =
+      const downloadAssessmentText =
         DIME.protection_gap > 0
           ? `A coverage gap of ${formatCurrency(DIME.protection_gap)} exists. Consider reviewing your life insurance coverage.`
           : "Your current coverage meets the estimated protection needs.";
-      pdf.text(assessmentText, margin, yPos);
+      pdf.text(downloadAssessmentText, margin, yPos);
       yPos += 10;
 
       // =====================
