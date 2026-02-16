@@ -38,15 +38,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userId)
-        .single();
+        .eq('user_id', userId);
 
-      if (error) {
+      if (error || !data || data.length === 0) {
         console.error('Error fetching user role:', error);
         return 'user' as UserRole;
       }
 
-      return data?.role as UserRole || 'user';
+      // Pick the highest privilege role
+      const roles = data.map(r => r.role as UserRole);
+      if (roles.includes('admin')) return 'admin' as UserRole;
+      if (roles.includes('advisor')) return 'advisor' as UserRole;
+      return 'user' as UserRole;
     } catch (error) {
       console.error('Error fetching user role:', error);
       return 'user' as UserRole;
