@@ -5,18 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { Upload, MessageSquare, TrendingUp, LogOut, Shield, Database, CalendarDays, ArrowLeft } from 'lucide-react';
+import { Upload, MessageSquare, TrendingUp, LogOut, Shield, Database, CalendarDays, ArrowLeft, Users } from 'lucide-react';
 import { IllustrationUploader } from '@/components/admin/IllustrationUploader';
 import { DigitalTwinChat } from '@/components/admin/DigitalTwinChat';
 import { StressTesting } from '@/components/admin/StressTesting';
 import { MarketComparison } from '@/components/admin/MarketComparison';
 import { ComplianceReports } from '@/components/admin/ComplianceReports';
 import { AppointmentsManager } from '@/components/admin/AppointmentsManager';
+import { ClientAssessmentDashboard } from '@/components/admin/ClientAssessmentDashboard';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user, userRole, signOut } = useAuth();
-  const [activeTab, setActiveTab] = useState('upload');
+  const [activeTab, setActiveTab] = useState('clients');
 
   const handleSignOut = async () => {
     await signOut();
@@ -72,7 +73,11 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-8">
+          <TabsList className="grid w-full grid-cols-7 mb-8">
+            <TabsTrigger value="clients" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Clients</span>
+            </TabsTrigger>
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
               <span className="hidden sm:inline">Upload</span>
@@ -98,6 +103,10 @@ export default function AdminDashboard() {
               <span className="hidden sm:inline">Appointments</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="clients" className="space-y-6">
+            <ClientAssessmentDashboard />
+          </TabsContent>
 
           <TabsContent value="upload" className="space-y-6">
             <Card>
