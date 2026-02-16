@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Users, ChevronRight, ChevronDown, User, TrendingUp, Target, ShieldAlert, Loader2, AlertCircle } from 'lucide-react';
+import { Search, Users, User, TrendingUp, Target, ShieldAlert, Loader2, AlertCircle } from 'lucide-react';
 import type { Json } from '@/integrations/supabase/types';
 
 // ── Types ──────────────────────────────────────────────────────
@@ -16,6 +16,7 @@ interface ClientRow {
   name_first: string;
   name_last: string;
   email: string | null;
+  phone: string | null;
   dob: string;
   state: string;
   filing_status: string;
@@ -96,6 +97,12 @@ const scoreBg = (score: number) => {
   if (score >= 80) return 'bg-green-500';
   if (score >= 60) return 'bg-yellow-500';
   return 'bg-red-500';
+};
+
+const riskLabel = (score: number) => {
+  if (score >= 80) return 'Low Risk';
+  if (score >= 60) return 'Medium Risk';
+  return 'High Risk';
 };
 
 const getOverallScore = (metrics: ClientRow['computed_metrics']): number | null => {
@@ -346,9 +353,9 @@ function RiskAnalysisTab({ metrics, clientId }: { metrics: ClientRow['computed_m
       {/* Overall Score */}
       <div className="flex flex-col items-center gap-2">
         <div className={`relative h-28 w-28 rounded-full border-8 ${scoreBg(overall)} border-opacity-20 flex items-center justify-center`}>
-          <span className={`text-3xl font-bold ${scoreColor(overall)}`}>{overall}</span>
+          <span className={`text-xl font-bold ${scoreColor(overall)}`}>{riskLabel(overall)}</span>
         </div>
-        <p className="text-sm text-muted-foreground">Overall Risk Score</p>
+        <p className="text-sm text-muted-foreground">Overall Risk Level</p>
       </div>
 
       {/* Sub-scores */}
@@ -408,6 +415,8 @@ export function ClientAssessmentDashboard() {
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detailTab, setDetailTab] = useState('personal');
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 5;
 
   useEffect(() => {
     const load = async () => {
@@ -415,7 +424,7 @@ export function ClientAssessmentDashboard() {
       const { data, error } = await supabase
         .from('clients')
         .select(`
-          id, name_first, name_last, email, dob, state, filing_status, household_jsonb, created_at,
+          id, name_first, name_last, email, phone, dob, state, filing_status, household_jsonb, created_at,
           computed_metrics (net_worth, scores_jsonb, dime_need, protection_gap, retirement_gap_mo, tax_bucket_now_pct, tax_bucket_later_pct, tax_bucket_never_pct, liquid_pct, top_concentration_pct, liquidity_runway_months, disability_gap, ltc_gap, seq_risk_index, lifetime_tax_drag_est),
           financial_profile (income_jsonb, expenses_jsonb, goals_jsonb, preferences_jsonb)
         `)
@@ -440,11 +449,18 @@ export function ClientAssessmentDashboard() {
     const q = search.toLowerCase();
     return clients.filter(c =>
       `${c.name_first} ${c.name_last}`.toLowerCase().includes(q) ||
-      (c.email || '').toLowerCase().includes(q)
+      (c.email || '').toLowerCase().includes(q) ||
+      (c.phone || '').toLowerCase().includes(q)
     );
   }, [clients, search]);
 
-  const selected = useMemo(() => filtered.find(c => c.id === selectedId) ?? null, [filtered, selectedId]);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = useMemo(() => filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE), [filtered, page]);
+
+  // Reset page when search changes
+  useEffect(() => { setPage(0); }, [search]);
+
+  const selected = useMemo(() => clients.find(c => c.id === selectedId) ?? null, [clients, selectedId]);
 
   if (loading) {
     return (
@@ -474,40 +490,43 @@ export function ClientAssessmentDashboard() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-8" />
               <TableHead>Name</TableHead>
               <TableHead className="hidden sm:table-cell">Email</TableHead>
+              <TableHead className="hidden sm:table-cell">Phone</TableHead>
               <TableHead>State</TableHead>
               <TableHead>Score</TableHead>
               <TableHead className="hidden md:table-cell">Date</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {paged.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   {search ? 'No clients match your search.' : 'No clients found.'}
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map(c => {
+              paged.map(c => {
                 const score = getOverallScore(c.computed_metrics);
-                const isSelected = selectedId === c.id;
                 return (
-                  <TableRow
-                    key={c.id}
-                    className="cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => { setSelectedId(isSelected ? null : c.id); setDetailTab('personal'); }}
-                  >
-                    <TableCell>
-                      {isSelected ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                    </TableCell>
+                  <TableRow key={c.id}>
                     <TableCell className="font-medium">{c.name_first} {c.name_last}</TableCell>
                     <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">{c.email || '—'}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">{c.phone || '—'}</TableCell>
                     <TableCell>{c.state}</TableCell>
                     <TableCell>
                       {score != null ? (
-                        <Badge className={`${scoreBg(score)} text-white`}>{score}</Badge>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className={`${scoreColor(score)} font-semibold px-2 py-1 h-auto`}
+                          onClick={() => {
+                            setSelectedId(selectedId === c.id ? null : c.id);
+                            setDetailTab('personal');
+                          }}
+                        >
+                          {riskLabel(score)}
+                        </Button>
                       ) : (
                         <Badge variant="outline">Pending</Badge>
                       )}
@@ -522,6 +541,23 @@ export function ClientAssessmentDashboard() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+              Previous
+            </Button>
+            <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Detail Panel */}
       {selected && (
