@@ -38,10 +38,10 @@ export default function AdminDashboard() {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                IUL Digital Twin
+                Client Risk Analyzer
               </h1>
               <p className="text-sm text-muted-foreground">
-                Advanced Policy Analysis & Stress Testing
+                Risk Assessment & Client Analysis
               </p>
             </div>
           </div>
@@ -65,10 +65,10 @@ export default function AdminDashboard() {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">
-            Welcome to the IUL Analysis Platform
+            Welcome to the Advisor Dashboard
           </h2>
           <p className="text-muted-foreground">
-            Upload illustrations, run stress tests, and generate comprehensive client reports.
+            Manage clients, run risk assessments, and generate comprehensive reports.
           </p>
         </div>
 
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5" />
-                  Upload & Parse IUL Illustrations
+                  Upload & Parse Illustrations
                 </CardTitle>
                 <CardDescription>
                   Upload PDF illustrations from any carrier. Our system will extract and normalize policy data for analysis.
@@ -130,10 +130,10 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MessageSquare className="h-5 w-5" />
-                  Digital Twin Simulator
+                  Policy Simulator
                 </CardTitle>
                 <CardDescription>
-                  Ask "What if" questions about your IUL policies and get instant projections and analysis.
+                  Ask "What if" questions about policies and get instant projections and analysis.
                 </CardDescription>
               </CardHeader>
               <CardContent>
