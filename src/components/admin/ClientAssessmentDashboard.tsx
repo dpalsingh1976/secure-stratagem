@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -521,7 +522,7 @@ export function ClientAssessmentDashboard() {
                           variant="ghost"
                           className={`${scoreColor(score)} font-semibold px-2 py-1 h-auto`}
                           onClick={() => {
-                            setSelectedId(selectedId === c.id ? null : c.id);
+                            setSelectedId(c.id);
                             setDetailTab('personal');
                           }}
                         >
@@ -559,16 +560,16 @@ export function ClientAssessmentDashboard() {
         </div>
       )}
 
-      {/* Detail Panel */}
-      {selected && (
-        <Card className="border-primary/20 shadow-lg animate-in slide-in-from-top-2 duration-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
+      {/* Detail Dialog */}
+      <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelectedId(null); }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
               <User className="h-5 w-5 text-primary" />
-              {selected.name_first} {selected.name_last}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+              {selected?.name_first} {selected?.name_last}
+            </DialogTitle>
+          </DialogHeader>
+          {selected && (
             <Tabs value={detailTab} onValueChange={setDetailTab}>
               <TabsList className="grid w-full grid-cols-4 mb-4">
                 <TabsTrigger value="personal" className="text-xs sm:text-sm">
@@ -598,9 +599,9 @@ export function ClientAssessmentDashboard() {
                 <RiskAnalysisTab metrics={selected.computed_metrics} clientId={selected.id} />
               </TabsContent>
             </Tabs>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
