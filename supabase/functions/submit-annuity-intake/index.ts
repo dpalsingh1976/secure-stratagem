@@ -141,9 +141,11 @@ function checkTotals(data: z.infer<typeof SubmitSchema>): string[] {
     const sum = contingent.reduce((a, b) => a + b.share_percentage, 0);
     if (Math.abs(sum - 100) > 0.01) errs.push(`Contingent beneficiary shares sum to ${sum.toFixed(2)}%, must equal 100%`);
   }
-  if (allocations.length > 0) {
+  if (allocations.length === 0) {
+    errs.push("Allocation Options are required — at least one strategy must be selected");
+  } else {
     const sum = allocations.reduce((a, b) => a + b.allocation_percentage, 0);
-    if (Math.abs(sum - 100) > 0.01) errs.push(`Allocation percentages sum to ${sum.toFixed(2)}%, must equal 100%`);
+    if (Math.abs(sum - 100) > 0.01) errs.push(`Allocation percentages sum to ${sum.toFixed(2)}%, must equal exactly 100%`);
   }
 
   return errs;

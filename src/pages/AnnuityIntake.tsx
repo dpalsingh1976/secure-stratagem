@@ -462,10 +462,10 @@ function AllocationSection() {
   const total = percentages.reduce((a, b) => a + (Number(b) || 0), 0);
 
   return (
-    <SectionCard n={5} title="Allocation Options">
+    <SectionCard n={5} title="Allocation Options *">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm text-gray-500">
-          Enter percentage for each desired crediting strategy. Total must equal 100%.
+          Required — enter percentage for each desired strategy. Total must equal exactly 100%.
         </span>
         <Badge variant={Math.abs(total - 100) < 0.01 ? "default" : "secondary"} className="shrink-0 ml-2">
           Total: {total.toFixed(0)}%
@@ -502,9 +502,11 @@ function AllocationSection() {
         ))}
       </div>
 
-      {Math.abs(total - 100) > 0.01 && total > 0 && (
-        <p className="text-orange-600 text-xs mt-1">
-          Allocations must sum to 100% (currently {total.toFixed(2)}%)
+      {Math.abs(total - 100) > 0.01 && (
+        <p className="text-red-500 text-xs mt-1 font-medium">
+          {total === 0
+            ? "Required — allocate 100% across one or more strategies before submitting."
+            : `Allocations must sum to exactly 100% (currently ${total.toFixed(2)}%)`}
         </p>
       )}
     </SectionCard>
@@ -917,8 +919,8 @@ export default function AnnuityIntake() {
       clientErrors.push("Primary beneficiary shares must sum to 100%");
     if (values.contingent_beneficiaries.length > 0 && Math.abs(contTotal - 100) > 0.01)
       clientErrors.push("Contingent beneficiary shares must sum to 100%");
-    if (allocTotal > 0 && Math.abs(allocTotal - 100) > 0.01)
-      clientErrors.push("Allocation percentages must sum to 100%");
+    if (Math.abs(allocTotal - 100) > 0.01)
+      clientErrors.push("Allocation Options are required and must sum to exactly 100%");
 
     if (clientErrors.length) {
       toast({ title: "Fix before submitting", description: clientErrors.join("\n"), variant: "destructive" });
