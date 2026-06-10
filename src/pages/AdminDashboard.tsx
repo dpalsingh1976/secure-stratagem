@@ -214,6 +214,23 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="annuity-applications" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Annuity Applications
+                </CardTitle>
+                <CardDescription>
+                  Review submitted Allianz 222+ FIA intake forms. Sensitive fields (SSN, ID) are stored encrypted at rest.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AnnuityApplicationsManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </main>
     </div>
