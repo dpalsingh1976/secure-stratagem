@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { Upload, MessageSquare, TrendingUp, LogOut, Shield, Database, CalendarDays, ArrowLeft, Users } from 'lucide-react';
+import { Upload, MessageSquare, TrendingUp, LogOut, Shield, Database, CalendarDays, ArrowLeft, Users, FileText } from 'lucide-react';
 import { IllustrationUploader } from '@/components/admin/IllustrationUploader';
 import { DigitalTwinChat } from '@/components/admin/DigitalTwinChat';
 import { StressTesting } from '@/components/admin/StressTesting';
@@ -13,6 +13,7 @@ import { MarketComparison } from '@/components/admin/MarketComparison';
 import { ComplianceReports } from '@/components/admin/ComplianceReports';
 import { AppointmentsManager } from '@/components/admin/AppointmentsManager';
 import { ClientAssessmentDashboard } from '@/components/admin/ClientAssessmentDashboard';
+import { AnnuityApplicationsManager } from '@/components/admin/AnnuityApplicationsManager';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -73,7 +74,7 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-7 mb-8">
+          <TabsList className="grid w-full grid-cols-8 mb-8">
             <TabsTrigger value="clients" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Clients</span>
@@ -101,6 +102,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="appointments" className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4" />
               <span className="hidden sm:inline">Appointments</span>
+            </TabsTrigger>
+            <TabsTrigger value="annuity-applications" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Annuity Apps</span>
             </TabsTrigger>
           </TabsList>
 
@@ -206,6 +211,23 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <AppointmentsManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="annuity-applications" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Annuity Applications
+                </CardTitle>
+                <CardDescription>
+                  Review submitted Allianz 222+ FIA intake forms. Sensitive fields (SSN, ID) are stored encrypted at rest.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AnnuityApplicationsManager />
               </CardContent>
             </Card>
           </TabsContent>
