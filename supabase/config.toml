@@ -65,3 +65,7 @@ verify_jwt = false
 
 [functions.bootstrap-system-user]
 verify_jwt = false
+
+# Annuity intake — public, JWT optional (anon clients can submit)
+[functions.submit-annuity-intake]
+verify_jwt = false
