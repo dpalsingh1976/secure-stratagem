@@ -14,6 +14,316 @@ export type Database = {
   }
   public: {
     Tables: {
+      annuity_applications: {
+        Row: {
+          actively_employed: boolean | null
+          add_additional_payments: boolean | null
+          annuitant_is:
+            | Database["public"]["Enums"]["annuity_annuitant_is"]
+            | null
+          anticipate_decrease_income: boolean | null
+          anticipate_decrease_liquid_assets: boolean | null
+          anticipate_increase_living_expenses: boolean | null
+          application_date: string | null
+          checking_savings_electronic: number | null
+          city: string | null
+          client_brokerage_account_number: string | null
+          client_name: string | null
+          client_signature_name: string | null
+          contract_issue_type:
+            | Database["public"]["Enums"]["annuity_contract_issue_type"]
+            | null
+          created_at: string
+          date_of_birth: string | null
+          decline_mobile: boolean | null
+          distribution_methods: Json | null
+          edelivery_contract: boolean | null
+          edelivery_correspondence: boolean | null
+          email: string | null
+          federal_tax_bracket:
+            | Database["public"]["Enums"]["annuity_tax_bracket"]
+            | null
+          financial_objectives: Json | null
+          first_distribution_timing:
+            | Database["public"]["Enums"]["annuity_distribution_timing"]
+            | null
+          first_name: string | null
+          fp_or_client_requested: number | null
+          gender: string | null
+          gross_monthly_income: number | null
+          has_existing_policies: boolean | null
+          has_ltc_insurance: boolean | null
+          has_medicare_supplement: boolean | null
+          household_annuities_value: number | null
+          household_liquid_assets: number | null
+          household_net_worth: number | null
+          id: string
+          id_document_expiration: string | null
+          id_document_number: string | null
+          id_document_type: string | null
+          is_us_citizen: boolean | null
+          joint_signature_date: string | null
+          joint_signature_name: string | null
+          last_name: string | null
+          middle_initial: string | null
+          mobile_phone: string | null
+          monthly_disposable_income: number | null
+          monthly_living_expenses: number | null
+          other_phone: string | null
+          other_products_owned: Json | null
+          ownership_type:
+            | Database["public"]["Enums"]["annuity_ownership_type"]
+            | null
+          payment_method: string | null
+          prefix: string | null
+          premium_sources: Json | null
+          resides_nursing_home: boolean | null
+          risk_tolerance:
+            | Database["public"]["Enums"]["annuity_risk_tolerance"]
+            | null
+          signature_date: string | null
+          ssn_tin: string | null
+          state: string | null
+          status: Database["public"]["Enums"]["annuity_app_status"]
+          street_address: string | null
+          suffix: string | null
+          total_expected_amount: number | null
+          transfer_rollover_exchange: number | null
+          updated_at: string
+          will_replace_existing: boolean | null
+          zip_code: string | null
+        }
+        Insert: {
+          actively_employed?: boolean | null
+          add_additional_payments?: boolean | null
+          annuitant_is?:
+            | Database["public"]["Enums"]["annuity_annuitant_is"]
+            | null
+          anticipate_decrease_income?: boolean | null
+          anticipate_decrease_liquid_assets?: boolean | null
+          anticipate_increase_living_expenses?: boolean | null
+          application_date?: string | null
+          checking_savings_electronic?: number | null
+          city?: string | null
+          client_brokerage_account_number?: string | null
+          client_name?: string | null
+          client_signature_name?: string | null
+          contract_issue_type?:
+            | Database["public"]["Enums"]["annuity_contract_issue_type"]
+            | null
+          created_at?: string
+          date_of_birth?: string | null
+          decline_mobile?: boolean | null
+          distribution_methods?: Json | null
+          edelivery_contract?: boolean | null
+          edelivery_correspondence?: boolean | null
+          email?: string | null
+          federal_tax_bracket?:
+            | Database["public"]["Enums"]["annuity_tax_bracket"]
+            | null
+          financial_objectives?: Json | null
+          first_distribution_timing?:
+            | Database["public"]["Enums"]["annuity_distribution_timing"]
+            | null
+          first_name?: string | null
+          fp_or_client_requested?: number | null
+          gender?: string | null
+          gross_monthly_income?: number | null
+          has_existing_policies?: boolean | null
+          has_ltc_insurance?: boolean | null
+          has_medicare_supplement?: boolean | null
+          household_annuities_value?: number | null
+          household_liquid_assets?: number | null
+          household_net_worth?: number | null
+          id?: string
+          id_document_expiration?: string | null
+          id_document_number?: string | null
+          id_document_type?: string | null
+          is_us_citizen?: boolean | null
+          joint_signature_date?: string | null
+          joint_signature_name?: string | null
+          last_name?: string | null
+          middle_initial?: string | null
+          mobile_phone?: string | null
+          monthly_disposable_income?: number | null
+          monthly_living_expenses?: number | null
+          other_phone?: string | null
+          other_products_owned?: Json | null
+          ownership_type?:
+            | Database["public"]["Enums"]["annuity_ownership_type"]
+            | null
+          payment_method?: string | null
+          prefix?: string | null
+          premium_sources?: Json | null
+          resides_nursing_home?: boolean | null
+          risk_tolerance?:
+            | Database["public"]["Enums"]["annuity_risk_tolerance"]
+            | null
+          signature_date?: string | null
+          ssn_tin?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["annuity_app_status"]
+          street_address?: string | null
+          suffix?: string | null
+          total_expected_amount?: number | null
+          transfer_rollover_exchange?: number | null
+          updated_at?: string
+          will_replace_existing?: boolean | null
+          zip_code?: string | null
+        }
+        Update: {
+          actively_employed?: boolean | null
+          add_additional_payments?: boolean | null
+          annuitant_is?:
+            | Database["public"]["Enums"]["annuity_annuitant_is"]
+            | null
+          anticipate_decrease_income?: boolean | null
+          anticipate_decrease_liquid_assets?: boolean | null
+          anticipate_increase_living_expenses?: boolean | null
+          application_date?: string | null
+          checking_savings_electronic?: number | null
+          city?: string | null
+          client_brokerage_account_number?: string | null
+          client_name?: string | null
+          client_signature_name?: string | null
+          contract_issue_type?:
+            | Database["public"]["Enums"]["annuity_contract_issue_type"]
+            | null
+          created_at?: string
+          date_of_birth?: string | null
+          decline_mobile?: boolean | null
+          distribution_methods?: Json | null
+          edelivery_contract?: boolean | null
+          edelivery_correspondence?: boolean | null
+          email?: string | null
+          federal_tax_bracket?:
+            | Database["public"]["Enums"]["annuity_tax_bracket"]
+            | null
+          financial_objectives?: Json | null
+          first_distribution_timing?:
+            | Database["public"]["Enums"]["annuity_distribution_timing"]
+            | null
+          first_name?: string | null
+          fp_or_client_requested?: number | null
+          gender?: string | null
+          gross_monthly_income?: number | null
+          has_existing_policies?: boolean | null
+          has_ltc_insurance?: boolean | null
+          has_medicare_supplement?: boolean | null
+          household_annuities_value?: number | null
+          household_liquid_assets?: number | null
+          household_net_worth?: number | null
+          id?: string
+          id_document_expiration?: string | null
+          id_document_number?: string | null
+          id_document_type?: string | null
+          is_us_citizen?: boolean | null
+          joint_signature_date?: string | null
+          joint_signature_name?: string | null
+          last_name?: string | null
+          middle_initial?: string | null
+          mobile_phone?: string | null
+          monthly_disposable_income?: number | null
+          monthly_living_expenses?: number | null
+          other_phone?: string | null
+          other_products_owned?: Json | null
+          ownership_type?:
+            | Database["public"]["Enums"]["annuity_ownership_type"]
+            | null
+          payment_method?: string | null
+          prefix?: string | null
+          premium_sources?: Json | null
+          resides_nursing_home?: boolean | null
+          risk_tolerance?:
+            | Database["public"]["Enums"]["annuity_risk_tolerance"]
+            | null
+          signature_date?: string | null
+          ssn_tin?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["annuity_app_status"]
+          street_address?: string | null
+          suffix?: string | null
+          total_expected_amount?: number | null
+          transfer_rollover_exchange?: number | null
+          updated_at?: string
+          will_replace_existing?: boolean | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      application_allocations: {
+        Row: {
+          allocation_percentage: number
+          application_id: string
+          crediting_method: string
+          id: string
+          index_option: string
+        }
+        Insert: {
+          allocation_percentage: number
+          application_id: string
+          crediting_method: string
+          id?: string
+          index_option: string
+        }
+        Update: {
+          allocation_percentage?: number
+          application_id?: string
+          crediting_method?: string
+          id?: string
+          index_option?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_allocations_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "annuity_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      application_beneficiaries: {
+        Row: {
+          application_id: string
+          beneficiary_type: Database["public"]["Enums"]["annuity_beneficiary_type"]
+          date_of_birth: string | null
+          full_name: string
+          id: string
+          relationship: string | null
+          share_percentage: number
+          ssn_tin: string | null
+        }
+        Insert: {
+          application_id: string
+          beneficiary_type: Database["public"]["Enums"]["annuity_beneficiary_type"]
+          date_of_birth?: string | null
+          full_name: string
+          id?: string
+          relationship?: string | null
+          share_percentage: number
+          ssn_tin?: string | null
+        }
+        Update: {
+          application_id?: string
+          beneficiary_type?: Database["public"]["Enums"]["annuity_beneficiary_type"]
+          date_of_birth?: string | null
+          full_name?: string
+          id?: string
+          relationship?: string | null
+          share_percentage?: number
+          ssn_tin?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_beneficiaries_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "annuity_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           created_at: string
@@ -1319,6 +1629,24 @@ export type Database = {
       }
     }
     Enums: {
+      annuity_annuitant_is: "owner" | "other"
+      annuity_app_status: "draft" | "submitted"
+      annuity_beneficiary_type: "primary" | "contingent"
+      annuity_contract_issue_type: "non_qualified" | "qualified"
+      annuity_distribution_timing:
+        | "lt_1yr"
+        | "1_5yr"
+        | "6_9yr"
+        | "10_plus"
+        | "none"
+      annuity_ownership_type: "individual_joint" | "custodian" | "trust"
+      annuity_risk_tolerance:
+        | "conservative"
+        | "moderately_conservative"
+        | "moderate"
+        | "moderately_aggressive"
+        | "aggressive"
+      annuity_tax_bracket: "0_10" | "11_20" | "21_30" | "31_40" | "41_plus"
       asset_type_enum:
         | "cash_checking"
         | "cash_savings"
@@ -1506,6 +1834,26 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      annuity_annuitant_is: ["owner", "other"],
+      annuity_app_status: ["draft", "submitted"],
+      annuity_beneficiary_type: ["primary", "contingent"],
+      annuity_contract_issue_type: ["non_qualified", "qualified"],
+      annuity_distribution_timing: [
+        "lt_1yr",
+        "1_5yr",
+        "6_9yr",
+        "10_plus",
+        "none",
+      ],
+      annuity_ownership_type: ["individual_joint", "custodian", "trust"],
+      annuity_risk_tolerance: [
+        "conservative",
+        "moderately_conservative",
+        "moderate",
+        "moderately_aggressive",
+        "aggressive",
+      ],
+      annuity_tax_bracket: ["0_10", "11_20", "21_30", "31_40", "41_plus"],
       asset_type_enum: [
         "cash_checking",
         "cash_savings",
