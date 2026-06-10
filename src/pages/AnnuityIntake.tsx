@@ -42,10 +42,10 @@ function FieldError({ name }: { name: string }) {
 }
 
 function FormInput({
-  label, name, type = "text", placeholder, required, className,
+  label, name, type = "text", placeholder, required, className, autoComplete,
 }: {
   label: string; name: string; type?: string; placeholder?: string;
-  required?: boolean; className?: string;
+  required?: boolean; className?: string; autoComplete?: string;
 }) {
   const { register } = useFormContext();
   return (
@@ -53,7 +53,7 @@ function FormInput({
       <Label className="text-sm font-medium">
         {label}{required && <span className="text-red-500 ml-1">*</span>}
       </Label>
-      <Input type={type} placeholder={placeholder} className="mt-1" {...register(name)} />
+      <Input type={type} placeholder={placeholder} autoComplete={autoComplete} className="mt-1" {...register(name)} />
       <FieldError name={name} />
     </div>
   );
