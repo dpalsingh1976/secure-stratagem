@@ -42,10 +42,10 @@ function FieldError({ name }: { name: string }) {
 }
 
 function FormInput({
-  label, name, type = "text", placeholder, required, className,
+  label, name, type = "text", placeholder, required, className, autoComplete,
 }: {
   label: string; name: string; type?: string; placeholder?: string;
-  required?: boolean; className?: string;
+  required?: boolean; className?: string; autoComplete?: string;
 }) {
   const { register } = useFormContext();
   return (
@@ -53,7 +53,7 @@ function FormInput({
       <Label className="text-sm font-medium">
         {label}{required && <span className="text-red-500 ml-1">*</span>}
       </Label>
-      <Input type={type} placeholder={placeholder} className="mt-1" {...register(name)} />
+      <Input type={type} placeholder={placeholder} autoComplete={autoComplete} className="mt-1" {...register(name)} />
       <FieldError name={name} />
     </div>
   );
@@ -209,17 +209,17 @@ function AnnuitantSection() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <FormInput label="Prefix" name="prefix" placeholder="Mr./Ms." />
-        <FormInput label="First Name" name="first_name" required className="col-span-1 sm:col-span-1" />
-        <FormInput label="M.I." name="middle_initial" placeholder="A" />
-        <FormInput label="Last Name" name="last_name" required />
-        <FormInput label="Suffix" name="suffix" placeholder="Jr./Sr." />
+        <FormInput label="Prefix" name="prefix" placeholder="Mr./Ms." autoComplete="off" />
+        <FormInput label="First Name" name="first_name" required className="col-span-1 sm:col-span-1" autoComplete="off" />
+        <FormInput label="M.I." name="middle_initial" placeholder="A" autoComplete="off" />
+        <FormInput label="Last Name" name="last_name" required autoComplete="off" />
+        <FormInput label="Suffix" name="suffix" placeholder="Jr./Sr." autoComplete="off" />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {/* SSN with mask toggle */}
         <div>
-          <Label className="text-sm font-medium">SSN / TIN <span className="text-red-500">*</span></Label>
+          <Label className="text-sm font-medium">SSN / TIN <span className="text-gray-400 text-xs">(optional)</span></Label>
           <div className="relative mt-1">
             <Controller
               control={control}
@@ -229,6 +229,7 @@ function AnnuitantSection() {
                   type={showSsn ? "text" : "password"}
                   placeholder="###-##-####"
                   maxLength={11}
+                  autoComplete="off"
                   value={field.value ?? ""}
                   onChange={(e) => {
                     let v = e.target.value.replace(/\D/g, "");

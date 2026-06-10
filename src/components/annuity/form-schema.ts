@@ -31,8 +31,8 @@ export const AnnuityFormSchema = z.object({
   suffix: z.string().optional(),
   ssn_tin: z
     .string()
-    .min(1, "Required")
-    .regex(ssnRegex, "Format: ###-##-####"),
+    .optional()
+    .refine((v) => !v || ssnRegex.test(v), "Format: ###-##-####"),
   date_of_birth: z.string().min(1, "Required"),
   gender: z.string().min(1, "Required"),
   is_us_citizen: z.boolean({ required_error: "Required" }),

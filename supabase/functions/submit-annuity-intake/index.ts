@@ -61,7 +61,7 @@ const SubmitSchema = z.object({
   middle_initial: z.string().max(1).optional(),
   last_name: z.string().min(1),
   suffix: z.string().optional(),
-  ssn_tin: z.string().regex(ssnRegex, "SSN must be ###-##-####"),
+  ssn_tin: z.string().optional().refine((v) => !v || ssnRegex.test(v), "SSN must be ###-##-####"),
   date_of_birth: z.string().min(1),
   gender: z.string().min(1),
   is_us_citizen: z.boolean(),
