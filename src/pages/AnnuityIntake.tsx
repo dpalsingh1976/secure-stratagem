@@ -813,42 +813,6 @@ function SuitabilitySection() {
   );
 }
 
-// ── Section 21: Acknowledgement ───────────────────────────────────────────────
-function AcknowledgementSection() {
-  const { control } = useFormContext();
-  return (
-    <SectionCard n={21} title="Acknowledgement">
-      <p className="text-sm text-gray-600">
-        By signing, the client acknowledges that all information provided is accurate and complete to the
-        best of their knowledge.
-      </p>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <FormInput label="Client Signature Name" name="client_signature_name" placeholder="Full name as signature" />
-        <div>
-          <Label className="text-sm font-medium">Signature Date</Label>
-          <Controller
-            control={control}
-            name="signature_date"
-            render={({ field }) => (
-              <Input type="date" className="mt-1" {...field} value={field.value ?? ""} />
-            )}
-          />
-        </div>
-        <FormInput label="Joint Owner Signature Name (if applicable)" name="joint_signature_name" />
-        <div>
-          <Label className="text-sm font-medium">Joint Signature Date</Label>
-          <Controller
-            control={control}
-            name="joint_signature_date"
-            render={({ field }) => (
-              <Input type="date" className="mt-1" {...field} value={field.value ?? ""} />
-            )}
-          />
-        </div>
-      </div>
-    </SectionCard>
-  );
-}
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function AnnuityIntake() {
@@ -1069,7 +1033,7 @@ export default function AnnuityIntake() {
             <TaxBracketSection />
             <AdditionalQuestionsSection />
             <SuitabilitySection />
-            <AcknowledgementSection />
+            
 
             {/* Action bar */}
             <div className="sticky bottom-0 bg-white border-t shadow-lg -mx-4 px-4 py-4 flex flex-col sm:flex-row gap-3 justify-between">
