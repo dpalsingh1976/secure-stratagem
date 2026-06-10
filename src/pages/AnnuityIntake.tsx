@@ -1033,7 +1033,7 @@ export default function AnnuityIntake() {
             <TaxBracketSection />
             <AdditionalQuestionsSection />
             <SuitabilitySection />
-            <AcknowledgementSection />
+            
 
             {/* Action bar */}
             <div className="sticky bottom-0 bg-white border-t shadow-lg -mx-4 px-4 py-4 flex flex-col sm:flex-row gap-3 justify-between">
