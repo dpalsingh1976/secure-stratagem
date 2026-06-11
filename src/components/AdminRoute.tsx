@@ -1,7 +1,8 @@
 import { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface AdminRouteProps {
   children: ReactNode;
@@ -9,7 +10,8 @@ interface AdminRouteProps {
 }
 
 export const AdminRoute = ({ children, requiredRole = 'user' }: AdminRouteProps) => {
-  const { user, userRole, loading, hasRole } = useAuth();
+  const { user, userRole, loading, hasRole, signOut } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
