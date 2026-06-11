@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 type AnnuityApp = Record<string, any>;
 type Beneficiary = Record<string, any>;
@@ -22,11 +24,57 @@ function formatLabel(key: string) {
 
 function formatValue(key: string, value: unknown): string {
   if (value === null || value === undefined || value === '') return '—';
-  if (ENCRYPTED_FIELDS.has(key)) return '[encrypted — retrieve via admin tool]';
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
   if (Array.isArray(value)) return value.length ? value.join(', ') : '—';
   if (typeof value === 'object') return JSON.stringify(value);
   return String(value);
+}
+
+type RevealKey = string; // `${table}:${id}:${field}`
+
+function EncryptedField({
+  table,
+  id,
+  field,
+  cipher,
+  revealed,
+  loading,
+  onReveal,
+  onHide,
+}: {
+  table: 'annuity_applications' | 'application_beneficiaries';
+  id: string;
+  field: 'ssn_tin' | 'id_document_number';
+  cipher: unknown;
+  revealed?: string;
+  loading?: boolean;
+  onReveal: () => void;
+  onHide: () => void;
+}) {
+  if (!cipher) return <span>—</span>;
+  return (
+    <div className="flex items-center gap-2 break-all">
+      <span className="font-mono text-xs">
+        {revealed ?? '••••••••  (encrypted)'}
+      </span>
+      <Button
+        size="sm"
+        variant="ghost"
+        className="h-6 px-2"
+        onClick={revealed ? onHide : onReveal}
+        disabled={loading}
+        title={revealed ? 'Hide' : 'Reveal'}
+      >
+        {loading ? (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        ) : revealed ? (
+          <EyeOff className="h-3 w-3" />
+        ) : (
+          <Eye className="h-3 w-3" />
+        )}
+      </Button>
+    </div>
+  );
 }
 
 export function AnnuityApplicationsManager() {
@@ -36,6 +84,8 @@ export function AnnuityApplicationsManager() {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [allocations, setAllocations] = useState<Allocation[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [revealed, setRevealed] = useState<Record<RevealKey, string>>({});
+  const [revealLoading, setRevealLoading] = useState<Record<RevealKey, boolean>>({});
 
   useEffect(() => {
     (async () => {
@@ -51,6 +101,8 @@ export function AnnuityApplicationsManager() {
   const openDetails = async (app: AnnuityApp) => {
     setSelected(app);
     setDetailLoading(true);
+    setRevealed({});
+    setRevealLoading({});
     const [b, a] = await Promise.all([
       (supabase as any).from('application_beneficiaries').select('*').eq('application_id', app.id),
       (supabase as any).from('application_allocations').select('*').eq('application_id', app.id),
@@ -58,6 +110,43 @@ export function AnnuityApplicationsManager() {
     setBeneficiaries(b.data ?? []);
     setAllocations(a.data ?? []);
     setDetailLoading(false);
+  };
+
+  const revealField = async (
+    table: 'annuity_applications' | 'application_beneficiaries',
+    id: string,
+    field: 'ssn_tin' | 'id_document_number',
+  ) => {
+    const key: RevealKey = `${table}:${id}:${field}`;
+    setRevealLoading((s) => ({ ...s, [key]: true }));
+    try {
+      const { data, error } = await supabase.functions.invoke('decrypt-annuity-field', {
+        body: { table, id, field },
+      });
+      if (error) throw error;
+      if (data?.value == null) {
+        toast.info('No value stored for this field.');
+        return;
+      }
+      setRevealed((s) => ({ ...s, [key]: data.value as string }));
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Failed to decrypt');
+    } finally {
+      setRevealLoading((s) => ({ ...s, [key]: false }));
+    }
+  };
+
+  const hideField = (
+    table: 'annuity_applications' | 'application_beneficiaries',
+    id: string,
+    field: 'ssn_tin' | 'id_document_number',
+  ) => {
+    const key: RevealKey = `${table}:${id}:${field}`;
+    setRevealed((s) => {
+      const n = { ...s };
+      delete n[key];
+      return n;
+    });
   };
 
   if (loading) {
@@ -69,6 +158,30 @@ export function AnnuityApplicationsManager() {
       </div>
     );
   }
+
+  const renderFieldValue = (
+    table: 'annuity_applications' | 'application_beneficiaries',
+    rowId: string,
+    key: string,
+    value: unknown,
+  ) => {
+    if (ENCRYPTED_FIELDS.has(key)) {
+      const revealKey: RevealKey = `${table}:${rowId}:${key}`;
+      return (
+        <EncryptedField
+          table={table}
+          id={rowId}
+          field={key as 'ssn_tin' | 'id_document_number'}
+          cipher={value}
+          revealed={revealed[revealKey]}
+          loading={revealLoading[revealKey]}
+          onReveal={() => revealField(table, rowId, key as any)}
+          onHide={() => hideField(table, rowId, key as any)}
+        />
+      );
+    }
+    return <span>{formatValue(key, value)}</span>;
+  };
 
   return (
     <>
@@ -143,7 +256,9 @@ export function AnnuityApplicationsManager() {
                         .map(([k, v]) => (
                           <div key={k} className="text-sm">
                             <div className="text-muted-foreground text-xs">{formatLabel(k)}</div>
-                            <div className="break-words">{formatValue(k, v)}</div>
+                            <div className="break-words">
+                              {renderFieldValue('annuity_applications', selected.id, k, v)}
+                            </div>
                           </div>
                         ))}
                     </CardContent>
@@ -167,7 +282,9 @@ export function AnnuityApplicationsManager() {
                               .map(([k, v]) => (
                                 <div key={k}>
                                   <div className="text-muted-foreground text-xs">{formatLabel(k)}</div>
-                                  <div>{formatValue(k, v)}</div>
+                                  <div>
+                                    {renderFieldValue('application_beneficiaries', b.id, k, v)}
+                                  </div>
                                 </div>
                               ))}
                           </CardContent>
