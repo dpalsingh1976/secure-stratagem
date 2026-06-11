@@ -201,9 +201,24 @@ const handler = async (req: Request): Promise<Response> => {
       ? await encrypt(data.id_document_number as string)
       : null;
 
+    // Coerce empty strings / NaN to null for numeric & date columns (Postgres rejects "")
+    const num = (v: unknown): number | null => {
+      if (v === "" || v === null || v === undefined) return null;
+      const n = typeof v === "number" ? v : Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+    const dateOrNull = (v: unknown): string | null => {
+      if (v === "" || v === null || v === undefined) return null;
+      return String(v);
+    };
+    const strOrNull = (v: unknown): string | null => {
+      if (v === "" || v === null || v === undefined) return null;
+      return String(v);
+    };
+
     // Compute disposable income server-side (never trust client)
-    const grossIncome = typeof data.gross_monthly_income === "number" ? data.gross_monthly_income : null;
-    const expenses = typeof data.monthly_living_expenses === "number" ? data.monthly_living_expenses : null;
+    const grossIncome = num(data.gross_monthly_income);
+    const expenses = num(data.monthly_living_expenses);
     const disposable = grossIncome !== null && expenses !== null ? grossIncome - expenses : null;
 
     // Build DB row
@@ -211,64 +226,64 @@ const handler = async (req: Request): Promise<Response> => {
       status: isDraft ? "draft" : "submitted",
       client_name: data.first_name && data.last_name ? `${data.first_name} ${data.last_name}` : null,
       application_date: new Date().toISOString().split("T")[0],
-      ownership_type: data.ownership_type ?? null,
-      annuitant_is: data.annuitant_is ?? null,
-      prefix: data.prefix ?? null,
-      first_name: data.first_name ?? null,
-      middle_initial: data.middle_initial ?? null,
-      last_name: data.last_name ?? null,
-      suffix: data.suffix ?? null,
+      ownership_type: strOrNull(data.ownership_type),
+      annuitant_is: strOrNull(data.annuitant_is),
+      prefix: strOrNull(data.prefix),
+      first_name: strOrNull(data.first_name),
+      middle_initial: strOrNull(data.middle_initial),
+      last_name: strOrNull(data.last_name),
+      suffix: strOrNull(data.suffix),
       ssn_tin: encryptedSsn,
-      date_of_birth: data.date_of_birth ?? null,
-      gender: data.gender ?? null,
+      date_of_birth: dateOrNull(data.date_of_birth),
+      gender: strOrNull(data.gender),
       is_us_citizen: data.is_us_citizen ?? null,
-      street_address: data.street_address ?? null,
-      zip_code: data.zip_code ?? null,
-      city: data.city ?? null,
-      state: data.state ?? null,
-      email: data.email ?? null,
-      mobile_phone: data.mobile_phone ?? null,
-      other_phone: data.other_phone ?? null,
+      street_address: strOrNull(data.street_address),
+      zip_code: strOrNull(data.zip_code),
+      city: strOrNull(data.city),
+      state: strOrNull(data.state),
+      email: strOrNull(data.email),
+      mobile_phone: strOrNull(data.mobile_phone),
+      other_phone: strOrNull(data.other_phone),
       decline_mobile: data.decline_mobile ?? false,
-      contract_issue_type: data.contract_issue_type ?? null,
-      payment_method: data.payment_method ?? null,
+      contract_issue_type: strOrNull(data.contract_issue_type),
+      payment_method: strOrNull(data.payment_method),
       add_additional_payments: data.add_additional_payments ?? null,
-      total_expected_amount: data.total_expected_amount ?? null,
-      checking_savings_electronic: data.checking_savings_electronic ?? null,
-      transfer_rollover_exchange: data.transfer_rollover_exchange ?? null,
-      fp_or_client_requested: data.fp_or_client_requested ?? null,
-      client_brokerage_account_number: data.client_brokerage_account_number ?? null,
+      total_expected_amount: num(data.total_expected_amount),
+      checking_savings_electronic: num(data.checking_savings_electronic),
+      transfer_rollover_exchange: num(data.transfer_rollover_exchange),
+      fp_or_client_requested: num(data.fp_or_client_requested),
+      client_brokerage_account_number: strOrNull(data.client_brokerage_account_number),
       has_existing_policies: data.has_existing_policies ?? null,
       will_replace_existing: data.will_replace_existing ?? null,
       edelivery_correspondence: data.edelivery_correspondence ?? null,
       edelivery_contract: data.edelivery_contract ?? null,
-      id_document_type: data.id_document_type ?? null,
+      id_document_type: strOrNull(data.id_document_type),
       id_document_number: encryptedIdNum,
-      id_document_expiration: data.id_document_expiration ?? null,
+      id_document_expiration: dateOrNull(data.id_document_expiration),
       gross_monthly_income: grossIncome,
       monthly_living_expenses: expenses,
       monthly_disposable_income: disposable,
-      household_liquid_assets: data.household_liquid_assets ?? null,
-      household_annuities_value: data.household_annuities_value ?? null,
-      household_net_worth: data.household_net_worth ?? null,
+      household_liquid_assets: num(data.household_liquid_assets),
+      household_annuities_value: num(data.household_annuities_value),
+      household_net_worth: num(data.household_net_worth),
       anticipate_increase_living_expenses: data.anticipate_increase_living_expenses ?? null,
       anticipate_decrease_income: data.anticipate_decrease_income ?? null,
       anticipate_decrease_liquid_assets: data.anticipate_decrease_liquid_assets ?? null,
-      federal_tax_bracket: data.federal_tax_bracket ?? null,
+      federal_tax_bracket: strOrNull(data.federal_tax_bracket),
       resides_nursing_home: data.resides_nursing_home ?? null,
       has_ltc_insurance: data.has_ltc_insurance ?? null,
       has_medicare_supplement: data.has_medicare_supplement ?? null,
       actively_employed: data.actively_employed ?? null,
       financial_objectives: data.financial_objectives ?? [],
       other_products_owned: data.other_products_owned ?? [],
-      risk_tolerance: data.risk_tolerance ?? null,
+      risk_tolerance: strOrNull(data.risk_tolerance),
       distribution_methods: data.distribution_methods ?? [],
-      first_distribution_timing: data.first_distribution_timing ?? null,
+      first_distribution_timing: strOrNull(data.first_distribution_timing),
       premium_sources: data.premium_sources ?? [],
-      client_signature_name: data.client_signature_name ?? null,
-      signature_date: data.signature_date ?? null,
-      joint_signature_name: data.joint_signature_name ?? null,
-      joint_signature_date: data.joint_signature_date ?? null,
+      client_signature_name: strOrNull(data.client_signature_name),
+      signature_date: dateOrNull(data.signature_date),
+      joint_signature_name: strOrNull(data.joint_signature_name),
+      joint_signature_date: dateOrNull(data.joint_signature_date),
     };
 
     // Upsert application
