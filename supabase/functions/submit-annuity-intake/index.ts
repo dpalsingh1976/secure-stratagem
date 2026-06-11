@@ -320,17 +320,17 @@ const handler = async (req: Request): Promise<Response> => {
       ...((data.contingent_beneficiaries as Array<Record<string,unknown>>) ?? []).map((b) => ({
         ...b, beneficiary_type: "contingent", application_id: appId,
       })),
-    ];
+    ].filter((b) => b.full_name && String(b.full_name).trim() !== "");
 
     if (beneficiaries.length) {
       const rows = await Promise.all(beneficiaries.map(async (b) => ({
         application_id: appId,
         beneficiary_type: b.beneficiary_type,
         full_name: b.full_name,
-        relationship: b.relationship ?? null,
-        date_of_birth: b.date_of_birth ?? null,
+        relationship: strOrNull(b.relationship),
+        date_of_birth: dateOrNull(b.date_of_birth),
         ssn_tin: b.ssn_tin ? await encrypt((b.ssn_tin as string).replace(/-/g, "")) : null,
-        share_percentage: b.share_percentage,
+        share_percentage: num(b.share_percentage) ?? 0,
       })));
       const { error } = await supabase.from("application_beneficiaries").insert(rows);
       if (error) throw error;
@@ -342,7 +342,7 @@ const handler = async (req: Request): Promise<Response> => {
         application_id: appId,
         crediting_method: a.crediting_method,
         index_option: a.index_option,
-        allocation_percentage: a.allocation_percentage,
+        allocation_percentage: num(a.allocation_percentage) ?? 0,
       }));
       const { error } = await supabase.from("application_allocations").insert(rows);
       if (error) throw error;
