@@ -1975,7 +1975,7 @@ export function ReportModal({
                       <div>
                         <div className="text-sm text-gray-600">Monthly Income Need (60%)</div>
                         <div className="text-2xl font-bold">
-                          {formatCurrency((incomeData.w2_income + incomeData.business_income) * 0.6)}
+                          {formatCurrency(((incomeData.w2_income + incomeData.business_income) / 12) * 0.6)}
                         </div>
                       </div>
                       <div>
