@@ -64,7 +64,7 @@ export const computeRiskMetrics = async (
 
   // Calculate DIME method life insurance need
   const totalDebt = totalLiabilities;
-  const annualIncome = (incomeData.w2_income + incomeData.business_income) * 12;
+  const annualIncome = (incomeData.w2_income + incomeData.business_income);
   const incomeReplacementYears = Math.max(0, profileData.retirement_age - getCurrentAge(profileData.dob));
   const incomeReplacement = annualIncome * 10; // Standard DIME: 10x annual income
   const mortgageBalance = liabilities
