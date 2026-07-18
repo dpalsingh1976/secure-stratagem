@@ -19,9 +19,10 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
     onValidationChange(true);
   };
 
-  // Calculate idle cash (surplus)
+  // Income fields are ANNUAL; expenses are MONTHLY. Convert to monthly for cash flow.
   const cashFlowSummary = useMemo(() => {
-    const totalIncome = (data.w2_income || 0) + (data.business_income || 0) + (data.rental_income || 0) + (data.social_security || 0);
+    const totalAnnualIncome = (data.w2_income || 0) + (data.business_income || 0) + (data.rental_income || 0) + (data.social_security || 0);
+    const totalIncome = totalAnnualIncome / 12; // monthly
     const totalExpenses = (data.fixed_expenses || 0) + (data.variable_expenses || 0);
     const idleCash = Math.max(0, totalIncome - totalExpenses);
     return { totalIncome, totalExpenses, idleCash };
