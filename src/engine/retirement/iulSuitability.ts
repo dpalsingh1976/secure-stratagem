@@ -66,8 +66,8 @@ export function computeIULSuitability(inputs: SuitabilityInputs): IULSuitability
   let disqualified = false;
   let disqualification_reason: string | undefined;
 
-  const monthlyIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
-  const annualIncome = monthlyIncome * 12;
+  const annualIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
+  const monthlyIncome = annualIncome / 12;
   const emergencyMonths = protectionData.emergency_fund_months || 0;
   
   // ============================================
