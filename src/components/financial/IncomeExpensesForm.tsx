@@ -44,8 +44,8 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Monthly Income Sources</CardTitle>
-            <CardDescription>Enter your gross monthly income from all sources</CardDescription>
+            <CardTitle>Annual Income Sources</CardTitle>
+            <CardDescription>Enter your gross <strong>annual</strong> income from all sources (yearly, not monthly)</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
