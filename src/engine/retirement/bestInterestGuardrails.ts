@@ -87,7 +87,7 @@ export function checkDataCompleteness(
   
   // Check financial data
   const annualIncome = incomeData 
-    ? ((incomeData.w2_income || 0) + (incomeData.business_income || 0)) * 12 
+    ? ((incomeData.w2_income || 0) + (incomeData.business_income || 0))
     : 0;
   
   if (annualIncome === 0) {
