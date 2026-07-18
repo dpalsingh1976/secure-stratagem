@@ -12,8 +12,9 @@ import BookingCalendar from "@/components/BookingCalendar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { getLongevityRiskExplanation, getMarketRiskExplanation, getTaxEstateRiskExplanation } from "@/utils/riskExplanations";
-import { calculateAllRisks, getRiskLevel } from "@/utils/riskCalculations";
+import { calculateAllRisks, calculateLifeInsuranceRisk, calculateLongevityRisk, afterTaxIncome } from "@/utils/riskCalculations";
 import { mapAssessmentToRiskInputs } from "@/utils/assessmentDataMapper";
+import { RiskInputs } from "@/types/riskTypes";
 import CategoryRiskModal from "@/components/CategoryRiskModal";
 import { DialogTrigger } from "@/components/ui/dialog";
 
@@ -83,129 +84,57 @@ const EnhancedResultsModal = ({
 
   useEffect(() => {
     if (assessmentData) {
-      const { scores, details } = calculateRiskScoresWithDetails(assessmentData);
-      setRiskScores(scores);
-      setRiskCalculationDetails(details);
-      
-      // Map assessment data to risk inputs for the modal
+      // Single source of truth: map to structured inputs, then run the shared
+      // engine so the ring scores match the detail pop-ups exactly.
       const inputs = mapAssessmentToRiskInputs(assessmentData);
       setRiskInputs(inputs);
-      
+
+      const scores = calculateAllRisks(inputs);
+      setRiskScores(scores);
+      setRiskCalculationDetails(buildCalculationDetails(inputs));
+
       generateInsights(assessmentData, scores);
       saveLead(assessmentData, scores, contactInfo);
     }
   }, [assessmentData, contactInfo]);
 
-  const calculateRiskScoresWithDetails = (data: AssessmentData): { scores: RiskScores, details: any } => {
-    const age = parseInt(data.age) || 30;
-    const dependents = parseInt(data.dependents) || 0;
-    
-    // Life Insurance Gap Analysis with detailed breakdown
-    const incomeMultiplier = getIncomeMultiplier(data.annualIncome);
-    const recommendedCoverage = incomeMultiplier * 10; // 10x income rule
-    const currentCoverage = getCoverageAmount(data.lifeInsurance);
-    const lifeInsuranceGap = Math.max(0, (recommendedCoverage - currentCoverage) / recommendedCoverage * 100);
-    
-    // Longevity Risk (retirement preparedness) with detailed breakdown
-    const retirementSavings = getSavingsAmount(data.retirementSavings);
-    const yearsToRetirement = parseInt(data.retirementAge) - age;
-    const recommendedRetirement = incomeMultiplier * 10; // Simplified: need 10x income
-    const longevityRisk = Math.max(0, (recommendedRetirement - retirementSavings) / recommendedRetirement * 100);
-    
-    // Market Risk (portfolio diversification) with detailed breakdown
-    const emergencyFundRisk = data.emergencyFund === 'none' ? 40 : 
-                             data.emergencyFund === '1-3months' ? 25 :
-                             data.emergencyFund === '3-6months' ? 10 : 0;
-    const investmentRisk = data.investmentAccounts === 'none' ? 30 : 10;
-    const riskToleranceScore = data.riskTolerance === 'aggressive' ? 20 : 
-                              data.riskTolerance === 'conservative' ? 5 : 10;
-    const marketRisk = Math.min(100, emergencyFundRisk + investmentRisk + riskToleranceScore);
-    
-    // Tax Risk (estate planning) with detailed breakdown
-    const estatePlanningRisk = data.estatePlanning === 'none' ? 70 : 
-                              data.estatePlanning === 'basic' ? 40 :
-                              data.estatePlanning === 'standard' ? 20 : 10;
-    
-    const overall = Math.round((lifeInsuranceGap + longevityRisk + marketRisk + estatePlanningRisk) / 4);
+  // Build the "Risk Calculation Methodology" breakdown from the same engine
+  // inputs that drive the ring scores and the detail pop-ups.
+  const buildCalculationDetails = (inputs: RiskInputs) => {
+    const li = calculateLifeInsuranceRisk(inputs);
+    const longevity = calculateLongevityRisk(inputs);
+    const retirementYears = inputs.lifeExpectancyAge - inputs.plannedRetirementAge;
+    const portfolioIncome = Math.round(inputs.investableAssets * (inputs.withdrawalRatePct / 100));
 
-    const scores = {
-      lifeInsurance: Math.round(lifeInsuranceGap),
-      longevity: Math.round(longevityRisk),
-      market: Math.round(marketRisk),
-      tax: Math.round(estatePlanningRisk),
-      overall
-    };
-
-    const details = {
+    return {
       lifeInsurance: {
-        currentIncome: incomeMultiplier,
-        recommendedCoverage,
-        currentCoverage,
-        gap: recommendedCoverage - currentCoverage,
-        calculation: "Based on 10x annual income rule for life insurance coverage"
+        afterTaxIncome: Math.round(afterTaxIncome(inputs)),
+        recommendedCoverage: Math.round(li.need),
+        currentCoverage: inputs.currentLifeCoverage,
+        coverageGap: Math.round(li.gap),
+        calculation: "DIME method: debts + mortgage + final expenses + education fund + after-tax income × replacement years, minus current coverage and liquid assets."
       },
       longevity: {
-        currentAge: age,
-        retirementAge: parseInt(data.retirementAge),
-        yearsToRetirement,
-        currentSavings: retirementSavings,
-        recommendedSavings: recommendedRetirement,
-        calculation: "Based on needing 10x annual income saved for retirement"
+        yearsToRetirement: inputs.plannedRetirementAge - inputs.currentAge,
+        retirementYears,
+        annualRetirementIncomeNeed: inputs.retirementAnnualNeed ?? inputs.monthlyExpenses * 12,
+        guaranteedIncome: inputs.retirementIncomeSourcesAnnual,
+        portfolioIncome,
+        calculation: "Annual retirement need (desired % of income) vs. guaranteed income plus a 4% withdrawal from investable assets, projected across retirement years."
       },
       market: {
-        emergencyFundStatus: data.emergencyFund,
-        emergencyFundRisk,
-        investmentStatus: data.investmentAccounts,
-        investmentRisk,
-        riskTolerance: data.riskTolerance,
-        riskToleranceScore,
-        calculation: "Emergency fund coverage + investment diversification + risk tolerance alignment"
+        currentAge: inputs.currentAge,
+        withdrawalRate: `${inputs.withdrawalRatePct}%`,
+        expectedReturn: `${inputs.expectedReturnPct}%`,
+        calculation: "Portfolio volatility exposure relative to an age-appropriate equity allocation (rule of thumb: 100 − age)."
       },
       tax: {
-        estatePlanningStatus: data.estatePlanning,
-        risk: estatePlanningRisk,
-        calculation: "Based on current estate planning documentation and structures"
+        marginalTaxRate: `${inputs.taxRatePct}%`,
+        hasEstateDocs: inputs.hasEstateDocs ? 'Yes' : 'No',
+        beneficiariesUpdated: inputs.beneficiariesUpdated ? 'Yes' : 'No',
+        calculation: "Estate documentation status and marginal tax drag on withdrawals; higher for high earners without tax diversification."
       }
     };
-
-    return { scores, details };
-  };
-
-  const getIncomeMultiplier = (income: string): number => {
-    const multipliers: { [key: string]: number } = {
-      'under50k': 40000,
-      '50k-75k': 62500,
-      '75k-100k': 87500,
-      '100k-150k': 125000,
-      '150k-200k': 175000,
-      '200k-300k': 250000,
-      'over300k': 350000
-    };
-    return multipliers[income] || 50000;
-  };
-
-  const getCoverageAmount = (coverage: string): number => {
-    const amounts: { [key: string]: number } = {
-      'none': 0,
-      'under100k': 50000,
-      '100k-250k': 175000,
-      '250k-500k': 375000,
-      '500k-1m': 750000,
-      'over1m': 1500000
-    };
-    return amounts[coverage] || 0;
-  };
-
-  const getSavingsAmount = (savings: string): number => {
-    const amounts: { [key: string]: number } = {
-      'none': 0,
-      'under50k': 25000,
-      '50k-100k': 75000,
-      '100k-250k': 175000,
-      '250k-500k': 375000,
-      'over500k': 750000
-    };
-    return amounts[savings] || 0;
   };
 
   const generateInsights = async (data: AssessmentData, scores: RiskScores) => {
