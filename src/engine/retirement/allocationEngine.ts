@@ -52,19 +52,20 @@ function calculateAge(dob: string): number {
 }
 
 /**
- * Calculate total MONTHLY income (all income fields are monthly)
+ * Calculate total MONTHLY income. Income fields on the form are ANNUAL,
+ * so we divide by 12 to get monthly.
  */
 function calculateMonthlyIncome(incomeData: IncomeExpensesData): number {
   return (
-    (incomeData.w2_income || 0) +
-    (incomeData.business_income || 0) +
-    (incomeData.rental_income || 0) +
-    (incomeData.social_security || 0)
+    ((incomeData.w2_income || 0) +
+      (incomeData.business_income || 0) +
+      (incomeData.rental_income || 0) +
+      (incomeData.social_security || 0)) / 12
   );
 }
 
 /**
- * Calculate total annual income (convert monthly to annual)
+ * Calculate total annual income (income fields are already annual)
  */
 function calculateAnnualIncome(incomeData: IncomeExpensesData): number {
   return calculateMonthlyIncome(incomeData) * 12;
