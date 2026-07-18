@@ -620,9 +620,8 @@ export function ReportModal({
       .filter((l) => l.type === "mortgage_primary" || l.type === "mortgage_rental")
       .reduce((sum, l) => sum + (l.balance || 0), 0);
 
-    // Income fields are MONTHLY - multiply by 12 to get annual
-    const monthlyIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
-    const annualIncome = monthlyIncome * 12;
+    // Income fields are ANNUAL (gross yearly income)
+    const annualIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
     const incomeReplacement = annualIncome * INCOME_YEARS * REPLACEMENT_RT;
 
     const numDependents = profileData.dependents || 0;
@@ -1976,7 +1975,7 @@ export function ReportModal({
                       <div>
                         <div className="text-sm text-gray-600">Monthly Income Need (60%)</div>
                         <div className="text-2xl font-bold">
-                          {formatCurrency((incomeData.w2_income + incomeData.business_income) * 0.6)}
+                          {formatCurrency(((incomeData.w2_income + incomeData.business_income) / 12) * 0.6)}
                         </div>
                       </div>
                       <div>

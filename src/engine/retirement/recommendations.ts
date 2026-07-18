@@ -53,7 +53,7 @@ export function evaluateTermFit(
   }
   
   // Check income
-  const annualIncome = (incomeData.w2_income + incomeData.business_income) * 12;
+  const annualIncome = (incomeData.w2_income + incomeData.business_income);
   if (annualIncome > 50000) {
     fitScore += 15;
     whyBullets.push('Income replacement needed to protect family lifestyle');

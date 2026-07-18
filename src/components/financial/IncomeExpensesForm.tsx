@@ -19,9 +19,10 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
     onValidationChange(true);
   };
 
-  // Calculate idle cash (surplus)
+  // Income fields are ANNUAL; expenses are MONTHLY. Convert to monthly for cash flow.
   const cashFlowSummary = useMemo(() => {
-    const totalIncome = (data.w2_income || 0) + (data.business_income || 0) + (data.rental_income || 0) + (data.social_security || 0);
+    const totalAnnualIncome = (data.w2_income || 0) + (data.business_income || 0) + (data.rental_income || 0) + (data.social_security || 0);
+    const totalIncome = totalAnnualIncome / 12; // monthly
     const totalExpenses = (data.fixed_expenses || 0) + (data.variable_expenses || 0);
     const idleCash = Math.max(0, totalIncome - totalExpenses);
     return { totalIncome, totalExpenses, idleCash };
@@ -43,25 +44,25 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Monthly Income Sources</CardTitle>
-            <CardDescription>Enter your gross monthly income from all sources</CardDescription>
+            <CardTitle>Annual Income Sources</CardTitle>
+            <CardDescription>Enter your gross <strong>annual</strong> income from all sources (yearly, not monthly)</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>W-2 Income</Label>
-              <Input type="number" value={data.w2_income} onChange={(e) => handleInputChange('w2_income', parseFloat(e.target.value) || 0)} />
+              <Label>W-2 Income (Annual)</Label>
+              <Input type="number" placeholder="e.g., 120000" value={data.w2_income} onChange={(e) => handleInputChange('w2_income', parseFloat(e.target.value) || 0)} />
             </div>
             <div>
-              <Label>Business Income</Label>
-              <Input type="number" value={data.business_income} onChange={(e) => handleInputChange('business_income', parseFloat(e.target.value) || 0)} />
+              <Label>Business Income (Annual)</Label>
+              <Input type="number" placeholder="e.g., 0" value={data.business_income} onChange={(e) => handleInputChange('business_income', parseFloat(e.target.value) || 0)} />
             </div>
             <div>
-              <Label>Rental Income</Label>
-              <Input type="number" value={data.rental_income} onChange={(e) => handleInputChange('rental_income', parseFloat(e.target.value) || 0)} />
+              <Label>Rental Income (Annual)</Label>
+              <Input type="number" placeholder="e.g., 0" value={data.rental_income} onChange={(e) => handleInputChange('rental_income', parseFloat(e.target.value) || 0)} />
             </div>
             <div>
-              <Label>Social Security</Label>
-              <Input type="number" value={data.social_security} onChange={(e) => handleInputChange('social_security', parseFloat(e.target.value) || 0)} />
+              <Label>Social Security (Annual)</Label>
+              <Input type="number" placeholder="e.g., 0" value={data.social_security} onChange={(e) => handleInputChange('social_security', parseFloat(e.target.value) || 0)} />
             </div>
           </CardContent>
         </Card>

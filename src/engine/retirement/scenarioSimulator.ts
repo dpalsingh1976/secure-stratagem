@@ -241,8 +241,8 @@ function simulateScenarioB(
   const yearsToRetirement = getYearsToRetirement(profileData.dob, retirementAge);
   const planToAge = LIFE_EXPECTANCY.CONSERVATIVE;
 
-  const monthlyIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
-  const annualIncome = monthlyIncome * 12;
+  const annualIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
+  const monthlyIncome = annualIncome / 12;
   const marginalRate = TAX_ASSUMPTIONS.MARGINAL_RATE_DEFAULT;
   const returnRate = RETURN_ASSUMPTIONS.BASE;
 
