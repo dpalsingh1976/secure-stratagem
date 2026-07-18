@@ -23,6 +23,7 @@ export interface RiskInputs {
   spouseIncomeOffsetPct: number; // default 0
 
   // Longevity / retirement
+  retirementAnnualNeed?: number; // desired annual retirement income (from retirement income %)
   retirementIncomeSourcesAnnual: number; // pensions + SS + annuity income
   investableAssets: number;
   expectedReturnPct: number; // default 5 real

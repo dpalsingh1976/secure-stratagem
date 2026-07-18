@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RiskProgressRing from "@/components/RiskProgressRing";
 import { Shield, Clock, TrendingUp, AlertTriangle, ArrowRight, BarChart3 } from "lucide-react";
 import { RiskInputs, RiskScores } from "@/types/riskTypes";
-import { formatCurrency } from "@/utils/riskCalculations";
+import { formatCurrency, calculateLifeInsuranceRisk, calculateLongevityRisk } from "@/utils/riskCalculations";
 import { getRiskLevel } from "@/utils/riskCalculations";
 
 interface RiskScoreModalProps {
@@ -72,12 +72,10 @@ const RiskScoreModal = ({ children, riskScores, riskInputs }: RiskScoreModalProp
   // Top driver content templates
   const getTopDriverContent = () => {
     if (topDriver.category === "Life Insurance Gap") {
-      const need = riskInputs.debtsTotal + riskInputs.mortgageBalance + riskInputs.finalExpensesEstimate + 
-                   riskInputs.educationFundNeeded + 
-                   (riskInputs.annualIncome * 10); // Standard DIME: 10x annual income
-      const available = riskInputs.currentLifeCoverage + riskInputs.liquidAssets;
-      const gap = Math.max(0, need - available);
+      // Use the shared DIME engine so this matches the ring/detail scores.
+      const { need, available, gap } = calculateLifeInsuranceRisk(riskInputs);
       const per100k = need > 0 ? Math.round((100000 / need) * 100) : 0;
+      const coveredPct = need > 0 ? Math.min(100, Math.round((available / need) * 100)) : 0;
 
       return {
         headline: `Coverage Gap: ${riskScores.lifeInsurance}% shortfall ⚠️`,
@@ -85,17 +83,13 @@ const RiskScoreModal = ({ children, riskScores, riskInputs }: RiskScoreModalProp
         body: `Your coverage is too low compared to your family's needs. This means that if income stops, your family may face a shortfall of ${riskScores.lifeInsurance}% in meeting daily expenses, education, and long-term commitments.`,
         cta: "Schedule a free strategy session",
         microProof: `Add ${per100k}% gap reduction for each extra $100k of coverage.`,
-        needVsHave: { need: formatCurrency(need), have: formatCurrency(available), gap: formatCurrency(gap) }
+        needVsHave: { need: formatCurrency(need), have: formatCurrency(available), gap: formatCurrency(gap), coveredPct }
       };
     }
 
     if (topDriver.category === "Longevity Risk") {
       const retYears = riskInputs.lifeExpectancyAge - riskInputs.plannedRetirementAge;
-      const retNeed = riskInputs.monthlyExpenses * 12;
-      const guaranteedIncome = riskInputs.retirementIncomeSourcesAnnual;
-      const portfolioIncome = riskInputs.investableAssets * (riskInputs.withdrawalRatePct / 100);
-      const annualGap = Math.max(0, retNeed - (guaranteedIncome + portfolioIncome));
-      const yearsShort = retNeed > 0 ? Math.round(annualGap * retYears / retNeed) : 0;
+      const { yearsShort } = calculateLongevityRisk(riskInputs);
       const yearsFunded = Math.max(0, retYears - yearsShort);
 
       return {
@@ -285,12 +279,12 @@ const RiskScoreModal = ({ children, riskScores, riskInputs }: RiskScoreModalProp
                           <span className="text-red-600 dark:text-red-400">At Risk</span>
                         </div>
                         <div className="relative w-full bg-red-200 dark:bg-red-900/30 rounded-full h-4 overflow-hidden shadow-inner">
-                          <div 
-                            className="bg-gradient-to-r from-green-500 to-green-600 h-full transition-all duration-700 ease-out" 
-                            style={{ width: `${Math.min(100, (riskInputs.currentLifeCoverage + riskInputs.liquidAssets) / (riskInputs.debtsTotal + riskInputs.mortgageBalance + riskInputs.finalExpensesEstimate + riskInputs.educationFundNeeded + (riskInputs.annualIncome * 10)) * 100)}%` }}
+                          <div
+                            className="bg-gradient-to-r from-green-500 to-green-600 h-full transition-all duration-700 ease-out"
+                            style={{ width: `${topDriverContent.needVsHave.coveredPct}%` }}
                           />
                           <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow">
-                            {Math.round((riskInputs.currentLifeCoverage + riskInputs.liquidAssets) / (riskInputs.debtsTotal + riskInputs.mortgageBalance + riskInputs.finalExpensesEstimate + riskInputs.educationFundNeeded + (riskInputs.annualIncome * 10)) * 100)}% Covered
+                            {topDriverContent.needVsHave.coveredPct}% Covered
                           </div>
                         </div>
                       </div>

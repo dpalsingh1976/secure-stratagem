@@ -24,15 +24,25 @@ export const getRiskLevel = (score: number): string => {
   return "Low";
 };
 
+// After-tax (take-home) income. Income replacement should be based on the
+// income the family actually lives on, not gross W-2 income.
+export const afterTaxIncome = (inputs: RiskInputs): number => {
+  const taxRate = inputs.taxRatePct ?? 22;
+  return inputs.annualIncome * (1 - taxRate / 100);
+};
+
 // Life Insurance Gap Calculation (DIME method)
 export const calculateLifeInsuranceRisk = (inputs: RiskInputs): { exposurePct: number; need: number; available: number; gap: number } => {
-  // Calculate total need using DIME method
-  const need = 
-    inputs.debtsTotal + 
-    inputs.mortgageBalance + 
-    inputs.finalExpensesEstimate + 
-    inputs.educationFundNeeded + 
-    (inputs.annualIncome * 10); // Standard DIME: 10x annual income
+  // Calculate total need using DIME method. The "income" leg replaces
+  // after-tax income for the number of years the family needs support.
+  const incomeReplacement = afterTaxIncome(inputs) * inputs.incomeReplacementYears;
+
+  const need =
+    inputs.debtsTotal +
+    inputs.mortgageBalance +
+    inputs.finalExpensesEstimate +
+    inputs.educationFundNeeded +
+    incomeReplacement;
 
   const available = inputs.currentLifeCoverage + inputs.liquidAssets;
   const gap = Math.max(0, need - available);
@@ -44,7 +54,9 @@ export const calculateLifeInsuranceRisk = (inputs: RiskInputs): { exposurePct: n
 // Longevity Risk Calculation
 export const calculateLongevityRisk = (inputs: RiskInputs): { exposurePct: number; yearsShort: number; lifetimeGap: number } => {
   const retYears = inputs.lifeExpectancyAge - inputs.plannedRetirementAge;
-  const retNeed = inputs.monthlyExpenses * 12; // Annual retirement need
+  // Annual retirement need: prefer the desired retirement income (% of income)
+  // captured on the form; fall back to annualizing current monthly expenses.
+  const retNeed = inputs.retirementAnnualNeed ?? inputs.monthlyExpenses * 12;
 
   const guaranteedIncome = inputs.retirementIncomeSourcesAnnual;
   const portfolioIncome = inputs.investableAssets * (inputs.withdrawalRatePct / 100);
