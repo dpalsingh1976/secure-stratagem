@@ -448,7 +448,9 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
             data={incomeData} 
             onChange={setIncomeData}
             onValidationChange={() => {}} 
+            filingStatus={profileData.filing_status}
           />
+
         );
       case 2:
         return (
