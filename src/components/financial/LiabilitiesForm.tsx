@@ -152,7 +152,11 @@ export function LiabilitiesForm({ data, onChange, clientId, onValidationChange }
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor={`type-${index}`}>Liability Type</Label>
+                        <LabelWithHelp
+                          htmlFor={`type-${index}`}
+                          label="Liability Type"
+                          help="What kind of debt this is (mortgage, auto loan, credit card, student loan). Mortgages are handled separately from other debt in your life-insurance need, and each type carries a typical interest rate we use if you don't set one."
+                        />
                         <Select
                           value={liability.type}
                           onValueChange={(value: LiabilityType) => {
