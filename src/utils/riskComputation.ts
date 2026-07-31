@@ -8,7 +8,7 @@ import type {
   RiskPreferencesData,
   TaxWrapperType
 } from '@/types/financial';
-import { clientEarnedIncome, clientAnnualEarnedIncome, householdAnnualEarnedIncome, householdSocialSecurity, survivingSpouseAnnualIncome } from '@/utils/householdIncome';
+import { clientEarnedIncome, clientAnnualEarnedIncome, householdSocialSecurity } from '@/utils/householdIncome';
 
 interface RiskComputationInput {
   profileData: ProfileGoalsData;
