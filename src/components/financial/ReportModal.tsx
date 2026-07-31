@@ -647,6 +647,7 @@ export function ReportModal({
       REPLACEMENT_RT,
       nonMortgageDebt,
       mortgageBalance,
+      monthlyIncome,
       annualIncome,
       spouseIncome,
       spouseOffset,
