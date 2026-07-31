@@ -24,18 +24,18 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange, filingS
     onValidationChange(true);
   };
 
-  // Income fields are ANNUAL; expenses are MONTHLY. Convert to monthly for cash flow.
+  // Income and expenses are both MONTHLY. W-2 amounts are after-tax take-home.
   const cashFlowSummary = useMemo(() => {
-    const spouseAnnual = married
+    const spouseMonthly = married
       ? (data.spouse_w2_income || 0) + (data.spouse_business_income || 0) + (data.spouse_social_security || 0)
       : 0;
-    const clientAnnual = (data.w2_income || 0) + (data.business_income || 0) + (data.rental_income || 0) + (data.social_security || 0);
-    const totalAnnualIncome = clientAnnual + spouseAnnual;
-    const totalIncome = totalAnnualIncome / 12; // monthly household income
+    const clientMonthly = (data.w2_income || 0) + (data.business_income || 0) + (data.rental_income || 0) + (data.social_security || 0);
+    const totalIncome = clientMonthly + spouseMonthly; // monthly household income
     const totalExpenses = (data.fixed_expenses || 0) + (data.variable_expenses || 0);
     const idleCash = Math.max(0, totalIncome - totalExpenses);
-    return { totalIncome, totalExpenses, idleCash, spouseMonthly: spouseAnnual / 12 };
+    return { totalIncome, totalExpenses, idleCash, spouseMonthly };
   }, [data.w2_income, data.business_income, data.rental_income, data.social_security, data.spouse_w2_income, data.spouse_business_income, data.spouse_social_security, data.fixed_expenses, data.variable_expenses, married]);
+
 
   // Auto-update monthly_checking_balance with idle cash
   useEffect(() => {
