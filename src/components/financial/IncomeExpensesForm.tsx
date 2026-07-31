@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { HelpCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { LabelWithHelp } from '@/components/financial/FieldHelp';
 import type { IncomeExpensesData, FilingStatus } from '@/types/financial';
 
 interface IncomeExpensesFormProps {
@@ -54,23 +55,36 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange, filingS
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Monthly W-2 Income (after tax / take-home)</Label>
+              <LabelWithHelp
+                label="Monthly W-2 Income (after tax / take-home)"
+                help="The amount that actually lands in your bank account each month from your job — after federal and state taxes, Social Security, Medicare, and payroll deductions. Do not enter your gross salary. If you are paid every two weeks, multiply one paycheck by 26 and divide by 12."
+              />
               <Input type="number" placeholder="e.g., 7500" value={data.w2_income} onChange={(e) => handleInputChange('w2_income', parseFloat(e.target.value) || 0)} />
               <p className="text-xs text-muted-foreground mt-1">Enter your net take-home pay after taxes and payroll deductions.</p>
             </div>
             <div>
-              <Label>Business Income (Monthly)</Label>
+              <LabelWithHelp
+                label="Business Income (Monthly)"
+                help="Average monthly profit you take home from self-employment, a side business, or a partnership — after business expenses and estimated taxes. Enter 0 if this does not apply."
+              />
               <Input type="number" placeholder="e.g., 0" value={data.business_income} onChange={(e) => handleInputChange('business_income', parseFloat(e.target.value) || 0)} />
             </div>
             <div>
-              <Label>Rental Income (Monthly)</Label>
+              <LabelWithHelp
+                label="Rental Income (Monthly)"
+                help="Net rent you collect each month from investment property, after the mortgage, taxes, insurance, and upkeep on that property. Enter 0 if you own no rentals."
+              />
               <Input type="number" placeholder="e.g., 0" value={data.rental_income} onChange={(e) => handleInputChange('rental_income', parseFloat(e.target.value) || 0)} />
             </div>
             <div>
-              <Label>Social Security (Monthly)</Label>
+              <LabelWithHelp
+                label="Social Security (Monthly)"
+                help="Social Security, pension, disability, or annuity payments you already receive each month. Leave at 0 if you have not started collecting yet — future benefits are projected separately."
+              />
               <Input type="number" placeholder="e.g., 0" value={data.social_security} onChange={(e) => handleInputChange('social_security', parseFloat(e.target.value) || 0)} />
             </div>
           </CardContent>
+
         </Card>
 
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { LabelWithHelp } from '@/components/financial/FieldHelp';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users } from 'lucide-react';
@@ -54,7 +55,11 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name *</Label>
+                <LabelWithHelp
+                  htmlFor="firstName"
+                  label="First Name *"
+                  help="Your legal first name. It appears on your risk report and on any application we prepare for you."
+                />
                 <Input
                   id="firstName"
                   value={data.name_first}
@@ -64,7 +69,11 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name *</Label>
+                <LabelWithHelp
+                  htmlFor="lastName"
+                  label="Last Name *"
+                  help="Your legal last name, matching your government-issued ID."
+                />
                 <Input
                   id="lastName"
                   value={data.name_last}
@@ -74,7 +83,11 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address *</Label>
+                <LabelWithHelp
+                  htmlFor="email"
+                  label="Email Address *"
+                  help="Where we send your completed risk report. It is also how your advisor identifies your file, so use an address you check."
+                />
                 <Input
                   id="email"
                   type="email"
@@ -85,7 +98,11 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dob">Date of Birth *</Label>
+                <LabelWithHelp
+                  htmlFor="dob"
+                  label="Date of Birth *"
+                  help="Your age drives nearly every number in this analysis: years until retirement, life-insurance pricing, Social Security timing, and how long your savings must last."
+                />
                 <Input
                   id="dob"
                   type="date"
@@ -95,7 +112,11 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="state">State of Residence *</Label>
+                <LabelWithHelp
+                  htmlFor="state"
+                  label="State of Residence *"
+                  help="State income tax rates and insurance product availability differ by state, so where you live changes both your tax picture and which solutions you qualify for."
+                />
                 <Select value={data.state} onValueChange={(value) => handleInputChange('state', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select state" />
@@ -109,7 +130,11 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dependents">Number of Dependents</Label>
+                <LabelWithHelp
+                  htmlFor="dependents"
+                  label="Number of Dependents"
+                  help="People who rely on your income — children, or anyone else you support. Each dependent adds an education and support cost to your life-insurance need."
+                />
                 <Input
                   id="dependents"
                   type="number"
@@ -121,7 +146,11 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="maritalStatus">Marital Status</Label>
+                <LabelWithHelp
+                  htmlFor="maritalStatus"
+                  label="Marital Status"
+                  help="Sets your tax filing status, which affects tax brackets and retirement contribution limits. Note: this assessment is calculated for you individually — a spouse should complete their own assessment."
+                />
                 <Select value={data.filing_status} onValueChange={(value: FilingStatus) => handleInputChange('filing_status', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select marital status" />
@@ -135,6 +164,7 @@ export function ProfileGoalsForm({ data, onChange, onValidationChange }: Profile
                 </Select>
               </div>
             </div>
+
           </CardContent>
         </Card>
       </div>

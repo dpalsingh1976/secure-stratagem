@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LabelWithHelp } from "@/components/financial/FieldHelp";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -107,7 +108,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="age">Age</Label>
+                <LabelWithHelp
+                  htmlFor="age"
+                  label="Age"
+                  help="Your current age. It sets your time horizon to retirement and strongly affects insurance cost and how much risk your plan can absorb."
+                />
                 <Select value={formData.age} onValueChange={(value) => updateFormData("age", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select your age" />
@@ -121,7 +126,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="income">Annual Income</Label>
+                <LabelWithHelp
+                  htmlFor="income"
+                  label="Annual Income"
+                  help="Your household gross pay before taxes, from all sources. Used to size income replacement, savings capacity, and retirement targets."
+                />
                 <Select value={formData.annualIncome} onValueChange={(value) => updateFormData("annualIncome", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select income range" />
@@ -139,7 +148,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="marital">Marital Status</Label>
+                <LabelWithHelp
+                  htmlFor="marital"
+                  label="Marital Status"
+                  help="Affects your tax filing status and who would depend on your income. This assessment is scored for you as an individual."
+                />
                 <Select value={formData.maritalStatus} onValueChange={(value) => updateFormData("maritalStatus", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
@@ -154,7 +167,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="dependents">Number of Dependents</Label>
+                <LabelWithHelp
+                  htmlFor="dependents"
+                  label="Number of Dependents"
+                  help="Anyone financially reliant on you — children, or family you support. Each dependent raises your protection and education need."
+                />
                 <Select value={formData.dependents} onValueChange={(value) => updateFormData("dependents", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select number" />
@@ -177,7 +194,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="expenses">Monthly Expenses</Label>
+                <LabelWithHelp
+                  htmlFor="expenses"
+                  label="Monthly Expenses"
+                  help="Everything you spend in a typical month: housing, food, insurance, loan payments, and discretionary spending. Drives your emergency fund target and savings capacity."
+                />
                 <Select value={formData.monthlyExpenses} onValueChange={(value) => updateFormData("monthlyExpenses", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select range" />
@@ -193,7 +214,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="debt">Total Debt (excluding mortgage)</Label>
+                <LabelWithHelp
+                  htmlFor="debt"
+                  label="Total Debt (excluding mortgage)"
+                  help="Credit cards, auto loans, student loans, and personal loans. Leave your mortgage out — it is captured by home value. High non-mortgage debt raises your risk score."
+                />
                 <Select value={formData.totalDebt} onValueChange={(value) => updateFormData("totalDebt", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select range" />
@@ -209,7 +234,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="emergency">Emergency Fund</Label>
+                <LabelWithHelp
+                  htmlFor="emergency"
+                  label="Emergency Fund"
+                  help="Cash you can reach immediately, measured in months of expenses. Three to six months is the general benchmark; less than that leaves you exposed to a job loss or medical event."
+                />
                 <Select value={formData.emergencyFund} onValueChange={(value) => updateFormData("emergencyFund", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select amount" />
@@ -224,7 +253,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="home">Home Value</Label>
+                <LabelWithHelp
+                  htmlFor="home"
+                  label="Home Value"
+                  help="The current market value of the home you own, or choose the rent option. Used for net worth and to estimate the mortgage protection your family would need."
+                />
                 <Select value={formData.homeValue} onValueChange={(value) => updateFormData("homeValue", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select range" />
@@ -247,7 +280,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="life-insurance">Life Insurance Coverage</Label>
+                <LabelWithHelp
+                  htmlFor="life-insurance"
+                  label="Life Insurance Coverage"
+                  help="The total death benefit already in force across all policies, including any coverage through work. Compared against your calculated need to find your protection gap."
+                />
                 <Select value={formData.lifeInsurance} onValueChange={(value) => updateFormData("lifeInsurance", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select coverage" />
@@ -264,7 +301,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="retirement">Retirement Savings</Label>
+                <LabelWithHelp
+                  htmlFor="retirement"
+                  label="Retirement Savings"
+                  help="Combined balance of your 401(k), IRA, and pension accounts. This is the base your retirement projection grows from."
+                />
                 <Select value={formData.retirementSavings} onValueChange={(value) => updateFormData("retirementSavings", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select amount" />
@@ -281,7 +322,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="investments">Investment Accounts</Label>
+                <LabelWithHelp
+                  htmlFor="investments"
+                  label="Investment Accounts"
+                  help="Taxable brokerage, mutual fund, and savings balances outside retirement accounts. These are typically your most flexible, liquid assets."
+                />
                 <Select value={formData.investmentAccounts} onValueChange={(value) => updateFormData("investmentAccounts", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select amount" />
@@ -297,7 +342,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="benefits">Employer Benefits</Label>
+                <LabelWithHelp
+                  htmlFor="benefits"
+                  label="Employer Benefits"
+                  help="What your job provides: group life, disability, health, and a retirement match. Employer coverage usually ends when the job does, so it is counted differently from personal coverage."
+                />
                 <Select value={formData.employerBenefits} onValueChange={(value) => updateFormData("employerBenefits", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select coverage" />
@@ -319,7 +368,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="retirement-age">Planned Retirement Age</Label>
+                <LabelWithHelp
+                  htmlFor="retirement-age"
+                  label="Planned Retirement Age"
+                  help="When you intend to stop working. Retiring earlier means fewer years to save and more years to fund, which raises your required savings rate."
+                />
                 <Select value={formData.retirementAge} onValueChange={(value) => updateFormData("retirementAge", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select age" />
@@ -337,7 +390,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="retirement-income">Desired Retirement Income</Label>
+                <LabelWithHelp
+                  htmlFor="retirement-income"
+                  label="Desired Retirement Income"
+                  help="What share of today’s income you want in retirement. Most planners use 70-80%, since work costs and payroll taxes disappear."
+                />
                 <Select value={formData.retirementIncome} onValueChange={(value) => updateFormData("retirementIncome", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select percentage" />
@@ -353,7 +410,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="risk-tolerance">Risk Tolerance</Label>
+                <LabelWithHelp
+                  htmlFor="risk-tolerance"
+                  label="Risk Tolerance"
+                  help="How much market swing you can accept without changing course. Conservative favors guarantees and protection; aggressive favors growth with more volatility."
+                />
                 <Select value={formData.riskTolerance} onValueChange={(value) => updateFormData("riskTolerance", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select tolerance" />
@@ -367,7 +428,11 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
               </div>
               
               <div>
-                <Label htmlFor="estate">Estate Planning</Label>
+                <LabelWithHelp
+                  htmlFor="estate"
+                  label="Estate Planning"
+                  help="Whether you have a will, trust, and up-to-date beneficiary designations. Without them, state law decides how your assets pass on."
+                />
                 <Select value={formData.estatePlanning} onValueChange={(value) => updateFormData("estatePlanning", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />

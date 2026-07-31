@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { LabelWithHelp } from '@/components/financial/FieldHelp';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -152,7 +153,11 @@ export function LiabilitiesForm({ data, onChange, clientId, onValidationChange }
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor={`type-${index}`}>Liability Type</Label>
+                        <LabelWithHelp
+                          htmlFor={`type-${index}`}
+                          label="Liability Type"
+                          help="What kind of debt this is (mortgage, auto loan, credit card, student loan). Mortgages are handled separately from other debt in your life-insurance need, and each type carries a typical interest rate we use if you don't set one."
+                        />
                         <Select
                           value={liability.type}
                           onValueChange={(value: LiabilityType) => {
@@ -178,7 +183,11 @@ export function LiabilitiesForm({ data, onChange, clientId, onValidationChange }
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor={`balance-${index}`}>Current Balance</Label>
+                        <LabelWithHelp
+                          htmlFor={`balance-${index}`}
+                          label="Current Balance"
+                          help="The payoff amount you still owe today, not the original loan amount and not your monthly payment."
+                        />
                         <Input
                           id={`balance-${index}`}
                           type="number"
