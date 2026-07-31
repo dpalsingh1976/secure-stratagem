@@ -293,8 +293,9 @@ export function ReportModal({
       { 
         label: `I - Income Replacement (${DIME.INCOME_YEARS} years)`, 
         value: DIME.incomeReplacement,
-        subtext: `${formatCurrency(DIME.incomeToReplace)}/year × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%${DIME.spouseOffset > 0 ? ` (after ${formatCurrency(DIME.spouseOffset)} surviving spouse income)` : ''}`
+        subtext: `${formatCurrency(DIME.monthlyIncome)}/mo × 12 = ${formatCurrency(DIME.annualIncome)}/yr${DIME.spouseOffset > 0 ? ` − ${formatCurrency(DIME.spouseOffset)}/yr surviving spouse income = ${formatCurrency(DIME.incomeToReplace)}/yr` : ''} × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%`
       },
+
       { 
         label: "M - Mortgage Balance", 
         value: DIME.mortgageBalance,
