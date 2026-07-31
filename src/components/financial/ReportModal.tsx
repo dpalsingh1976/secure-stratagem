@@ -27,7 +27,7 @@ import { ScenarioComparisonCard } from "./ScenarioComparisonCard";
 import { RetirementTimeline } from "./RetirementTimeline";
 import { AllocationInputCard, AllocationSources } from "./AllocationInputCard";
 import { computeScenarioComparison } from "@/engine/retirement/scenarioSimulator";
-import { clientEarnedIncome, clientAnnualEarnedIncome, spouseAnnualEarnedIncome, survivingSpouseAnnualIncome } from '@/utils/householdIncome';
+import { clientEarnedIncome, clientAnnualEarnedIncome } from '@/utils/householdIncome';
 import { computeAllocationSources } from "@/engine/retirement/allocationEngine";
 
 import type {
