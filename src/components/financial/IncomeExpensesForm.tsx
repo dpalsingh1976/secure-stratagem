@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { HelpCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { LabelWithHelp } from '@/components/financial/FieldHelp';
 import type { IncomeExpensesData, FilingStatus } from '@/types/financial';
 
 interface IncomeExpensesFormProps {
