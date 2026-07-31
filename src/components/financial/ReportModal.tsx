@@ -1857,7 +1857,6 @@ export function ReportModal({
                         </div>
                         <div className="text-purple-100 text-sm">
                           {DIME.INCOME_YEARS} years of income at 100% replacement
-                          {DIME.spouseOffset > 0 && ` (spouse income of ${formatCurrency(DIME.spouseOffset)}/yr offset)`}
                         </div>
                       </div>
 
