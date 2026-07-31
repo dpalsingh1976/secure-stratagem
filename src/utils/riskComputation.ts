@@ -8,7 +8,7 @@ import type {
   RiskPreferencesData,
   TaxWrapperType
 } from '@/types/financial';
-import { clientEarnedIncome, householdEarnedIncome, householdSocialSecurity, survivingSpouseIncome } from '@/utils/householdIncome';
+import { clientEarnedIncome, clientAnnualEarnedIncome, householdAnnualEarnedIncome, householdSocialSecurity, survivingSpouseAnnualIncome } from '@/utils/householdIncome';
 
 interface RiskComputationInput {
   profileData: ProfileGoalsData;
@@ -65,12 +65,13 @@ export const computeRiskMetrics = async (
 
   // Calculate DIME method life insurance need
   const totalDebt = totalLiabilities;
-  const clientIncome = clientEarnedIncome(incomeData);
-  const annualIncome = householdEarnedIncome(incomeData); // household income for capacity math
-  const spouseOffset = survivingSpouseIncome(incomeData);
+  const clientMonthlyIncome = clientEarnedIncome(incomeData);
+  const clientAnnualIncome = clientAnnualEarnedIncome(incomeData);
+  const annualIncome = householdAnnualEarnedIncome(incomeData); // household income for capacity math
+  const spouseOffset = survivingSpouseAnnualIncome(incomeData);
   const incomeReplacementYears = Math.max(0, profileData.retirement_age - getCurrentAge(profileData.dob));
   // Standard DIME: 10x the client's income, net of income the surviving spouse keeps earning
-  const incomeReplacement = Math.max(0, clientIncome - spouseOffset) * 10;
+  const incomeReplacement = Math.max(0, clientAnnualIncome - spouseOffset) * 10;
   const mortgageBalance = liabilities
     .filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental')
     .reduce((sum, l) => sum + l.balance, 0);
@@ -86,7 +87,7 @@ export const computeRiskMetrics = async (
   const retirementGapMo = Math.max(0, monthlyRetirementNeed - projectedPension);
 
   // Calculate disability gap
-  const monthlyIncomeNeed = (clientIncome / 12) * 0.6; // 60% of the client's own income
+  const monthlyIncomeNeed = clientMonthlyIncome * 0.6; // 60% of the client's own monthly income
   const disabilityGap = monthlyIncomeNeed; // Assuming no disability coverage since field removed
 
   // Calculate LTC gap (basic estimate)

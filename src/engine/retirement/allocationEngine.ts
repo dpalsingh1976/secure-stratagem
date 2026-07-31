@@ -58,7 +58,7 @@ function calculateAge(dob: string): number {
  */
 function calculateMonthlyIncome(incomeData: IncomeExpensesData): number {
   return (
-    householdTotalIncome(incomeData) / 12
+    householdTotalIncome(incomeData)
   );
 }
 

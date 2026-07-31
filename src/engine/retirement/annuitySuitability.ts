@@ -88,7 +88,7 @@ export function computeAnnuitySuitability(inputs: AnnuitySuitabilityInputs): Ann
   // ============================================
   // EXPENSE CALCULATIONS - NEW
   // ============================================
-  const monthlyIncome = householdEarnedIncome(incomeData) / 12;
+  const monthlyIncome = householdEarnedIncome(incomeData);
   const totalMonthlyExpenses = (incomeData.fixed_expenses || 0) + (incomeData.variable_expenses || 0);
   const fixedExpenses = incomeData.fixed_expenses || 0;
   const fixedExpenseRatio = totalMonthlyExpenses > 0 

@@ -27,7 +27,7 @@ import { ScenarioComparisonCard } from "./ScenarioComparisonCard";
 import { RetirementTimeline } from "./RetirementTimeline";
 import { AllocationInputCard, AllocationSources } from "./AllocationInputCard";
 import { computeScenarioComparison } from "@/engine/retirement/scenarioSimulator";
-import { clientEarnedIncome, spouseEarnedIncome, survivingSpouseIncome } from '@/utils/householdIncome';
+import { clientEarnedIncome, clientAnnualEarnedIncome, spouseAnnualEarnedIncome, survivingSpouseAnnualIncome } from '@/utils/householdIncome';
 import { computeAllocationSources } from "@/engine/retirement/allocationEngine";
 
 import type {
@@ -621,11 +621,11 @@ export function ReportModal({
       .filter((l) => l.type === "mortgage_primary" || l.type === "mortgage_rental")
       .reduce((sum, l) => sum + (l.balance || 0), 0);
 
-    // Income fields are ANNUAL (gross yearly income)
-    const annualIncome = clientEarnedIncome(incomeData);
-    const spouseIncome = spouseEarnedIncome(incomeData);
+    // Income fields are MONTHLY (W-2 after tax); annualize for DIME replacement math
+    const annualIncome = clientAnnualEarnedIncome(incomeData);
+    const spouseIncome = spouseAnnualEarnedIncome(incomeData);
     // If the spouse keeps earning, that income offsets what must be replaced
-    const spouseOffset = survivingSpouseIncome(incomeData);
+    const spouseOffset = survivingSpouseAnnualIncome(incomeData);
     const incomeToReplace = Math.max(0, annualIncome - spouseOffset);
     const incomeReplacement = incomeToReplace * INCOME_YEARS * REPLACEMENT_RT;
 
@@ -1990,7 +1990,7 @@ export function ReportModal({
                       <div>
                         <div className="text-sm text-gray-600">Monthly Income Need (60%)</div>
                         <div className="text-2xl font-bold">
-                          {formatCurrency(((incomeData.w2_income + incomeData.business_income) / 12) * 0.6)}
+                          {formatCurrency(clientEarnedIncome(incomeData) * 0.6)}
                         </div>
                       </div>
                       <div>
