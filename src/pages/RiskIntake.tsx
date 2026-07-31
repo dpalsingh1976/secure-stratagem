@@ -78,6 +78,10 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     pension_income: 0,
     social_security: 0,
     annuity_income: 0,
+    spouse_w2_income: 0,
+    spouse_business_income: 0,
+    spouse_social_security: 0,
+    spouse_income_continues: true,
     fixed_expenses: 0,
     variable_expenses: 0,
     debt_service: 0,
@@ -444,7 +448,9 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
             data={incomeData} 
             onChange={setIncomeData}
             onValidationChange={() => {}} 
+            filingStatus={profileData.filing_status}
           />
+
         );
       case 2:
         return (

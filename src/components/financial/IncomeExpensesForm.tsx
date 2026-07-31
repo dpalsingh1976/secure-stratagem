@@ -2,17 +2,22 @@ import React, { useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { HelpCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import type { IncomeExpensesData } from '@/types/financial';
+import { HelpCircle, TrendingUp, TrendingDown, Minus, Users } from 'lucide-react';
+import type { IncomeExpensesData, FilingStatus } from '@/types/financial';
+import { isMarried } from '@/utils/householdIncome';
 
 interface IncomeExpensesFormProps {
   data: IncomeExpensesData;
   onChange: (data: IncomeExpensesData) => void;
   onValidationChange: (isValid: boolean) => void;
+  filingStatus?: FilingStatus;
 }
 
-export function IncomeExpensesForm({ data, onChange, onValidationChange }: IncomeExpensesFormProps) {
+export function IncomeExpensesForm({ data, onChange, onValidationChange, filingStatus }: IncomeExpensesFormProps) {
+  const married = isMarried(filingStatus);
+
   const handleInputChange = (field: keyof IncomeExpensesData, value: any) => {
     const newData = { ...data, [field]: value };
     onChange(newData);
@@ -21,12 +26,16 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
 
   // Income fields are ANNUAL; expenses are MONTHLY. Convert to monthly for cash flow.
   const cashFlowSummary = useMemo(() => {
-    const totalAnnualIncome = (data.w2_income || 0) + (data.business_income || 0) + (data.rental_income || 0) + (data.social_security || 0);
-    const totalIncome = totalAnnualIncome / 12; // monthly
+    const spouseAnnual = married
+      ? (data.spouse_w2_income || 0) + (data.spouse_business_income || 0) + (data.spouse_social_security || 0)
+      : 0;
+    const clientAnnual = (data.w2_income || 0) + (data.business_income || 0) + (data.rental_income || 0) + (data.social_security || 0);
+    const totalAnnualIncome = clientAnnual + spouseAnnual;
+    const totalIncome = totalAnnualIncome / 12; // monthly household income
     const totalExpenses = (data.fixed_expenses || 0) + (data.variable_expenses || 0);
     const idleCash = Math.max(0, totalIncome - totalExpenses);
-    return { totalIncome, totalExpenses, idleCash };
-  }, [data.w2_income, data.business_income, data.rental_income, data.social_security, data.fixed_expenses, data.variable_expenses]);
+    return { totalIncome, totalExpenses, idleCash, spouseMonthly: spouseAnnual / 12 };
+  }, [data.w2_income, data.business_income, data.rental_income, data.social_security, data.spouse_w2_income, data.spouse_business_income, data.spouse_social_security, data.fixed_expenses, data.variable_expenses, married]);
 
   // Auto-update monthly_checking_balance with idle cash
   useEffect(() => {
@@ -38,6 +47,7 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
   };
+
 
   return (
     <TooltipProvider>
@@ -66,6 +76,51 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange }: Incom
             </div>
           </CardContent>
         </Card>
+
+        {married && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                Spouse / Partner Annual Income
+              </CardTitle>
+              <CardDescription>
+                We include both incomes to measure household savings capacity and protection needs
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Spouse W-2 Income (Annual)</Label>
+                <Input type="number" placeholder="e.g., 80000" value={data.spouse_w2_income ?? 0} onChange={(e) => handleInputChange('spouse_w2_income', parseFloat(e.target.value) || 0)} />
+              </div>
+              <div>
+                <Label>Spouse Business Income (Annual)</Label>
+                <Input type="number" placeholder="e.g., 0" value={data.spouse_business_income ?? 0} onChange={(e) => handleInputChange('spouse_business_income', parseFloat(e.target.value) || 0)} />
+              </div>
+              <div>
+                <Label>Spouse Social Security (Annual)</Label>
+                <Input type="number" placeholder="e.g., 0" value={data.spouse_social_security ?? 0} onChange={(e) => handleInputChange('spouse_social_security', parseFloat(e.target.value) || 0)} />
+              </div>
+              <div className="flex items-start gap-3 pt-6">
+                <Checkbox
+                  id="spouse_income_continues"
+                  checked={data.spouse_income_continues !== false}
+                  onCheckedChange={(checked) => handleInputChange('spouse_income_continues', checked === true)}
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="spouse_income_continues" className="cursor-pointer">
+                    Spouse income would continue
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    If checked, spouse earnings offset the life insurance need
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+
 
         <Card>
           <CardHeader>
