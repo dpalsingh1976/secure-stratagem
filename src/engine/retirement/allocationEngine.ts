@@ -17,7 +17,7 @@ import type {
   SavingsVehicle,
   PrimaryRetirementGoal
 } from '@/types/retirement';
-import { householdTotalIncome, householdEarnedIncome } from '@/utils/householdIncome';
+import { householdTotalIncome } from '@/utils/householdIncome';
 
 // 2024 contribution limits
 const LIMITS = {
