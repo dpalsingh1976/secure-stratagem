@@ -1463,7 +1463,6 @@ export function ReportModal({
                         </div>
                         <p className="text-sm text-green-700 mb-2">
                           {formatCurrency(DIME.monthlyIncome)}/mo × 12 = {formatCurrency(DIME.annualIncome)}/yr
-                          {DIME.spouseOffset > 0 && ` − ${formatCurrency(DIME.spouseOffset)}/yr surviving spouse income = ${formatCurrency(DIME.incomeToReplace)}/yr`}
                           {` × ${DIME.INCOME_YEARS} years (100% replacement)`}
                         </p>
                         <p className="text-2xl font-bold text-green-900">{formatCurrency(DIME.incomeReplacement)}</p>
