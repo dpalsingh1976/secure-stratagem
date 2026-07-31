@@ -14,7 +14,7 @@ interface IncomeExpensesFormProps {
 }
 
 export function IncomeExpensesForm({ data, onChange, onValidationChange, filingStatus }: IncomeExpensesFormProps) {
-  const married = isMarried(filingStatus);
+
 
   const handleInputChange = (field: keyof IncomeExpensesData, value: any) => {
     const newData = { ...data, [field]: value };
