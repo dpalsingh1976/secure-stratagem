@@ -1,48 +1,43 @@
+# Add Spouse Income to the Financial Risk Assessment
 
+## Current state (verified)
 
-# Show Client Details in a Dialog (Popup) Instead of Inline Panel
+- The intake captures **marital status** only (`ProfileGoalsForm`, filing status: Single / Married / Separated / Widowed).
+- The income step (`IncomeExpensesForm`) captures **one person's** income: W-2, business, rental, Social Security — no spouse fields.
+- `ProtectionHealthData` has an optional `spouse_age`, but no spouse income anywhere.
+- The only place spouse income exists is a hardcoded guess in the legacy quick assessment: `spouseIncomeOffsetPct: married ? 30 : 0`.
 
-## Overview
-Move the client detail panel (Personal, Investments, Retirement, Risk tabs) from the bottom of the page into a centered popup dialog. When the user clicks a risk label button (High Risk / Medium Risk / Low Risk), the details will appear in a modal overlay instead of expanding below the table.
+So today a married household's risk is scored off one income, which overstates income-replacement need (DIME) and understates household cash flow.
 
-## Changes
+## What to build
 
-**File: `src/components/admin/ClientAssessmentDashboard.tsx`**
+**1. Spouse income inputs (intake)**
+In the Income & Expenses step, add a "Spouse / Partner Income (Annual)" card that appears only when marital status is Married:
+- Spouse W-2 income (annual)
+- Spouse business income (annual)
+- Spouse Social Security (annual)
+- Checkbox: "Spouse income would continue if I pass away" (default on)
 
-1. Import `Dialog, DialogContent, DialogHeader, DialogTitle` from `@/components/ui/dialog`
-2. Replace the inline `<Card>` detail panel (lines 563-603) with a `<Dialog>` component
-3. Change `selectedId` state to control the dialog's `open` prop -- when a client is selected the dialog opens; setting `selectedId` to `null` closes it
-4. The score button `onClick` will set `selectedId` to the client's ID (opening the dialog) instead of toggling
-5. The dialog content will contain the same 4-tab layout (Personal, Investments, Retirement, Risk) with the client name as the dialog title
-6. Dialog max-width will be set to `max-w-3xl` for comfortable viewing of tables and data
+The monthly cash-flow summary adds spouse income to household income.
 
-## Technical Details
+**2. Household vs. individual income in the math**
+- **Cash flow / savings capacity / allocation:** use **household** income (client + spouse).
+- **DIME income replacement:** replace **only the client's** income, then subtract the surviving spouse's continuing income over the replacement years (this is the spouse offset that is currently hardcoded at 30%). Result: married clients with a working spouse get a realistic, lower coverage need.
+- **Retirement projection & Social Security:** include spouse Social Security and spouse retirement income in projected income sources.
+- **Disability / LTC gap:** stays based on the client's own income (their earnings are what's at risk), but household surplus is used for affordability checks.
 
-- Replace the bottom Card block (lines 563-603) with:
-```tsx
-<Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelectedId(null); }}>
-  <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-    <DialogHeader>
-      <DialogTitle className="flex items-center gap-2">
-        <User className="h-5 w-5 text-primary" />
-        {selected?.name_first} {selected?.name_last}
-      </DialogTitle>
-    </DialogHeader>
-    {selected && (
-      <Tabs value={detailTab} onValueChange={setDetailTab}>
-        {/* same TabsList and TabsContent as before */}
-      </Tabs>
-    )}
-  </DialogContent>
-</Dialog>
-```
+**3. Reporting**
+- Report income sections show a household total with a client / spouse split.
+- DIME breakdown gains a line: "Less: surviving spouse income (N years)" so the reduction is visible and defensible.
 
-- Update the score button onClick to simply set the client ID (no toggle):
-```tsx
-onClick={() => {
-  setSelectedId(c.id);
-  setDetailTab('personal');
-}}
-```
+**4. Persistence**
+Spouse fields save with the rest of the income data; no new database table needed.
 
-No other files need changes. The existing tab sub-components (PersonalTab, InvestmentsTab, RetirementTab, RiskAnalysisTab) remain unchanged.
+## Technical notes
+
+- Extend `IncomeExpensesData` in `src/types/financial.ts` with `spouse_w2_income`, `spouse_business_income`, `spouse_social_security`, `spouse_income_continues`.
+- `src/components/financial/IncomeExpensesForm.tsx`: conditional spouse card (driven by `profileData.filing_status`, passed in as a prop), household totals in the summary.
+- `src/pages/RiskIntake.tsx`: add fields to initial state, pass filing status into the income form; spouse values flow into the existing `income_jsonb` payload (jsonb column, no migration).
+- Add a shared helper (e.g. `householdIncome()` / `clientIncome()`) so engines stop re-deriving income inline: update `src/utils/riskComputation.ts`, `src/components/financial/ReportModal.tsx`, and `src/engine/retirement/*` (`projection`, `recommendations`, `allocationEngine`, `annuitySuitability`, `iulSuitability`, `scenarioSimulator`, `bestInterestGuardrails`) to consume the right one.
+- Retire the hardcoded `spouseIncomeOffsetPct: 30` in `src/utils/assessmentDataMapper.ts` in favour of actual spouse income when available.
+- All income fields remain **annual** (consistent with the recent DIME fix).
