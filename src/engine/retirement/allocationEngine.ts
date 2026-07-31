@@ -17,6 +17,7 @@ import type {
   SavingsVehicle,
   PrimaryRetirementGoal
 } from '@/types/retirement';
+import { householdTotalIncome, householdEarnedIncome } from '@/utils/householdIncome';
 
 // 2024 contribution limits
 const LIMITS = {
@@ -57,10 +58,7 @@ function calculateAge(dob: string): number {
  */
 function calculateMonthlyIncome(incomeData: IncomeExpensesData): number {
   return (
-    ((incomeData.w2_income || 0) +
-      (incomeData.business_income || 0) +
-      (incomeData.rental_income || 0) +
-      (incomeData.social_security || 0)) / 12
+    householdTotalIncome(incomeData) / 12
   );
 }
 

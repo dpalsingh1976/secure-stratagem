@@ -8,6 +8,7 @@ import type {
   IncomeExpensesData,
   ProfileGoalsData
 } from '@/types/financial';
+import { householdEarnedIncome } from '@/utils/householdIncome';
 
 export interface DataCompletenessCheck {
   is_complete: boolean;
@@ -86,9 +87,7 @@ export function checkDataCompleteness(
   }
   
   // Check financial data
-  const annualIncome = incomeData 
-    ? ((incomeData.w2_income || 0) + (incomeData.business_income || 0))
-    : 0;
+  const annualIncome = incomeData ? householdEarnedIncome(incomeData) : 0;
   
   if (annualIncome === 0) {
     missing.push('Annual Income');

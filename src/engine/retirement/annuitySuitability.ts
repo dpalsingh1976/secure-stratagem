@@ -9,6 +9,7 @@ import type {
   IncomeExpensesData
 } from '@/types/financial';
 import type { RetirementProjection, FIAStrategy, AnnuityFit } from '@/types/retirement';
+import { householdEarnedIncome } from '@/utils/householdIncome';
 
 export type { AnnuityFit };
 
@@ -87,7 +88,7 @@ export function computeAnnuitySuitability(inputs: AnnuitySuitabilityInputs): Ann
   // ============================================
   // EXPENSE CALCULATIONS - NEW
   // ============================================
-  const monthlyIncome = ((incomeData.w2_income || 0) + (incomeData.business_income || 0)) / 12;
+  const monthlyIncome = householdEarnedIncome(incomeData) / 12;
   const totalMonthlyExpenses = (incomeData.fixed_expenses || 0) + (incomeData.variable_expenses || 0);
   const fixedExpenses = incomeData.fixed_expenses || 0;
   const fixedExpenseRatio = totalMonthlyExpenses > 0 

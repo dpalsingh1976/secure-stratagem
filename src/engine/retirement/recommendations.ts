@@ -16,6 +16,7 @@ import type {
 import { INSURANCE_ASSUMPTIONS } from './assumptions';
 import { computeIULSuitability, getDefaultPlanningReadiness } from './iulSuitability';
 import { computeAnnuitySuitability } from './annuitySuitability';
+import { householdEarnedIncome } from '@/utils/householdIncome';
 
 /**
  * Evaluate Term Life Insurance fit
@@ -53,7 +54,7 @@ export function evaluateTermFit(
   }
   
   // Check income
-  const annualIncome = (incomeData.w2_income + incomeData.business_income);
+  const annualIncome = householdEarnedIncome(incomeData);
   if (annualIncome > 50000) {
     fitScore += 15;
     whyBullets.push('Income replacement needed to protect family lifestyle');

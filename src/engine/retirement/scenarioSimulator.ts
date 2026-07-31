@@ -33,6 +33,7 @@ import {
 } from "./assumptions";
 
 import { getCurrentAge, getYearsToRetirement, futureValue } from "./projection";
+import { householdEarnedIncome } from '@/utils/householdIncome';
 
 // ============================================
 // CONSTANTS
@@ -241,7 +242,7 @@ function simulateScenarioB(
   const yearsToRetirement = getYearsToRetirement(profileData.dob, retirementAge);
   const planToAge = LIFE_EXPECTANCY.CONSERVATIVE;
 
-  const annualIncome = (incomeData.w2_income || 0) + (incomeData.business_income || 0);
+  const annualIncome = householdEarnedIncome(incomeData);
   const monthlyIncome = annualIncome / 12;
   const marginalRate = TAX_ASSUMPTIONS.MARGINAL_RATE_DEFAULT;
   const returnRate = RETURN_ASSUMPTIONS.BASE;
