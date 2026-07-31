@@ -2,11 +2,9 @@ import React, { useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { HelpCircle, TrendingUp, TrendingDown, Minus, Users } from 'lucide-react';
+import { HelpCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { IncomeExpensesData, FilingStatus } from '@/types/financial';
-import { isMarried } from '@/utils/householdIncome';
 
 interface IncomeExpensesFormProps {
   data: IncomeExpensesData;
