@@ -256,7 +256,7 @@ const AssessmentForm = ({ onSubmit, onClose }: AssessmentFormProps) => {
                 <LabelWithHelp
                   htmlFor="home"
                   label="Home Value"
-                  help="The current market value of the home you own, or select "I rent". Used for net worth and to estimate the mortgage protection your family would need."
+                  help="The current market value of the home you own, or choose the rent option. Used for net worth and to estimate the mortgage protection your family would need."
                 />
                 <Select value={formData.homeValue} onValueChange={(value) => updateFormData("homeValue", value)}>
                   <SelectTrigger>
