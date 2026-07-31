@@ -54,24 +54,25 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange, filingS
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Annual Income Sources</CardTitle>
-            <CardDescription>Enter your gross <strong>annual</strong> income from all sources (yearly, not monthly)</CardDescription>
+            <CardTitle>Monthly Income Sources</CardTitle>
+            <CardDescription>Enter your <strong>monthly</strong> income. W-2 income should be <strong>after tax</strong> (net take-home pay)</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>W-2 Income (Annual)</Label>
-              <Input type="number" placeholder="e.g., 120000" value={data.w2_income} onChange={(e) => handleInputChange('w2_income', parseFloat(e.target.value) || 0)} />
+              <Label>Monthly W-2 Income (after tax / take-home)</Label>
+              <Input type="number" placeholder="e.g., 7500" value={data.w2_income} onChange={(e) => handleInputChange('w2_income', parseFloat(e.target.value) || 0)} />
+              <p className="text-xs text-muted-foreground mt-1">Enter your net take-home pay after taxes and payroll deductions.</p>
             </div>
             <div>
-              <Label>Business Income (Annual)</Label>
+              <Label>Business Income (Monthly)</Label>
               <Input type="number" placeholder="e.g., 0" value={data.business_income} onChange={(e) => handleInputChange('business_income', parseFloat(e.target.value) || 0)} />
             </div>
             <div>
-              <Label>Rental Income (Annual)</Label>
+              <Label>Rental Income (Monthly)</Label>
               <Input type="number" placeholder="e.g., 0" value={data.rental_income} onChange={(e) => handleInputChange('rental_income', parseFloat(e.target.value) || 0)} />
             </div>
             <div>
-              <Label>Social Security (Annual)</Label>
+              <Label>Social Security (Monthly)</Label>
               <Input type="number" placeholder="e.g., 0" value={data.social_security} onChange={(e) => handleInputChange('social_security', parseFloat(e.target.value) || 0)} />
             </div>
           </CardContent>
@@ -82,7 +83,7 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange, filingS
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-primary" />
-                Spouse / Partner Annual Income
+                Spouse / Partner Monthly Income
               </CardTitle>
               <CardDescription>
                 We include both incomes to measure household savings capacity and protection needs
@@ -90,17 +91,19 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange, filingS
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Spouse W-2 Income (Annual)</Label>
-                <Input type="number" placeholder="e.g., 80000" value={data.spouse_w2_income ?? 0} onChange={(e) => handleInputChange('spouse_w2_income', parseFloat(e.target.value) || 0)} />
+                <Label>Spouse Monthly W-2 Income (after tax / take-home)</Label>
+                <Input type="number" placeholder="e.g., 5000" value={data.spouse_w2_income ?? 0} onChange={(e) => handleInputChange('spouse_w2_income', parseFloat(e.target.value) || 0)} />
+                <p className="text-xs text-muted-foreground mt-1">Enter net take-home pay after taxes and payroll deductions.</p>
               </div>
               <div>
-                <Label>Spouse Business Income (Annual)</Label>
+                <Label>Spouse Business Income (Monthly)</Label>
                 <Input type="number" placeholder="e.g., 0" value={data.spouse_business_income ?? 0} onChange={(e) => handleInputChange('spouse_business_income', parseFloat(e.target.value) || 0)} />
               </div>
               <div>
-                <Label>Spouse Social Security (Annual)</Label>
+                <Label>Spouse Social Security (Monthly)</Label>
                 <Input type="number" placeholder="e.g., 0" value={data.spouse_social_security ?? 0} onChange={(e) => handleInputChange('spouse_social_security', parseFloat(e.target.value) || 0)} />
               </div>
+
               <div className="flex items-start gap-3 pt-6">
                 <Checkbox
                   id="spouse_income_continues"
