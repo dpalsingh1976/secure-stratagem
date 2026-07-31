@@ -223,7 +223,11 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange, incom
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor={`title-${index}`}>Asset Title</Label>
+                      <LabelWithHelp
+                        htmlFor={`title-${index}`}
+                        label="Asset Title"
+                        help="A nickname so you can recognize this account later — for example 'Fidelity 401(k)' or 'Chase savings'. It has no effect on the math."
+                      />
                       <Input
                         id={`title-${index}`}
                         value={asset.title}
@@ -233,7 +237,11 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange, incom
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor={`type-${index}`}>Asset Type</Label>
+                      <LabelWithHelp
+                        htmlFor={`type-${index}`}
+                        label="Asset Type"
+                        help="What kind of account or property this is (401(k), IRA, brokerage, cash, real estate, and so on). The type determines how the asset is treated for growth, risk, and taxes, and it pre-fills the tax treatment below."
+                      />
                       <Select
                         value={asset.asset_type}
                         onValueChange={(value: AssetType) => {
@@ -259,7 +267,11 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange, incom
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor={`value-${index}`}>Current Value</Label>
+                      <LabelWithHelp
+                        htmlFor={`value-${index}`}
+                        label="Current Value"
+                        help="Today's balance or market value, before any tax you would owe on withdrawal. For property, use a realistic sale price rather than what you paid."
+                      />
                       <Input
                         id={`value-${index}`}
                         type="number"
@@ -271,7 +283,11 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange, incom
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor={`wrapper-${index}`}>Tax Treatment</Label>
+                      <LabelWithHelp
+                        htmlFor={`wrapper-${index}`}
+                        label="Tax Treatment"
+                        help="How this money is taxed: tax-deferred (401(k), traditional IRA — taxed when withdrawn), tax-free (Roth, cash value life insurance), or taxable (brokerage, savings — taxed on gains each year). This drives your tax diversification score."
+                      />
                       <Select
                         value={asset.tax_wrapper}
                         onValueChange={(value: TaxWrapperType) => updateAsset(index, { ...asset, tax_wrapper: value })}
@@ -293,9 +309,13 @@ export function AssetsForm({ data, onChange, clientId, onValidationChange, incom
                   <div className="space-y-4">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label>Liquidity Score</Label>
+                        <LabelWithHelp
+                          label="Liquidity Score"
+                          help="How quickly you could turn this into spendable cash without a penalty or a loss. 10 = a checking or savings account. 5 = a brokerage account (a few days to settle). 1 = real estate, a business, or a retirement account with early-withdrawal penalties."
+                        />
                         <Badge variant="outline">{asset.liquidity_score}/10</Badge>
                       </div>
+
                       <Slider
                         value={[asset.liquidity_score]}
                         onValueChange={([value]) => updateAsset(index, { ...asset, liquidity_score: value })}
