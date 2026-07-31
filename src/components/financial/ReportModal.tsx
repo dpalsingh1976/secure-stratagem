@@ -625,11 +625,7 @@ export function ReportModal({
     // Income fields are MONTHLY (W-2 after tax); annualize for DIME replacement math
     const monthlyIncome = clientEarnedIncome(incomeData);
     const annualIncome = clientAnnualEarnedIncome(incomeData);
-    const spouseIncome = spouseAnnualEarnedIncome(incomeData);
-    // If the spouse keeps earning, that income offsets what must be replaced
-    const spouseOffset = survivingSpouseAnnualIncome(incomeData);
-    const incomeToReplace = Math.max(0, annualIncome - spouseOffset);
-    const incomeReplacement = incomeToReplace * INCOME_YEARS * REPLACEMENT_RT;
+    const incomeReplacement = annualIncome * INCOME_YEARS * REPLACEMENT_RT;
 
     const numDependents = profileData.dependents || 0;
     const education = numDependents * EDU_PER_CHILD;
