@@ -623,6 +623,7 @@ export function ReportModal({
       .reduce((sum, l) => sum + (l.balance || 0), 0);
 
     // Income fields are MONTHLY (W-2 after tax); annualize for DIME replacement math
+    const monthlyIncome = clientEarnedIncome(incomeData);
     const annualIncome = clientAnnualEarnedIncome(incomeData);
     const spouseIncome = spouseAnnualEarnedIncome(incomeData);
     // If the spouse keeps earning, that income offsets what must be replaced
