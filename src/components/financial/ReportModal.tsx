@@ -27,7 +27,7 @@ import { ScenarioComparisonCard } from "./ScenarioComparisonCard";
 import { RetirementTimeline } from "./RetirementTimeline";
 import { AllocationInputCard, AllocationSources } from "./AllocationInputCard";
 import { computeScenarioComparison } from "@/engine/retirement/scenarioSimulator";
-import { clientEarnedIncome, clientAnnualEarnedIncome, spouseAnnualEarnedIncome, survivingSpouseAnnualIncome } from '@/utils/householdIncome';
+import { clientEarnedIncome, clientAnnualEarnedIncome } from '@/utils/householdIncome';
 import { computeAllocationSources } from "@/engine/retirement/allocationEngine";
 
 import type {
@@ -293,7 +293,7 @@ export function ReportModal({
       { 
         label: `I - Income Replacement (${DIME.INCOME_YEARS} years)`, 
         value: DIME.incomeReplacement,
-        subtext: `${formatCurrency(DIME.monthlyIncome)}/mo × 12 = ${formatCurrency(DIME.annualIncome)}/yr${DIME.spouseOffset > 0 ? ` − ${formatCurrency(DIME.spouseOffset)}/yr surviving spouse income = ${formatCurrency(DIME.incomeToReplace)}/yr` : ''} × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%`
+        subtext: `${formatCurrency(DIME.monthlyIncome)}/mo × 12 = ${formatCurrency(DIME.annualIncome)}/yr × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%`
       },
 
       { 
@@ -625,11 +625,7 @@ export function ReportModal({
     // Income fields are MONTHLY (W-2 after tax); annualize for DIME replacement math
     const monthlyIncome = clientEarnedIncome(incomeData);
     const annualIncome = clientAnnualEarnedIncome(incomeData);
-    const spouseIncome = spouseAnnualEarnedIncome(incomeData);
-    // If the spouse keeps earning, that income offsets what must be replaced
-    const spouseOffset = survivingSpouseAnnualIncome(incomeData);
-    const incomeToReplace = Math.max(0, annualIncome - spouseOffset);
-    const incomeReplacement = incomeToReplace * INCOME_YEARS * REPLACEMENT_RT;
+    const incomeReplacement = annualIncome * INCOME_YEARS * REPLACEMENT_RT;
 
     const numDependents = profileData.dependents || 0;
     const education = numDependents * EDU_PER_CHILD;
@@ -649,10 +645,7 @@ export function ReportModal({
       mortgageBalance,
       monthlyIncome,
       annualIncome,
-      spouseIncome,
-      spouseOffset,
-      incomeToReplace,
-      householdIncome: annualIncome + spouseIncome,
+      incomeToReplace: annualIncome,
       incomeReplacement,
       numDependents,
       education,
@@ -854,7 +847,7 @@ export function ReportModal({
         { 
           label: `I - Income Replacement (${DIME.INCOME_YEARS} years)`, 
           value: DIME.incomeReplacement,
-          subtext: `${formatCurrency(DIME.monthlyIncome)}/mo × 12 = ${formatCurrency(DIME.annualIncome)}/yr${DIME.spouseOffset > 0 ? ` − ${formatCurrency(DIME.spouseOffset)}/yr surviving spouse income = ${formatCurrency(DIME.incomeToReplace)}/yr` : ''} × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%`
+          subtext: `${formatCurrency(DIME.monthlyIncome)}/mo × 12 = ${formatCurrency(DIME.annualIncome)}/yr × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%`
         },
         { 
           label: "M - Mortgage Balance", 
@@ -1470,7 +1463,6 @@ export function ReportModal({
                         </div>
                         <p className="text-sm text-green-700 mb-2">
                           {formatCurrency(DIME.monthlyIncome)}/mo × 12 = {formatCurrency(DIME.annualIncome)}/yr
-                          {DIME.spouseOffset > 0 && ` − ${formatCurrency(DIME.spouseOffset)}/yr surviving spouse income = ${formatCurrency(DIME.incomeToReplace)}/yr`}
                           {` × ${DIME.INCOME_YEARS} years (100% replacement)`}
                         </p>
                         <p className="text-2xl font-bold text-green-900">{formatCurrency(DIME.incomeReplacement)}</p>
@@ -1865,7 +1857,6 @@ export function ReportModal({
                         </div>
                         <div className="text-purple-100 text-sm">
                           {DIME.INCOME_YEARS} years of income at 100% replacement
-                          {DIME.spouseOffset > 0 && ` (spouse income of ${formatCurrency(DIME.spouseOffset)}/yr offset)`}
                         </div>
                       </div>
 
