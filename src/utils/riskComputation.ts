@@ -8,6 +8,7 @@ import type {
   RiskPreferencesData,
   TaxWrapperType
 } from '@/types/financial';
+import { clientEarnedIncome, householdEarnedIncome, householdSocialSecurity, survivingSpouseIncome } from '@/utils/householdIncome';
 
 interface RiskComputationInput {
   profileData: ProfileGoalsData;
@@ -64,9 +65,12 @@ export const computeRiskMetrics = async (
 
   // Calculate DIME method life insurance need
   const totalDebt = totalLiabilities;
-  const annualIncome = (incomeData.w2_income + incomeData.business_income);
+  const clientIncome = clientEarnedIncome(incomeData);
+  const annualIncome = householdEarnedIncome(incomeData); // household income for capacity math
+  const spouseOffset = survivingSpouseIncome(incomeData);
   const incomeReplacementYears = Math.max(0, profileData.retirement_age - getCurrentAge(profileData.dob));
-  const incomeReplacement = annualIncome * 10; // Standard DIME: 10x annual income
+  // Standard DIME: 10x the client's income, net of income the surviving spouse keeps earning
+  const incomeReplacement = Math.max(0, clientIncome - spouseOffset) * 10;
   const mortgageBalance = liabilities
     .filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental')
     .reduce((sum, l) => sum + l.balance, 0);
@@ -78,11 +82,11 @@ export const computeRiskMetrics = async (
 
   // Calculate retirement gap
   const monthlyRetirementNeed = profileData.desired_monthly_income;
-  const projectedPension = incomeData.pension_income + incomeData.social_security;
+  const projectedPension = incomeData.pension_income + householdSocialSecurity(incomeData);
   const retirementGapMo = Math.max(0, monthlyRetirementNeed - projectedPension);
 
   // Calculate disability gap
-  const monthlyIncomeNeed = (annualIncome / 12) * 0.6; // 60% of income
+  const monthlyIncomeNeed = (clientIncome / 12) * 0.6; // 60% of the client's own income
   const disabilityGap = monthlyIncomeNeed; // Assuming no disability coverage since field removed
 
   // Calculate LTC gap (basic estimate)
