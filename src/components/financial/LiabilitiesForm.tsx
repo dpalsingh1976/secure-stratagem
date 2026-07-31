@@ -183,7 +183,11 @@ export function LiabilitiesForm({ data, onChange, clientId, onValidationChange }
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor={`balance-${index}`}>Current Balance</Label>
+                        <LabelWithHelp
+                          htmlFor={`balance-${index}`}
+                          label="Current Balance"
+                          help="The payoff amount you still owe today, not the original loan amount and not your monthly payment."
+                        />
                         <Input
                           id={`balance-${index}`}
                           type="number"
