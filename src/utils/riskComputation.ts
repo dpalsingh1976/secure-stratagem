@@ -67,11 +67,10 @@ export const computeRiskMetrics = async (
   const totalDebt = totalLiabilities;
   const clientMonthlyIncome = clientEarnedIncome(incomeData);
   const clientAnnualIncome = clientAnnualEarnedIncome(incomeData);
-  const annualIncome = householdAnnualEarnedIncome(incomeData); // household income for capacity math
-  const spouseOffset = survivingSpouseAnnualIncome(incomeData);
+  const annualIncome = clientAnnualIncome; // individual income for capacity math
   const incomeReplacementYears = Math.max(0, profileData.retirement_age - getCurrentAge(profileData.dob));
-  // Standard DIME: 10x the client's income, net of income the surviving spouse keeps earning
-  const incomeReplacement = Math.max(0, clientAnnualIncome - spouseOffset) * 10;
+  // Standard DIME: 10x the individual's annual (monthly x 12) after-tax income
+  const incomeReplacement = clientAnnualIncome * 10;
   const mortgageBalance = liabilities
     .filter(l => l.type === 'mortgage_primary' || l.type === 'mortgage_rental')
     .reduce((sum, l) => sum + l.balance, 0);
