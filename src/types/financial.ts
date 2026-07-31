@@ -210,6 +210,11 @@ export interface IncomeExpensesData {
   pension_income: number;
   social_security: number;
   annuity_income: number;
+  // Spouse / partner income (ANNUAL) — used when filing status is married
+  spouse_w2_income?: number;
+  spouse_business_income?: number;
+  spouse_social_security?: number;
+  spouse_income_continues?: boolean; // spouse income continues if client passes away (default true)
   fixed_expenses: number;       // Essential fixed expenses (mortgage, utilities, insurance, loans)
   variable_expenses: number;    // Discretionary spending (dining, entertainment, shopping, travel)
   debt_service: number;
