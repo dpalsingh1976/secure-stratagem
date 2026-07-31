@@ -63,7 +63,7 @@ function calculateMonthlyIncome(incomeData: IncomeExpensesData): number {
 }
 
 /**
- * Calculate total annual income (income fields are already annual)
+ * Calculate total annual income (income fields are monthly, so x12)
  */
 function calculateAnnualIncome(incomeData: IncomeExpensesData): number {
   return calculateMonthlyIncome(incomeData) * 12;

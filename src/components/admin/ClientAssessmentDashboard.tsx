@@ -298,7 +298,7 @@ function RetirementTab({ profile, metrics }: { profile: ClientRow['financial_pro
           { label: 'Desired Monthly Income', value: fmt(Number(goals.desired_monthly_income) || 0) },
           { label: 'Lifestyle Preference', value: formatType(String(prefs.lifestyle ?? '—')) },
           { label: 'Risk Tolerance', value: prefs.risk_tolerance ?? '—' },
-          { label: 'W2 / Salary Income', value: fmt(Number(income.w2_income) || 0) },
+          { label: 'W2 / Salary Income (monthly, after tax)', value: fmt(Number(income.w2_income) || 0) },
           { label: 'Social Security Est.', value: fmt(Number(income.social_security) || 0) },
           { label: 'Pension Est.', value: fmt(Number(income.pension) || 0) },
           { label: 'Other Income', value: fmt(Number(income.other_income) || 0) },
