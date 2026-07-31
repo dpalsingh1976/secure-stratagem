@@ -293,8 +293,9 @@ export function ReportModal({
       { 
         label: `I - Income Replacement (${DIME.INCOME_YEARS} years)`, 
         value: DIME.incomeReplacement,
-        subtext: `${formatCurrency(DIME.incomeToReplace)}/year × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%${DIME.spouseOffset > 0 ? ` (after ${formatCurrency(DIME.spouseOffset)} surviving spouse income)` : ''}`
+        subtext: `${formatCurrency(DIME.monthlyIncome)}/mo × 12 = ${formatCurrency(DIME.annualIncome)}/yr${DIME.spouseOffset > 0 ? ` − ${formatCurrency(DIME.spouseOffset)}/yr surviving spouse income = ${formatCurrency(DIME.incomeToReplace)}/yr` : ''} × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%`
       },
+
       { 
         label: "M - Mortgage Balance", 
         value: DIME.mortgageBalance,
@@ -622,6 +623,7 @@ export function ReportModal({
       .reduce((sum, l) => sum + (l.balance || 0), 0);
 
     // Income fields are MONTHLY (W-2 after tax); annualize for DIME replacement math
+    const monthlyIncome = clientEarnedIncome(incomeData);
     const annualIncome = clientAnnualEarnedIncome(incomeData);
     const spouseIncome = spouseAnnualEarnedIncome(incomeData);
     // If the spouse keeps earning, that income offsets what must be replaced
@@ -645,6 +647,7 @@ export function ReportModal({
       REPLACEMENT_RT,
       nonMortgageDebt,
       mortgageBalance,
+      monthlyIncome,
       annualIncome,
       spouseIncome,
       spouseOffset,
@@ -851,7 +854,7 @@ export function ReportModal({
         { 
           label: `I - Income Replacement (${DIME.INCOME_YEARS} years)`, 
           value: DIME.incomeReplacement,
-          subtext: `${formatCurrency(DIME.incomeToReplace)}/year × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%${DIME.spouseOffset > 0 ? ` (after ${formatCurrency(DIME.spouseOffset)} surviving spouse income)` : ''}`
+          subtext: `${formatCurrency(DIME.monthlyIncome)}/mo × 12 = ${formatCurrency(DIME.annualIncome)}/yr${DIME.spouseOffset > 0 ? ` − ${formatCurrency(DIME.spouseOffset)}/yr surviving spouse income = ${formatCurrency(DIME.incomeToReplace)}/yr` : ''} × ${DIME.INCOME_YEARS} years × ${Math.round(DIME.REPLACEMENT_RT * 100)}%`
         },
         { 
           label: "M - Mortgage Balance", 
@@ -1466,8 +1469,9 @@ export function ReportModal({
                           <h4 className="font-bold text-green-900">Income Replacement</h4>
                         </div>
                         <p className="text-sm text-green-700 mb-2">
-                          {DIME.INCOME_YEARS} × {formatCurrency(DIME.incomeToReplace)} annual income (100% replacement)
-                          {DIME.spouseOffset > 0 && ` — net of ${formatCurrency(DIME.spouseOffset)} surviving spouse income`}
+                          {formatCurrency(DIME.monthlyIncome)}/mo × 12 = {formatCurrency(DIME.annualIncome)}/yr
+                          {DIME.spouseOffset > 0 && ` − ${formatCurrency(DIME.spouseOffset)}/yr surviving spouse income = ${formatCurrency(DIME.incomeToReplace)}/yr`}
+                          {` × ${DIME.INCOME_YEARS} years (100% replacement)`}
                         </p>
                         <p className="text-2xl font-bold text-green-900">{formatCurrency(DIME.incomeReplacement)}</p>
                       </CardContent>
