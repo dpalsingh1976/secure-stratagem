@@ -77,6 +77,51 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange, filingS
           </CardContent>
         </Card>
 
+        {married && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                Spouse / Partner Annual Income
+              </CardTitle>
+              <CardDescription>
+                We include both incomes to measure household savings capacity and protection needs
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Spouse W-2 Income (Annual)</Label>
+                <Input type="number" placeholder="e.g., 80000" value={data.spouse_w2_income ?? 0} onChange={(e) => handleInputChange('spouse_w2_income', parseFloat(e.target.value) || 0)} />
+              </div>
+              <div>
+                <Label>Spouse Business Income (Annual)</Label>
+                <Input type="number" placeholder="e.g., 0" value={data.spouse_business_income ?? 0} onChange={(e) => handleInputChange('spouse_business_income', parseFloat(e.target.value) || 0)} />
+              </div>
+              <div>
+                <Label>Spouse Social Security (Annual)</Label>
+                <Input type="number" placeholder="e.g., 0" value={data.spouse_social_security ?? 0} onChange={(e) => handleInputChange('spouse_social_security', parseFloat(e.target.value) || 0)} />
+              </div>
+              <div className="flex items-start gap-3 pt-6">
+                <Checkbox
+                  id="spouse_income_continues"
+                  checked={data.spouse_income_continues !== false}
+                  onCheckedChange={(checked) => handleInputChange('spouse_income_continues', checked === true)}
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="spouse_income_continues" className="cursor-pointer">
+                    Spouse income would continue
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    If checked, spouse earnings offset the life insurance need
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+
+
         <Card>
           <CardHeader>
             <CardTitle>Monthly Expenses</CardTitle>
