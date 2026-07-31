@@ -58,12 +58,12 @@ function calculateAge(dob: string): number {
  */
 function calculateMonthlyIncome(incomeData: IncomeExpensesData): number {
   return (
-    householdTotalIncome(incomeData) / 12
+    householdTotalIncome(incomeData)
   );
 }
 
 /**
- * Calculate total annual income (income fields are already annual)
+ * Calculate total annual income (income fields are monthly, so x12)
  */
 function calculateAnnualIncome(incomeData: IncomeExpensesData): number {
   return calculateMonthlyIncome(incomeData) * 12;

@@ -156,7 +156,7 @@ export function calculateTargetIncome(
   if (preferences.spending_target_method === 'fixed') {
     baseTarget = profileData.desired_monthly_income || 0;
   } else {
-    const currentMonthlyIncome = householdEarnedIncome(incomeData) / 12;
+    const currentMonthlyIncome = householdEarnedIncome(incomeData);
     baseTarget = currentMonthlyIncome * (preferences.spending_percent_of_income / 100);
   }
   

@@ -7,7 +7,7 @@ import type {
   PlanningReadinessData,
   IncomeExpensesData
 } from '@/types/financial';
-import { householdEarnedIncome } from '@/utils/householdIncome';
+import { householdEarnedIncome, householdAnnualEarnedIncome } from '@/utils/householdIncome';
 
 export type IULFit = 'strong' | 'moderate' | 'weak' | 'not_recommended';
 
@@ -67,8 +67,8 @@ export function computeIULSuitability(inputs: SuitabilityInputs): IULSuitability
   let disqualified = false;
   let disqualification_reason: string | undefined;
 
-  const annualIncome = householdEarnedIncome(incomeData);
-  const monthlyIncome = annualIncome / 12;
+  const annualIncome = householdAnnualEarnedIncome(incomeData);
+  const monthlyIncome = householdEarnedIncome(incomeData);
   const emergencyMonths = protectionData.emergency_fund_months || 0;
   
   // ============================================
