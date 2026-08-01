@@ -2,8 +2,22 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+const isZeroValue = (v: string) => /^0+(\.0+)?$/.test(v.trim());
+
+const placeCaret = (el: HTMLInputElement) => {
+  if (isZeroValue(el.value)) {
+    el.select();
+    return;
+  }
+  try {
+    el.setSelectionRange(0, 0);
+  } catch {
+    /* unsupported input type */
+  }
+};
+
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, type, onFocus, onMouseUp, ...props }, ref) => {
     return (
       <input
         type={type}
@@ -12,11 +26,23 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
+        onFocus={(e) => {
+          placeCaret(e.currentTarget);
+          onFocus?.(e);
+        }}
+        onMouseUp={(e) => {
+          // Keep the caret/selection at the start for default "0" values;
+          // real values stay click-positionable.
+          if (isZeroValue(e.currentTarget.value)) e.currentTarget.select();
+          onMouseUp?.(e);
+        }}
+
         {...props}
       />
     )
   }
 )
+
 Input.displayName = "Input"
 
 export { Input }
