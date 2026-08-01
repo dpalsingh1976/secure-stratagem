@@ -154,68 +154,133 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange, filingS
           <CardHeader>
             <CardTitle>Monthly Expenses</CardTitle>
             <CardDescription>Categorize your monthly spending to help determine your savings capacity</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+            <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 mt-3">
               <div className="flex items-center gap-2">
-                <Label>Essential Fixed Expenses</Label>
+                <Label htmlFor="detailed-expenses" className="cursor-pointer">Add detailed breakdown</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p className="font-medium mb-1">Must-pay bills that stay the same each month:</p>
-                    <ul className="text-xs list-disc list-inside space-y-0.5">
-                      <li>Mortgage or rent payment</li>
-                      <li>Utilities (electric, gas, water)</li>
-                      <li>Insurance premiums (health, auto, home)</li>
-                      <li>Loan payments (auto, student)</li>
-                      <li>Internet, phone, subscriptions</li>
-                    </ul>
+                  <TooltipContent className="max-w-xs text-xs">
+                    Turn this on to itemize where your money goes each month — mortgage, loans, utilities, insurance and more. The two totals below are then calculated for you.
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <Input 
-                type="number" 
-                value={data.fixed_expenses} 
-                onChange={(e) => handleInputChange('fixed_expenses', parseFloat(e.target.value) || 0)} 
-                placeholder="e.g., 3500"
-              />
-              <p className="text-xs text-muted-foreground">
-                Bills you must pay regardless of your budget
-              </p>
+              <Switch id="detailed-expenses" checked={detailed} onCheckedChange={toggleDetailed} />
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label>Discretionary Spending</Label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p className="font-medium mb-1">Flexible spending you can adjust:</p>
-                    <ul className="text-xs list-disc list-inside space-y-0.5">
-                      <li>Dining out & takeout</li>
-                      <li>Entertainment & hobbies</li>
-                      <li>Shopping & clothing</li>
-                      <li>Travel & vacations</li>
-                      <li>Gifts & personal care</li>
-                    </ul>
-                  </TooltipContent>
-                </Tooltip>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {detailed && (
+              <div className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold">Essential (fixed) expenses</h4>
+                    <span className="text-sm font-semibold text-primary">{formatCurrency(fixedSubtotal)}/mo</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {FIXED_ITEMS.map((item) => (
+                      <div key={item.key}>
+                        <LabelWithHelp label={item.label} help={item.help} />
+                        <Input
+                          type="number"
+                          placeholder={item.placeholder}
+                          value={(detail[item.key] as number) ?? ''}
+                          onChange={(e) => handleDetailChange(item.key, parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold">Discretionary (variable) expenses</h4>
+                    <span className="text-sm font-semibold text-primary">{formatCurrency(variableSubtotal)}/mo</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {VARIABLE_ITEMS.map((item) => (
+                      <div key={item.key}>
+                        <LabelWithHelp label={item.label} help={item.help} />
+                        <Input
+                          type="number"
+                          placeholder={item.placeholder}
+                          value={(detail[item.key] as number) ?? ''}
+                          onChange={(e) => handleDetailChange(item.key, parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <Input 
-                type="number" 
-                value={data.variable_expenses} 
-                onChange={(e) => handleInputChange('variable_expenses', parseFloat(e.target.value) || 0)} 
-                placeholder="e.g., 1500"
-              />
-              <p className="text-xs text-muted-foreground">
-                Spending you can reduce if needed
-              </p>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label>Essential Fixed Expenses</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="font-medium mb-1">Must-pay bills that stay the same each month:</p>
+                      <ul className="text-xs list-disc list-inside space-y-0.5">
+                        <li>Mortgage or rent payment</li>
+                        <li>Utilities (electric, gas, water)</li>
+                        <li>Insurance premiums (health, auto, home)</li>
+                        <li>Loan payments (auto, student)</li>
+                        <li>Internet, phone, subscriptions</li>
+                      </ul>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input 
+                  type="number" 
+                  value={data.fixed_expenses} 
+                  onChange={(e) => handleInputChange('fixed_expenses', parseFloat(e.target.value) || 0)} 
+                  placeholder="e.g., 3500"
+                  readOnly={detailed}
+                  disabled={detailed}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {detailed ? 'Calculated from your itemized essential expenses above' : 'Bills you must pay regardless of your budget'}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label>Discretionary Spending</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="font-medium mb-1">Flexible spending you can adjust:</p>
+                      <ul className="text-xs list-disc list-inside space-y-0.5">
+                        <li>Dining out & takeout</li>
+                        <li>Entertainment & hobbies</li>
+                        <li>Shopping & clothing</li>
+                        <li>Travel & vacations</li>
+                        <li>Gifts & personal care</li>
+                      </ul>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input 
+                  type="number" 
+                  value={data.variable_expenses} 
+                  onChange={(e) => handleInputChange('variable_expenses', parseFloat(e.target.value) || 0)} 
+                  placeholder="e.g., 1500"
+                  readOnly={detailed}
+                  disabled={detailed}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {detailed ? 'Calculated from your itemized discretionary expenses above' : 'Spending you can reduce if needed'}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
+
 
         {/* Cash Flow Summary */}
         <Card className="bg-muted/30 border-dashed">
