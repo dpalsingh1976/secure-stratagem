@@ -29,6 +29,9 @@ import { AllocationInputCard, AllocationSources } from "./AllocationInputCard";
 import { computeScenarioComparison } from "@/engine/retirement/scenarioSimulator";
 import { clientEarnedIncome, clientAnnualEarnedIncome } from '@/utils/householdIncome';
 import { computeAllocationSources } from "@/engine/retirement/allocationEngine";
+// Set to true to show the bottom "Ready to Implement These Recommendations?" CTA section
+const ENABLE_REPORT_CTA = false;
+
 
 import type {
   ComputedMetrics,

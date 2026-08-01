@@ -24,6 +24,9 @@ interface RiskLevels {
   tax: string;
   overall: string;
 }
+// Set to true to show the bottom "Ready to Implement These Recommendations?" CTA section
+const ENABLE_REPORT_CTA = false;
+
 
 const Results = () => {
   const [riskScores, setRiskScores] = useState<RiskScores>({
