@@ -80,6 +80,9 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
     annuity_income: 0,
     fixed_expenses: 0,
     variable_expenses: 0,
+    use_detailed_expenses: false,
+    expense_detail: {},
+
     debt_service: 0,
     employer_match_pct: 0,
     hsa_eligible: false,
