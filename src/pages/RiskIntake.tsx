@@ -219,8 +219,11 @@ export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps
         p_expenses_jsonb: JSON.parse(JSON.stringify({
           fixed_expenses: incomeData.fixed_expenses,
           variable_expenses: incomeData.variable_expenses,
-          debt_service: incomeData.debt_service
+          debt_service: incomeData.debt_service,
+          use_detailed_expenses: incomeData.use_detailed_expenses ?? false,
+          expense_detail: incomeData.expense_detail ?? {}
         })),
+
         p_goals_jsonb: JSON.parse(JSON.stringify({
           retirement_age: profileData.retirement_age,
           desired_monthly_income: profileData.desired_monthly_income,
