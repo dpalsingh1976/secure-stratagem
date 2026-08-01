@@ -31,9 +31,12 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           onFocus?.(e);
         }}
         onMouseUp={(e) => {
-          if (!e.defaultPrevented) placeCaret(e.currentTarget);
+          // Keep the caret/selection at the start for default "0" values;
+          // real values stay click-positionable.
+          if (isZeroValue(e.currentTarget.value)) e.currentTarget.select();
           onMouseUp?.(e);
         }}
+
         {...props}
       />
     )
