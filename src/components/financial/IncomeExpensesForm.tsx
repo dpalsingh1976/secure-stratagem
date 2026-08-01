@@ -41,11 +41,47 @@ interface IncomeExpensesFormProps {
 export function IncomeExpensesForm({ data, onChange, onValidationChange, filingStatus }: IncomeExpensesFormProps) {
 
 
+  const detail = data.expense_detail ?? {};
+  const detailed = !!data.use_detailed_expenses;
+
   const handleInputChange = (field: keyof IncomeExpensesData, value: any) => {
     const newData = { ...data, [field]: value };
     onChange(newData);
     onValidationChange(true);
   };
+
+  const sumItems = (items: { key: keyof ExpenseDetail }[], d: ExpenseDetail) =>
+    items.reduce((sum, i) => sum + (Number(d[i.key]) || 0), 0);
+
+  const fixedSubtotal = useMemo(() => sumItems(FIXED_ITEMS, detail), [data.expense_detail]);
+  const variableSubtotal = useMemo(() => sumItems(VARIABLE_ITEMS, detail), [data.expense_detail]);
+
+  const handleDetailChange = (field: keyof ExpenseDetail, value: number) => {
+    const nextDetail = { ...detail, [field]: value };
+    onChange({
+      ...data,
+      expense_detail: nextDetail,
+      fixed_expenses: sumItems(FIXED_ITEMS, nextDetail),
+      variable_expenses: sumItems(VARIABLE_ITEMS, nextDetail),
+    });
+    onValidationChange(true);
+  };
+
+  const toggleDetailed = (on: boolean) => {
+    if (on) {
+      onChange({
+        ...data,
+        use_detailed_expenses: true,
+        expense_detail: detail,
+        fixed_expenses: sumItems(FIXED_ITEMS, detail),
+        variable_expenses: sumItems(VARIABLE_ITEMS, detail),
+      });
+    } else {
+      onChange({ ...data, use_detailed_expenses: false });
+    }
+    onValidationChange(true);
+  };
+
 
   // Income and expenses are both MONTHLY. W-2 amounts are after-tax take-home.
   // Income is per-individual — spouse income is not combined here.
