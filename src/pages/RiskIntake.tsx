@@ -46,6 +46,11 @@ const STEPS = [
 export default function RiskIntake({ isModal = false, onClose }: RiskIntakeProps = {}) {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
+
+  // Always start each step at the top of the page
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentStep]);
   const [clientId, setClientId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showReport, setShowReport] = useState(false);

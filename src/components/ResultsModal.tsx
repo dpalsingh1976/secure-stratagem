@@ -367,7 +367,7 @@ const ResultsModal = ({ open, onOpenChange, assessmentData, onClose }: ResultsMo
           )}
 
           {/* Call to Action with Term Coverage Link */}
-          {showCTA && (
+          {ENABLE_REPORT_CTA && showCTA && (
             <div className="text-center animate-fade-in">
               <Card className="card-financial bg-gradient-card">
                 <CardHeader>
