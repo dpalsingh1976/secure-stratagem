@@ -203,6 +203,27 @@ export interface ProfileGoalsData {
   planned_retirement_state: string;
 }
 
+export interface ExpenseDetail {
+  // Essential / fixed
+  mortgage_rent?: number;
+  property_tax_home_insurance?: number;
+  utilities?: number;
+  auto_loans?: number;
+  student_loans?: number;
+  credit_cards_other_loans?: number;
+  insurance_premiums?: number;
+  childcare_tuition?: number;
+  phone_internet_subscriptions?: number;
+  other_essential?: number;
+  // Discretionary / variable
+  groceries_household?: number;
+  dining_entertainment?: number;
+  shopping_clothing?: number;
+  travel_vacations?: number;
+  gifts_giving_personal_care?: number;
+  other_discretionary?: number;
+}
+
 export interface IncomeExpensesData {
   w2_income: number;
   business_income: number;
@@ -213,6 +234,9 @@ export interface IncomeExpensesData {
   // Income is MONTHLY, after-tax (net take-home), and per-individual — no spouse aggregation
   fixed_expenses: number;       // Essential fixed expenses (mortgage, utilities, insurance, loans)
   variable_expenses: number;    // Discretionary spending (dining, entertainment, shopping, travel)
+  use_detailed_expenses?: boolean; // When true, the two totals above are derived from expense_detail
+  expense_detail?: ExpenseDetail;  // Optional itemized monthly expense breakdown
+
   debt_service: number;
   employer_match_pct: number;
   hsa_eligible: boolean;
