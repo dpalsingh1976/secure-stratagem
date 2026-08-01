@@ -6,6 +6,9 @@ import RiskProgressRing from "@/components/RiskProgressRing";
 import BookingCalendar from "@/components/BookingCalendar";
 import { Phone, Mail, Calendar, Download, Share2, AlertTriangle, TrendingUp, Shield, Clock, ExternalLink } from "lucide-react";
 import { getLifeInsuranceExplanation, getLongevityRiskExplanation, getMarketRiskExplanation, getTaxEstateRiskExplanation, getOverallRiskMessage } from "@/utils/riskExplanations";
+// Set to true to show the bottom "Ready to Implement These Recommendations?" CTA section
+const ENABLE_REPORT_CTA = false;
+
 
 interface AssessmentData {
   age: string;
@@ -367,7 +370,7 @@ const ResultsModal = ({ open, onOpenChange, assessmentData, onClose }: ResultsMo
           )}
 
           {/* Call to Action with Term Coverage Link */}
-          {showCTA && (
+          {ENABLE_REPORT_CTA && showCTA && (
             <div className="text-center animate-fade-in">
               <Card className="card-financial bg-gradient-card">
                 <CardHeader>

@@ -24,6 +24,9 @@ interface RiskLevels {
   tax: string;
   overall: string;
 }
+// Set to true to show the bottom "Ready to Implement These Recommendations?" CTA section
+const ENABLE_REPORT_CTA = false;
+
 
 const Results = () => {
   const [riskScores, setRiskScores] = useState<RiskScores>({
@@ -339,7 +342,7 @@ const Results = () => {
           </div>
 
           {/* Call to Action */}
-          {showCTA && (
+          {ENABLE_REPORT_CTA && showCTA && (
             <div className="text-center space-y-6 animate-fade-in">
               {/* Primary CTAs - Action-Oriented */}
               <Card className="card-financial bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border-2 border-primary/20 max-w-5xl mx-auto shadow-2xl">

@@ -29,6 +29,9 @@ import { AllocationInputCard, AllocationSources } from "./AllocationInputCard";
 import { computeScenarioComparison } from "@/engine/retirement/scenarioSimulator";
 import { clientEarnedIncome, clientAnnualEarnedIncome } from '@/utils/householdIncome';
 import { computeAllocationSources } from "@/engine/retirement/allocationEngine";
+// Set to true to show the bottom "Ready to Implement These Recommendations?" CTA section
+const ENABLE_REPORT_CTA = false;
+
 
 import type {
   ComputedMetrics,
@@ -2090,7 +2093,7 @@ export function ReportModal({
         </Tabs>
 
         {/* Action CTAs at Bottom */}
-        {showCTA && (
+        {ENABLE_REPORT_CTA && showCTA && (
           <div className="sticky bottom-0 bg-gradient-to-r from-primary/5 to-secondary/5 border-t-2 border-primary/20 p-6 mt-8 animate-fade-in">
             <div className="max-w-4xl mx-auto">
               <h3 className="text-xl font-bold text-center mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
