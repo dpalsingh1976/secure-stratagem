@@ -1,11 +1,35 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { HelpCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { LabelWithHelp } from '@/components/financial/FieldHelp';
-import type { IncomeExpensesData, FilingStatus } from '@/types/financial';
+import type { IncomeExpensesData, ExpenseDetail, FilingStatus } from '@/types/financial';
+
+const FIXED_ITEMS: { key: keyof ExpenseDetail; label: string; help: string; placeholder: string }[] = [
+  { key: 'mortgage_rent', label: 'Mortgage / Rent', help: 'Your total monthly housing payment — principal and interest on your mortgage, or rent if you rent. Include HOA dues here if they are part of your regular payment.', placeholder: 'e.g., 2200' },
+  { key: 'property_tax_home_insurance', label: 'Property Taxes & Home Insurance', help: 'Monthly cost of property taxes and homeowners or renters insurance. If they are escrowed inside your mortgage payment, leave this at 0 so you do not double count.', placeholder: 'e.g., 450' },
+  { key: 'utilities', label: 'Utilities', help: 'Electricity, gas, water, sewer, and trash. Use a 12-month average so summer and winter swings even out.', placeholder: 'e.g., 300' },
+  { key: 'auto_loans', label: 'Auto Loan / Lease Payments', help: 'Total monthly payments on all vehicles you finance or lease.', placeholder: 'e.g., 500' },
+  { key: 'student_loans', label: 'Student Loan Payments', help: 'Monthly required payments on federal and private student loans, for you and any loans you co-signed and pay.', placeholder: 'e.g., 250' },
+  { key: 'credit_cards_other_loans', label: 'Credit Cards & Other Loan Payments', help: 'Monthly amount you actually pay toward credit cards, personal loans, and lines of credit. Enter your typical payment, not the balance.', placeholder: 'e.g., 300' },
+  { key: 'insurance_premiums', label: 'Insurance Premiums', help: 'Health, dental, auto, life, and disability premiums you pay each month, including amounts deducted from your paycheck if they were not already removed from your take-home pay.', placeholder: 'e.g., 400' },
+  { key: 'childcare_tuition', label: 'Childcare & Tuition', help: 'Daycare, after-school care, nanny costs, and school or college tuition paid monthly.', placeholder: 'e.g., 800' },
+  { key: 'phone_internet_subscriptions', label: 'Phone, Internet & Subscriptions', help: 'Mobile plans, home internet, streaming services, software, and recurring memberships such as a gym.', placeholder: 'e.g., 250' },
+  { key: 'other_essential', label: 'Other Essential', help: 'Any other must-pay monthly cost that does not fit the categories above — alimony, child support, medical payment plans, storage, and similar.', placeholder: 'e.g., 0' },
+];
+
+const VARIABLE_ITEMS: { key: keyof ExpenseDetail; label: string; help: string; placeholder: string }[] = [
+  { key: 'groceries_household', label: 'Groceries & Household', help: 'Food you buy for home, cleaning products, toiletries, and other household supplies.', placeholder: 'e.g., 700' },
+  { key: 'dining_entertainment', label: 'Dining Out & Entertainment', help: 'Restaurants, takeout, coffee, bars, movies, events, and hobbies.', placeholder: 'e.g., 400' },
+  { key: 'shopping_clothing', label: 'Shopping & Clothing', help: 'Clothing, shoes, electronics, home goods, and general non-essential purchases.', placeholder: 'e.g., 200' },
+  { key: 'travel_vacations', label: 'Travel & Vacations', help: 'Take your typical yearly travel spending and divide by 12 so it shows up as a monthly amount.', placeholder: 'e.g., 250' },
+  { key: 'gifts_giving_personal_care', label: 'Gifts, Giving & Personal Care', help: 'Gifts, charitable giving and tithing, haircuts, grooming, and other personal care.', placeholder: 'e.g., 150' },
+  { key: 'other_discretionary', label: 'Other Discretionary', help: 'Any other flexible spending you could cut back on if your income dropped.', placeholder: 'e.g., 0' },
+];
+
 
 interface IncomeExpensesFormProps {
   data: IncomeExpensesData;
