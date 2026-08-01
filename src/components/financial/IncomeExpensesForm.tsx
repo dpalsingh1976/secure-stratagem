@@ -1,11 +1,35 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { HelpCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { LabelWithHelp } from '@/components/financial/FieldHelp';
-import type { IncomeExpensesData, FilingStatus } from '@/types/financial';
+import type { IncomeExpensesData, ExpenseDetail, FilingStatus } from '@/types/financial';
+
+const FIXED_ITEMS: { key: keyof ExpenseDetail; label: string; help: string; placeholder: string }[] = [
+  { key: 'mortgage_rent', label: 'Mortgage / Rent', help: 'Your total monthly housing payment — principal and interest on your mortgage, or rent if you rent. Include HOA dues here if they are part of your regular payment.', placeholder: 'e.g., 2200' },
+  { key: 'property_tax_home_insurance', label: 'Property Taxes & Home Insurance', help: 'Monthly cost of property taxes and homeowners or renters insurance. If they are escrowed inside your mortgage payment, leave this at 0 so you do not double count.', placeholder: 'e.g., 450' },
+  { key: 'utilities', label: 'Utilities', help: 'Electricity, gas, water, sewer, and trash. Use a 12-month average so summer and winter swings even out.', placeholder: 'e.g., 300' },
+  { key: 'auto_loans', label: 'Auto Loan / Lease Payments', help: 'Total monthly payments on all vehicles you finance or lease.', placeholder: 'e.g., 500' },
+  { key: 'student_loans', label: 'Student Loan Payments', help: 'Monthly required payments on federal and private student loans, for you and any loans you co-signed and pay.', placeholder: 'e.g., 250' },
+  { key: 'credit_cards_other_loans', label: 'Credit Cards & Other Loan Payments', help: 'Monthly amount you actually pay toward credit cards, personal loans, and lines of credit. Enter your typical payment, not the balance.', placeholder: 'e.g., 300' },
+  { key: 'insurance_premiums', label: 'Insurance Premiums', help: 'Health, dental, auto, life, and disability premiums you pay each month, including amounts deducted from your paycheck if they were not already removed from your take-home pay.', placeholder: 'e.g., 400' },
+  { key: 'childcare_tuition', label: 'Childcare & Tuition', help: 'Daycare, after-school care, nanny costs, and school or college tuition paid monthly.', placeholder: 'e.g., 800' },
+  { key: 'phone_internet_subscriptions', label: 'Phone, Internet & Subscriptions', help: 'Mobile plans, home internet, streaming services, software, and recurring memberships such as a gym.', placeholder: 'e.g., 250' },
+  { key: 'other_essential', label: 'Other Essential', help: 'Any other must-pay monthly cost that does not fit the categories above — alimony, child support, medical payment plans, storage, and similar.', placeholder: 'e.g., 0' },
+];
+
+const VARIABLE_ITEMS: { key: keyof ExpenseDetail; label: string; help: string; placeholder: string }[] = [
+  { key: 'groceries_household', label: 'Groceries & Household', help: 'Food you buy for home, cleaning products, toiletries, and other household supplies.', placeholder: 'e.g., 700' },
+  { key: 'dining_entertainment', label: 'Dining Out & Entertainment', help: 'Restaurants, takeout, coffee, bars, movies, events, and hobbies.', placeholder: 'e.g., 400' },
+  { key: 'shopping_clothing', label: 'Shopping & Clothing', help: 'Clothing, shoes, electronics, home goods, and general non-essential purchases.', placeholder: 'e.g., 200' },
+  { key: 'travel_vacations', label: 'Travel & Vacations', help: 'Take your typical yearly travel spending and divide by 12 so it shows up as a monthly amount.', placeholder: 'e.g., 250' },
+  { key: 'gifts_giving_personal_care', label: 'Gifts, Giving & Personal Care', help: 'Gifts, charitable giving and tithing, haircuts, grooming, and other personal care.', placeholder: 'e.g., 150' },
+  { key: 'other_discretionary', label: 'Other Discretionary', help: 'Any other flexible spending you could cut back on if your income dropped.', placeholder: 'e.g., 0' },
+];
+
 
 interface IncomeExpensesFormProps {
   data: IncomeExpensesData;
@@ -17,11 +41,47 @@ interface IncomeExpensesFormProps {
 export function IncomeExpensesForm({ data, onChange, onValidationChange, filingStatus }: IncomeExpensesFormProps) {
 
 
+  const detail = data.expense_detail ?? {};
+  const detailed = !!data.use_detailed_expenses;
+
   const handleInputChange = (field: keyof IncomeExpensesData, value: any) => {
     const newData = { ...data, [field]: value };
     onChange(newData);
     onValidationChange(true);
   };
+
+  const sumItems = (items: { key: keyof ExpenseDetail }[], d: ExpenseDetail) =>
+    items.reduce((sum, i) => sum + (Number(d[i.key]) || 0), 0);
+
+  const fixedSubtotal = useMemo(() => sumItems(FIXED_ITEMS, detail), [data.expense_detail]);
+  const variableSubtotal = useMemo(() => sumItems(VARIABLE_ITEMS, detail), [data.expense_detail]);
+
+  const handleDetailChange = (field: keyof ExpenseDetail, value: number) => {
+    const nextDetail = { ...detail, [field]: value };
+    onChange({
+      ...data,
+      expense_detail: nextDetail,
+      fixed_expenses: sumItems(FIXED_ITEMS, nextDetail),
+      variable_expenses: sumItems(VARIABLE_ITEMS, nextDetail),
+    });
+    onValidationChange(true);
+  };
+
+  const toggleDetailed = (on: boolean) => {
+    if (on) {
+      onChange({
+        ...data,
+        use_detailed_expenses: true,
+        expense_detail: detail,
+        fixed_expenses: sumItems(FIXED_ITEMS, detail),
+        variable_expenses: sumItems(VARIABLE_ITEMS, detail),
+      });
+    } else {
+      onChange({ ...data, use_detailed_expenses: false });
+    }
+    onValidationChange(true);
+  };
+
 
   // Income and expenses are both MONTHLY. W-2 amounts are after-tax take-home.
   // Income is per-individual — spouse income is not combined here.
@@ -94,68 +154,133 @@ export function IncomeExpensesForm({ data, onChange, onValidationChange, filingS
           <CardHeader>
             <CardTitle>Monthly Expenses</CardTitle>
             <CardDescription>Categorize your monthly spending to help determine your savings capacity</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+            <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 mt-3">
               <div className="flex items-center gap-2">
-                <Label>Essential Fixed Expenses</Label>
+                <Label htmlFor="detailed-expenses" className="cursor-pointer">Add detailed breakdown</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p className="font-medium mb-1">Must-pay bills that stay the same each month:</p>
-                    <ul className="text-xs list-disc list-inside space-y-0.5">
-                      <li>Mortgage or rent payment</li>
-                      <li>Utilities (electric, gas, water)</li>
-                      <li>Insurance premiums (health, auto, home)</li>
-                      <li>Loan payments (auto, student)</li>
-                      <li>Internet, phone, subscriptions</li>
-                    </ul>
+                  <TooltipContent className="max-w-xs text-xs">
+                    Turn this on to itemize where your money goes each month — mortgage, loans, utilities, insurance and more. The two totals below are then calculated for you.
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <Input 
-                type="number" 
-                value={data.fixed_expenses} 
-                onChange={(e) => handleInputChange('fixed_expenses', parseFloat(e.target.value) || 0)} 
-                placeholder="e.g., 3500"
-              />
-              <p className="text-xs text-muted-foreground">
-                Bills you must pay regardless of your budget
-              </p>
+              <Switch id="detailed-expenses" checked={detailed} onCheckedChange={toggleDetailed} />
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label>Discretionary Spending</Label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p className="font-medium mb-1">Flexible spending you can adjust:</p>
-                    <ul className="text-xs list-disc list-inside space-y-0.5">
-                      <li>Dining out & takeout</li>
-                      <li>Entertainment & hobbies</li>
-                      <li>Shopping & clothing</li>
-                      <li>Travel & vacations</li>
-                      <li>Gifts & personal care</li>
-                    </ul>
-                  </TooltipContent>
-                </Tooltip>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {detailed && (
+              <div className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold">Essential (fixed) expenses</h4>
+                    <span className="text-sm font-semibold text-primary">{formatCurrency(fixedSubtotal)}/mo</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {FIXED_ITEMS.map((item) => (
+                      <div key={item.key}>
+                        <LabelWithHelp label={item.label} help={item.help} />
+                        <Input
+                          type="number"
+                          placeholder={item.placeholder}
+                          value={(detail[item.key] as number) ?? ''}
+                          onChange={(e) => handleDetailChange(item.key, parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold">Discretionary (variable) expenses</h4>
+                    <span className="text-sm font-semibold text-primary">{formatCurrency(variableSubtotal)}/mo</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {VARIABLE_ITEMS.map((item) => (
+                      <div key={item.key}>
+                        <LabelWithHelp label={item.label} help={item.help} />
+                        <Input
+                          type="number"
+                          placeholder={item.placeholder}
+                          value={(detail[item.key] as number) ?? ''}
+                          onChange={(e) => handleDetailChange(item.key, parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <Input 
-                type="number" 
-                value={data.variable_expenses} 
-                onChange={(e) => handleInputChange('variable_expenses', parseFloat(e.target.value) || 0)} 
-                placeholder="e.g., 1500"
-              />
-              <p className="text-xs text-muted-foreground">
-                Spending you can reduce if needed
-              </p>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label>Essential Fixed Expenses</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="font-medium mb-1">Must-pay bills that stay the same each month:</p>
+                      <ul className="text-xs list-disc list-inside space-y-0.5">
+                        <li>Mortgage or rent payment</li>
+                        <li>Utilities (electric, gas, water)</li>
+                        <li>Insurance premiums (health, auto, home)</li>
+                        <li>Loan payments (auto, student)</li>
+                        <li>Internet, phone, subscriptions</li>
+                      </ul>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input 
+                  type="number" 
+                  value={data.fixed_expenses} 
+                  onChange={(e) => handleInputChange('fixed_expenses', parseFloat(e.target.value) || 0)} 
+                  placeholder="e.g., 3500"
+                  readOnly={detailed}
+                  disabled={detailed}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {detailed ? 'Calculated from your itemized essential expenses above' : 'Bills you must pay regardless of your budget'}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label>Discretionary Spending</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="font-medium mb-1">Flexible spending you can adjust:</p>
+                      <ul className="text-xs list-disc list-inside space-y-0.5">
+                        <li>Dining out & takeout</li>
+                        <li>Entertainment & hobbies</li>
+                        <li>Shopping & clothing</li>
+                        <li>Travel & vacations</li>
+                        <li>Gifts & personal care</li>
+                      </ul>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input 
+                  type="number" 
+                  value={data.variable_expenses} 
+                  onChange={(e) => handleInputChange('variable_expenses', parseFloat(e.target.value) || 0)} 
+                  placeholder="e.g., 1500"
+                  readOnly={detailed}
+                  disabled={detailed}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {detailed ? 'Calculated from your itemized discretionary expenses above' : 'Spending you can reduce if needed'}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
+
 
         {/* Cash Flow Summary */}
         <Card className="bg-muted/30 border-dashed">
