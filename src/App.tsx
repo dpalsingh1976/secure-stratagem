@@ -16,6 +16,7 @@ import Policies from "./pages/Policies";
 import PolicyDetail from "./pages/PolicyDetail";
 import FNAReport from "./pages/FNAReport";
 import IULBanking from "./pages/IULBanking";
+import IULPlanner from "./pages/IULPlanner";
 import Annuities from "./pages/Annuities";
 import Plan529ComparisonTool from "./pages/Plan529ComparisonTool";
 import EstatePlanning from "./pages/EstatePlanning";
@@ -65,6 +66,7 @@ const App = () => (
             <Route path="/fna-report" element={<FNAReport />} />
             <Route path="/iul" element={<IULBanking />} />
             <Route path="/iul-banking" element={<IULBanking />} />
+            <Route path="/iul-planner" element={<IULPlanner />} />
             <Route path="/annuities" element={<Annuities />} />
             <Route path="/529-comparison-tool" element={<Plan529ComparisonTool />} />
             <Route path="/estate-planning" element={<EstatePlanning />} />
